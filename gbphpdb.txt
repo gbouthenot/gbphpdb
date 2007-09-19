@@ -1,0 +1,341 @@
+
+/////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////
+//
+// FONCTION check_result(...)
+//
+//		fonctions remplies:
+//			. Analyse la chaine retournée par une fonction.
+//			. Renvoie un niveau d'avertissement
+//					0: chaine vide ou qui contient uniquement "OK"
+//					1: chaine non vide
+//					2: contient uniquement des warnings
+//					3: contient au moins une erreur
+//
+//		paramètres:
+//				$sResult:			chaine à analyser
+//				[$sFunction]:	Nom de la fonction (pour les affichages) "" par défaut
+//				[$fPrint]:		flag : 1 pour autoriser l'affichage sur la page ou dans le footer 1 par défaut
+//				$globals[]:
+//							"debug"
+//
+//		retour:
+//				niveau d'avertissement
+//
+//		variables modifiées:
+//				$globals[]:
+//							"footer"
+//
+//		Auteur: Gilles Bouthenot
+//		Date dernière modif: 06 décembre 2000
+//
+/////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////
+
+
+/*
+ globals.p:
+ 
+// 2008 sep 08 : 1.71
+// gbdb::__construct() accepte les type Oracle, Pdo_Oracle et Pdo_Mysql, mappés sur MYSQL ou OCI
+
+// 2008 aug 28 : 1.70
+// error_reporting(E_ALL | E_STRICT) et ini_set('display_errors')
+// nouvelle fonction retrieve_one
+// nouvelle fonction retrieve_all
+// nouvelle fonction quote
+// nouvelle fonction prepare
+// log_file() ne loggue que les 100 premiers caractères des paramètres de fonction.
+
+// 2008 aug 22 : 1.61
+// send_headers(): http header et meta: 8859-15
+
+// 2008 aug 22 : 1.60
+// log_file(): leger bug $pr était envoyé avant d'être défini !
+
+// 2008 jul 27 : 1.59
+// log_file() loggue la ligne et le fichier appelant, ainsi que les arguments de la fonction
+
+// 2008 jul 20 : 1.58
+// gbdb->fetch_array(): grave bug corrigé, affectait retrieve_array (modifié aussi)
+
+// 2008 jul 18 : 1.57
+// check_result regarde "ERROR" au lieu de "ERROR:"
+
+// 2008 jul 17 : 1.56
+// gb_date_mysql et gb_date_fr accepte 0 argument : renvoit la date courante
+
+// 2008 jul 05 : 1.55
+// gbdb->fetch_row() et gbdb->fetch_array() renvoient true ou false
+// gbdb->fetch_array() renvoit maintenant MYSQL_ASSOC ou PG_ASSOC, au lieu de BOTH (oublié dans la v1.50)
+// gbdb->retrieve_array($sql)               : renvoit $array[0..n]=array();
+// gbdb->retrieve_index($sql, $index)       : renvoit $array[$index]=array();
+// gbdb->retrieve_assoc($sql, $key, $value) : renvoit $array[$key]=$value;
+
+
+
+// 2008 jun 12 : 1.51
+// nouvelles fonctions:
+// gpcstripslashes($str) : enlève les slashes si magic_quotes_gpc est actif
+// gpc_strip_all() : idem mais sur toutes les données $_GET $_POST, $_COOKIE 
+
+// 2008 fev 22 : 1.50
+// changements : globals.p devient gbphpdb.php, il n'y a plus de db.p, ni gbclass.p
+// sql_fetch_array renvoit maintenant MYSQL_ASSOC ou PG_ASSOC, au lieu de BOTH
+
+// 2007 feb 06 : 1.47
+// auto inclusion de gbphpdb/db.p en cherchant dans plusieurs chemins
+
+// 2007 jan 29 : 1.46
+// log_file loggue REMOTE_USER si présent, ne met plus sid si non présent
+// gbclass: n'affiche les instanciation que si debug
+
+// 2007 jan 29 : 1.45
+// footer n'affiche le DDK dom parser que si debug
+
+// 2006 jan 09 : 1.44
+// log_file loggue les adresses ip plus longues
+
+// 2006 dec 14 : 1.43
+// str_to_time accepte les date aaaa-mm-jj en plus des date jj/mm/aaaa
+
+// 2006 nov 26 : 1.42
+// RAS, cosmétique
+
+// 2006 jul 12 : 1.40
+// log_file() utilise HTTP_X_FORWARDED_FOR: permet de connaitre l'adresse avant le proxy
+
+// 2005 nov
+// ppk
+// repassé en HTML 4.01 suite à ca : http://www.hixie.ch/advocacy/xhtml le xhtml, bof, en fait...
+// ajout de $globals["html_headarea"], bodyarea, bodytag
+// ENLEVE bodytag
+
+// 2004 oct 25: 1.40
+// affiche un message si base_open renvoie une erreur
+
+// 2004 sep 10: 1.39
+// send_headers: nouveau paramètre $globals["html_onload"] pour une fonction body onload.
+
+// 2004 aug 30: 1.38
+// Vérifie que le fichier existe dans include_file()
+
+// 2004 aug 30: 1.37
+// n'ouvre la base que si le nom de la base est renseigné
+
+// 2004 aug 24: 1.36
+// nouvelles fonctions: gb_date_fr($d) et gb_date_mysql pour convertir les dates du format "jj/mm/aaaa" a "aaaa-mm-jj"
+
+// 2003 nov 01: 1.35
+// nouvelle fonction include_file($fname)
+// send_headers peut renvoyer une chaine
+
+// 2003 nov 01: 1.30
+// les temps sont affichés en centieme de sencondes au lieu de dixièmes
+// affichage temps d'éxécution total, dont sql
+// send_headers() est intégré
+// le footer est désormais affiché avec class='gbphpdb_footer'
+// $globals["footerescape"]=0 permet de laisser le footer à la position courante
+// checkresult: fPrint=2 pour ne jamais afficher (même pas les erreurs)
+
+// 2003 oct 28: 1.25
+// correction log file compatible php4
+
+// 2002 avr 10: 1.24
+// N'affiche plus dans le footer base_open() et set datestyle
+
+// 2002 avr 10: 1.23
+// ajout de la variable $globals["nologo"] qui n'affiche pas le texte 'built with ...'
+
+// 2002 mar 11: 1.22
+// modification des HTTP_GET_VARS et HTTP_POST_VARS en $_GET et $_POST
+// COMPATIBLE TOUTE VERSION DE PHP4
+
+// 2002 jan 14: (1.21)
+// correction d'un bug dans check_result qui ne remettait pas le temps à zéro.
+
+// 2001 10 10:
+// nouvelle fonction: str_readfile(filename): renvoie un string contenant le fichier
+
+// 2001 09 26: (1.2)
+// check_result renvoit maintenant le temps d'exécution entre chaque appel, si on appelle check_result avec un nom.
+// nouvelle fonction: getmicrotime()
+// mystrtoupper: optimisé 80 fois plus rapide
+
+// 2001 09 13: (1.1a)
+// changement de log: désormais plus court (début du sid seulement)
+
+// 2001 09 12: (->1.1)
+// ajout de:
+//	mystrtoupper(chaine) TODO: optimiser !
+//	create_nom(chaine, longueur)
+// envoie la version de GBPHPDBVERSION à la fin de la page si debug
+// ferme les balises HTML et BODY correctement
+
+// 2001 07 19:
+// autorisation $globals["debug"]=1 avant inclusion du fichier
+// mode debug activé  dès départ
+// ajout $globals["allow_debug"]
+
+// 2001 03 22:
+//  ajout de la gestion send_headers()
+//  ajout $globals["html_parse"]
+//	ajout $globals["html_title"]
+//	ajout $globals["html_keywords"]
+//	ajout $globals["html_description"]
+
+
+*/
+
+
+/*
+ db.p:
+ 
+ comprend les fonctions:
+ 	base_open($aDBparams, $aOut)
+ 	base_close($aDBparams, $aOut)
+ 	sql_exec($sql, $whichHandle=0, $fClearResult=1)
+ 	sql_free($whichID=0)
+ 	sql_fetch_row($aRow, $whichRow="next", $whichID=0)
+ 	sql_fetch_array($aRow, $whichRow="next", $whichID=0)
+ 	sql_get_col_names($aRow, $whichID=0)
+*/
+
+// v1.01: 22 fevrier 2007 en cas de sql_fetch_array renvoit uniquement le tableau ASSOC (et non plus ASSOC+NUM)
+
+// 11 septembre 2001:
+//		(fixed)se connectait forcément à localhost
+
+//19 juillet 2001:
+//	ajout compatibilité MYSQL
+//	sql_fetch_row() et sql_fetch_array():
+//		retournent un warning au lieu d'une erreur
+//		changement paramètre numéro de ligne, "next" (par défaut) pour ligne suivante, "prev", ou numéro de ligne.
+
+
+/////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////
+//
+// FONCTION base_open(...)
+//
+//		fonctions remplies:
+//			. Connection déjà établie ? -> erreur
+//			. Ouvre la base de données.
+//
+//		paramètres:
+//				$aDBparams[]:
+//								db_type					"MYSQL" ou "POSTGRESQL"
+//								db_host
+//								db_port
+//								db_dbname
+//								db_user
+//								db_passwd
+//								db_open					1 si la base est déjà ouverte
+//
+//		retour:
+//				$aOut[]:
+//								db_open					1 si base ouverte
+//								db_handle				handle de la connection
+//								nbError					!=0 si erreur
+//
+//		variables modifiées:
+//				-
+//
+//		Auteur: Gilles Bouthenot
+//		Date dernière modif: 05 décembre 2000
+//
+/////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////
+
+
+
+
+
+/////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////
+//
+// FONCTION base_close(...)
+//
+//		fonctions remplies:
+//			. Ferme la base de données
+//		paramètres:
+//				$aDBparams[]:
+//								db_type					"MYSQL" ou "POSTGRESQL"
+//								db_open					1 si la base est déjà ouverte
+//								db_handle				handle de la connection
+//
+//		retour:
+//				$aOut[]:
+//								db_open					1 si base fermée
+//
+//		variables modifiées:
+//				-
+//
+//		Auteur: Gilles Bouthenot
+//		Date dernière modif: 05 décembre 2000
+//
+/////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////
+
+
+
+
+
+// archive phpgbdb
+
+// conversion en majuscule avec les règles suivantes:
+// Les chiffres ne sont pas acceptés
+// les caractères " ", "'", "-", "." sont ignorés
+// "_" -> "-"
+// Le caractère "/" coupe la chaine !
+
+function mystrtoupper($sLigne)
+{
+	for ($i=0; $i<strlen($sLigne); $i++)
+	{
+		$c=substr($sLigne,$i,1);
+		if ($c==' ' || $c=="'" || $c=='-')															continue;
+		if ($c=='.' || $c=='_' || $c=='@')																continue;
+		if ($c>='A' && $c<='Z')																					continue;
+		if ($c>='a' && $c<='z')
+		{	$sLigne=substr_replace($sLigne,chr(ord($c)-32),$i,1);					continue;		}
+		if ($c=='â' || $c=='à')
+		{	$sLigne=substr_replace($sLigne,'A',$i,1);											continue;		}
+		if ($c=='é' || $c=='è' || $c=='ê' || $c=='ë' || $c=='É' || $c=='Ë' || $c=='È')
+		{	$sLigne=substr_replace($sLigne,'E',$i,1);											continue;		}
+		if ($c=='ç' || $c=='Ç')
+		{	$sLigne=substr_replace($sLigne,'C',$i,1);											continue;		}
+		if ($c=='Ï' || $c=='î' || $c=='ï' || $c=='Î' || $c=='Ï')
+		{	$sLigne=substr_replace($sLigne,'I',$i,1);											continue;		}
+		if ($c=='ô' || $c=='ö' || $c=='Ô')
+		{	$sLigne=substr_replace($sLigne,'O',$i,1);											continue;		}
+		if ($c=='û' || $c=='ü' || $c=='ù')
+		{	$sLigne=substr_replace($sLigne,'U',$i,1);											continue;		}
+		if ($c=='_')
+		{	$sLigne=substr_replace($sLigne,'-',$i,1);											continue;		}
+		if ($c=='/')
+		{	$sLigne=substr($sLigne,0,$i);																	break;			}
+		printf("Warning: caractère inconnu: %c dans la chaine %s en position %d\n",$c,$sLigne,$i);
+	}
+	return $sLigne;
+}
+
+
+
+
+//
+// gbclass:
+//
+
+/*
+ $aIn:
+	Obligatoires:
+		["type"]: un de "MYSQL", "POSTGRESQL", "OCI"
+ 		["host"]: serveur
+		["name"]: nom de la base de données
+ 	Facultatifs:
+		["port"]:
+		["user"]:
+		["pass"]:
+
+*/
