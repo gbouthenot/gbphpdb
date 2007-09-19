@@ -15,6 +15,7 @@
 Class GbUtil
 {
 	const GbUtilVERSION="2alpha";
+
 	// pour log
 	const LOG_NONE=9;
 	const LOG_EMERG=8;
@@ -72,8 +73,9 @@ Class GbUtil
 		,"body_header_files"  =>array()
 		);
 
-	public static $logFilename="";					// Fichier de log
-	public static $sessionDir="";						// Répertoire des sessions
+	public static $logFilename="";					// Fichier de log, par défaut error_log/PROJECTNAME.log
+	public static $sessionDir="";						// Répertoire des sessions par défaut session_path/PROJECTNAME/sessions
+	public static $cacheDir="";							// Répertoire du cache par défaut session_path/PROJECTNAME/cache
 
 	// pour send_headers()
 	const P_HTTP=0;										// headers HTTP
@@ -104,9 +106,9 @@ Class GbUtil
 	private static $sqlNbExec=0;
 	private static $sqlNbFetch=0;
 
-	private static $gbdb_instance_total=0;					// Nombre de classes gbdb ouvertes au total
-	private static $gbdb_instance_current=0;				// en ce moment
-	private static $gbdb_instance_max=0;						// maximum ouvertes simultanément
+	// les variables suivantes sont publiques, parce que gbUtilDb hérite déjà de Zend_Db
+	public static $gbdb_instance_total=0;					// Nombre de classes gbdb ouvertes au total
+	public static $gbdb_instance_max=0;						// maximum ouvertes simultanément
 
 	protected static $GbTimer_instance_max=0;
 
@@ -143,7 +145,7 @@ Class GbUtil
 		else
 			self::$debug=0;
 
-		if (function_exists($function))
+		if (is_array($function) || function_exists($function))
 			self::log_function(GbUtil::LOG_DEBUG, "", $function, $param);
 		else
 			throw new GbUtilException("function main() does not exist !");
@@ -155,6 +157,7 @@ Class GbUtil
 				$sqlpercent=$sqltime*100/$totaltime;
 				$sqlExec=self::$sqlNbExec;
 				$sqlFetch=self::$sqlNbFetch;
+				self::$footer=htmlspecialchars(self::$footer, ENT_QUOTES);
 				self::$footer.=sprintf("Total time: %s s (%.2f%% sql) sqlExec:%d sqlFetch:%d ", GbUtil::roundCeil($totaltime), $sqlpercent, $sqlExec, $sqlFetch);
 				if (self::$GbTimer_instance_max)
 					self::$footer.=sprintf("GbTimer_instances: %s ", self::$GbTimer_instance_max);
@@ -211,7 +214,7 @@ Class GbUtil
 
 				if (!self::$noFooterEscape)
 					echo "</span></span></span></div></div></div></div></div></p>";
-				printf("\n<div class='GbUtildb_footer'>\n%s</div>\n", self::$footer);
+				printf("\n<div class='GbUtil_footer'>\n%s</div>\n", self::$footer);
 		}	// Affichage du footer
 
 		$hp=self::$html_parse;
@@ -262,6 +265,9 @@ Class GbUtil
 		$REMOTE_ADDR="";          if (isset($_SERVER["REMOTE_ADDR"]))		       $REMOTE_ADDR=         $_SERVER["REMOTE_ADDR"];
 		$HTTP_X_FORWARDED_FOR=""; if (isset($_SERVER["HTTP_X_FORWARDED_FOR"])) $HTTP_X_FORWARDED_FOR=$_SERVER["HTTP_X_FORWARDED_FOR"];
 
+
+		if (!is_string($sText))
+			$text=self::dump($sText);
 
 		if (strlen($sFName)==0)
 			$sFName=self::getLogFilename();
@@ -321,6 +327,8 @@ Class GbUtil
 	protected static function writelog($level, $text, $file, $line, $fxname="", $fxparam="", $fxreturn="")
 	{
 		$logFilename=self::getLogFilename();
+			if (!is_string($text))
+				$text=self::dump($text);
 
 		$sLevel=GbUtil::$aLevels[$level];
 		$timecode=microtime(true)-self::$starttime;
@@ -377,8 +385,8 @@ Class GbUtil
 				$sLog.=" file:$file line:$line";
 			if (strlen($fxname))
 				$sLog.=" in $fxname($fxparam) --> $fxreturn";
-			$sLog.=" )<br />\n";
-			GbUtil::$footer.=$sLog;
+			$sLog.=" )\n";
+			self::$footer.=$sLog;
 		}
 
 	}
@@ -444,7 +452,7 @@ Class GbUtil
 
 	public static function str_to_time($sTime, $outTime)
 	{
-		$sTime=gb_date_fr($sTime);
+		$sTime=self::date_fr($sTime);
 		if (strlen($sTime)==23)
 			$sTime=substr($sTime,0,19);
 		if (strlen($sTime)>=26)
@@ -585,7 +593,7 @@ Class GbUtil
 	 */
 	public static function mystrtoupper($s)
 	{
-		return strtr($s, self::STR_SRC, self::STR_TOUPPER);
+		return strtr($s, self::STR_SRC, self::STR_UPPER);
 	}
 
 	/**
@@ -754,6 +762,34 @@ Class GbUtil
 
 
 
+	/**
+	 * Renvoit le nom du repertoire de cache
+	 * crée le répertoire si besoin
+	 *
+	 * @return string cacheDir
+	 */
+	public static function getCacheDir()
+	{
+		$sessionDir=self::$cacheDir;
+
+		if ($cacheDir=="")
+		{
+			$updir=session_save_path();
+			$updir2=$updir.DIRECTORY_SEPARATOR.self::getProjectName();
+			if ((!is_dir($updir2) || !is_writable($updir2)) && is_dir($updir) && is_writable($updir))
+				@mkdir($updir2, 0700);
+			$updir3=$updir2.DIRECTORY_SEPARATOR."cache";
+			if ((!is_dir($updir3) || !is_writable($updir3)) && is_dir($updir2) && is_writable($updir2))
+				@mkdir($updir3, 0700);
+
+			if (!is_dir($updir3) || !is_writable($updir3))
+				throw new GbUtilException("Impossible de créer le répertoire $updir3 pour stocker le cache !");
+		}
+		return $cacheDir;
+	}
+
+
+
 
 	/**
 	 * Renvoit le nom du repertoire de la session
@@ -850,10 +886,12 @@ Class GbUtil
 		$sVarNameUniqId=__CLASS__."_uniqId";
 		$sVarNameGrandTimeout=__CLASS__."_grandTimeout";
 		$sVarNameRelTimeout=__CLASS__."_relTimeout";
-		$uniqId=GbUtil::getForm("uniqId");
 
 		$sWarning="";
 
+		$uniqId="";
+		if (isset($_SESSION[$sVarNameUniqId]))	$uniqId=$_SESSION[$sVarNameUniqId];
+		$uniqIdForm=GbUtil::getForm("uniqId");
 		if ( isset($_SESSION[$sVarName]) && $_SESSION[$sVarName]!=$client )
 		{ // session hijacking ? Teste l'IP et l'user agent du client
 			$_SESSION=array();
@@ -879,9 +917,13 @@ Class GbUtil
 
 		if (empty($_SESSION[$sVarName]))
 		{ // premier appel de la session: initialisation  du client
-			$a='abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
-			$u=$a{mt_rand(0, 61)}; $u.=$a{mt_rand(0, 61)}; $u.=$a{mt_rand(0, 61)}; $u.=$a{mt_rand(0, 61)}; $u.=$a{mt_rand(0, 61)};
-			$_SESSION[$sVarNameUniqId]=$u;
+			if (strlen($uniqId)==0)
+			{ // génére un uniqId ni n'existe pas déjà, sinon reprend l'ancien
+				$a='abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+				$u=$a{mt_rand(0, 61)}; $u.=$a{mt_rand(0, 61)}; $u.=$a{mt_rand(0, 61)}; $u.=$a{mt_rand(0, 61)}; $u.=$a{mt_rand(0, 61)};
+				$uniqId=$u;
+			}
+			$_SESSION[$sVarNameUniqId]=$uniqId;
 			$_SESSION[$sVarName]=$client;
 			$_SESSION[$sVarNameGrandTimeout]=time()+60*$grandTimeOutMinutes;
 		}
@@ -1058,13 +1100,9 @@ Class GbUtilDb extends Zend_Db
 	/**
 	 * Renvoie une nouvelle connexion
 	 *
-	 * type est le driver à utiliser (Pdo_Mysql, Mysqli, Pdo_Oci) NON SUPPORTE: (Oracle)
-	 * mysql -> Pdo_Mysql
-	 * oci8 -> Pdo_Oci
-	 * pecl install pdo
-	 * pecl install pdo_oci
+	 * type est le driver à utiliser (MYSQL, OCI8)
 	 *
-	 * @param array("type"=>driver,"host"=>"","user"=>"","pass"=>"","name"=>"") $aIn
+	 * @param array("type"=>"MYSQL/OCI8", "host"=>"", "user"=>"", "pass"=>"", "name"=>"") $aIn
 	 * @return GbUtilDb
 	 */
 	function __construct(array $aIn)
@@ -1083,30 +1121,35 @@ Class GbUtilDb extends Zend_Db
 		elseif (strtoupper($driver)=="MYSQLI")			$driver="Pdo_Mysql";
 		elseif (strtoupper($driver)=="ORACLE")			$driver="Pdo_Oci";
 
-//		if (strtoupper($driver)=="ORACLE")
-//			$name="(DESCRIPTION=(ADDRESS=(PROTOCOL=TCP)(HOST=$host)(PORT=1521))(CONNECT_DATA=(SID=$name)))";
-
 		try
 		{
 			$this->conn=Zend_Db::factory($driver, array("host"=>$host, "username"=>$user, "password"=>$pass, "dbname"=>$name));
-			$this->conn->getConnection();
+			$conn=$this->conn->getConnection();
 			if ($driver=="Pdo_Oci")
-				$this->conn->getConnection()->exec("ALTER SESSION SET NLS_DATE_FORMAT = 'YYYY-MM-DD HH24:MI:SS'");
+			{
+				$conn->exec("ALTER SESSION SET NLS_DATE_FORMAT = 'YYYY-MM-DD HH24:MI:SS'");
+			}
 		} catch (Exception $e)
 		{
 			throw new GbUtilException($e->getMessage());
 		}
+
+		GbUtil::$gbdb_instance_total++;
+		GbUtil::$gbdb_instance_max++;
+	}
+
+	function __destruct()
+	{
+		GbUtil::$gbdb_instance_max--;
 	}
 
 	function fetchAll($a, $b)
 	{
-		//return $this->conn->fetchAll($a, $b);
 		return $this->conn->fetchAll($a, $b);
 	}
 
 	function fetchAssoc($a, $b)
 	{
-		//return $this->conn->fetchAll($a, $b);
 		return $this->conn->fetchAssoc($a, $b);
 	}
 
@@ -1271,7 +1314,7 @@ Class GbUtilDb extends Zend_Db
 	 *
 	 * @param string $table
 	 * @param array $data array("col"=>"val"...)
-	 * @param array[optional] $where array("col='val'...)
+	 * @param array[optional] $where array("col='val'", ...)
 	 * @return int nombre de lignes modifiées
 	 */
 	public function update($table, array $data, array $where=array())
@@ -1279,11 +1322,25 @@ Class GbUtilDb extends Zend_Db
 		return $this->conn->update($table, $data, $where);
 	}
 
+	/**
+	 * SQL delete
+	 *
+	 * @param string $table
+	 * @param array[optional] $where array("col='val'", ...)
+	 * @return int nombre de lignes modifiées
+	 */
 	public function delete($table, array $where)
 	{
 		return $this->conn->delete($table, $where);
 	}
 
+	/**
+	 * SQL insert
+	 *
+	 * @param string $table
+	 * @param array $data array("col"=>"val"...)
+	 * @return int nombre de lignes modifiées
+	 */
 	public function insert($table, array $data)
 	{
 		return $this->conn->insert($table, $data);
@@ -1296,7 +1353,7 @@ Class GbUtilDb extends Zend_Db
 	 *
 	 * @param string $table Table à mettre à jour
 	 * @param array $data Données à modifier
-	 * @param array $where Données Where
+	 * @param array[optional] $where array("col='val'", ...)
 	 * @throws GbUtilException
 	 */
 	public function replace($table, array $data, array $where)
@@ -1324,10 +1381,10 @@ Class GbUtilDb extends Zend_Db
 					else throw new GbUtilException("Pas de guillements trouvés dans la clause where !");
 					$data[$col]=$val;
 				}
-				$this->conn->insert($table, $data);
+				return $this->conn->insert($table, $data);
 			}
 			elseif ($nb==1) {
-				$nbUpdate=$this->conn->update($table, $data, $where);
+				return $this->conn->update($table, $data, $where);
 			}
 			else {
 				throw new GbUtilException("replace impossible: plus d'une ligne correspond !");
@@ -1353,12 +1410,23 @@ Class GbUtilDb extends Zend_Db
 	 * Quote une valeur dans une chaine
 	 *
 	 * @param string $text ex SELECT * WHERE uid=?
-	 * @param  string $value ex login (pas de quote !)
+	 * @param  string/array $value ex login (pas de quote !)
 	 * @return string chaine quotée
 	 */
 	public function quoteInto($text, $value)
-	{
-		return $this->conn->quoteInto($text, $value);
+	{	if (is_array($value))
+		{
+			foreach($value as $val)
+			{
+				$pos = strpos($text, "?");
+				if ($pos=== false)
+					break;
+				else
+					$text=substr($text, 0, $pos).$val.substr($text, $pos+1);
+			}
+		}
+		else
+			return $this->conn->quoteInto($text, $value);
 	}
 }
 
