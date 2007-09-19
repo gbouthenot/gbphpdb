@@ -14,28 +14,13 @@
  */
 Class GbUtil
 {
-	const GbUtilDBVERSION="2alpha";
-	const AUTH_GRAND_TIMEOUT=90;			// durée de vie maximum d'une session
-	const AUTH_REL_TIMEOUT=20;				// timeout d'une session sans activité
-
-	// pour send_headers()
-	const P_HTTP=0;										// headers HTTP
-	const P_CUSTOM=1;									// autre (pour gestion complete)
-	const P_HTML=2;										// dans la balise <HTML>
-	const P_HEAD=3;										// dans la balise <HEAD>
-	const P_XHEAD=4;									// après la balise </HEAD>
-	const P_BODY=5;										// dans la balise <BODY>
-	const P_XBODY=6;									// après la balise </BODY>
-	const P_XHTML=7;									// après la balise </HTML>
-	public static $html_parse=self::P_HTTP;
-
-
+	const GbUtilVERSION="2alpha";
 	// pour log
 	const LOG_NONE=9;
 	const LOG_EMERG=8;
 	const LOG_ALERT=7;
 	const LOG_CRIT=6;
-	const LOG_ERR=5;
+	const LOG_ERROR=5;
 	const LOG_WARNING=4;
 	const LOG_NOTICE=3;
 	const LOG_INFO=2;
@@ -52,14 +37,19 @@ Class GbUtil
 	public static $loglevel_footer  =self::LOG_DEBUG;
 	public static $loglevel_file    =self::LOG_WARNING;
 	public static $loglevel_showuser=self::LOG_CRIT;
-	public static $logfilename      ="";
 
-
-	// " et $ ignorés
-	const STR_SRC=  "' !#%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\]^_`abcdefghijklmnopqrstuvwxyz{|}~€?‚ƒ„…†‡ˆ‰Š‹Œ?Ž??‘’“”•–—˜™š›œ?žŸ ¡¢£¤¥¦§¨©ª«¬­®¯°±²³´µ¶·¸¹º»¼½¾¿ÀÁÂÃÄÅÆÇÈÉÊËÌÍÎÏÐÑÒÓÔÕÖ×ØÙÚÛÜÝÞßàáâãäåæçèéêëìíîïðñòóôõö÷øùúûüýþ";
-	const STR_UPPER="' !#%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\]^_`ABCDEFGHIJKLMNOPQRSTUVWXYZ{|}~€?,F,_†‡ˆ%S‹O?Z??''“”.--˜TS›O?ZY IC£¤¥|§¨C2<¬­R¯°±23'UQ.¸10>¼½¾?AAAAAAACEEEEIIIIDNOOOOOXOUUUUYþBAAAAAAACEEEEIIIIONOOOOO/OUUUUYþ";
-
+	// ***********************
 	// variables statiques accessibles depuis l'extérieur avec GbUtil::$head et depuis la classe avec self::$head
+	// ************************
+
+	public static $projectName="";					// Nom du projet
+	public static $debug=0;                 // par défaut, pas de mode débug
+	public static $show_footer=0;           // ne pas afficher le footer par défaut
+	public static $nologo=0;                // ne pas afficher "built with gbpgpdb vxxx"
+	public static $domParser=0;             // affiche PPK's DOMparse (http://www.quirksmode.org/dom/domparse.html)
+	public static $forbidDebug=0;           // ne pas interdire de passer en débug par $_GET["debug"]
+	public static $preventGzip=0;           // compresse en gzip
+	public static $noFooterEscape=0;				// Evite la ligne </div></span>, etc...
 
 	public static $head=array(
 		 "title"              =>""
@@ -68,7 +58,7 @@ Class GbUtil
 		,"author"             =>array("name", "")
 		,"copyright"          =>array("name", "")
 		,"x-URL"              =>array("name", "")
-		,"x-scriptVersion"    =>array("name", self::GbUtilDBVERSION)
+		,"x-scriptVersion"    =>array("name", self::GbUtilVERSION)
 		,"Expires"            =>array("http-equiv", "")                                  // mettre à vide pour une date du passé
 		,"Content-Type"       =>array("http-equiv", "text/html;  charset=ISO-8859-15")
 		,"Content-Script-Type"=>array("http-equiv", "text/javascript")
@@ -82,21 +72,31 @@ Class GbUtil
 		,"body_header_files"  =>array()
 		);
 
+	public static $logFilename="";					// Fichier de log
+	public static $sessionDir="";						// Répertoire des sessions
 
-	public static $debug=0;                 // par défaut, pas de mode débug
-	public static $show_footer=0;           // ne pas afficher le footer par défaut
-	public static $nologo=0;                // ne pas afficher "built with gbpgpdb vxxx"
-	public static $domParser=0;             // affiche PPK's DOMparse (http://www.quirksmode.org/dom/domparse.html)
-	public static $forbidDebug=0;           // ne pas interdire de passer en débug par $_GET["debug"]
-	public static $preventGzip=0;           // compresse en gzip
-	public static $noFooterEscape=0;				// Evite la ligne </div></span>, etc...
+	// pour send_headers()
+	const P_HTTP=0;										// headers HTTP
+	const P_CUSTOM=1;									// autre (pour gestion complete)
+	const P_HTML=2;										// dans la balise <HTML>
+	const P_HEAD=3;										// dans la balise <HEAD>
+	const P_XHEAD=4;									// après la balise </HEAD>
+	const P_BODY=5;										// dans la balise <BODY>
+	const P_XBODY=6;									// après la balise </BODY>
+	const P_XHTML=7;									// après la balise </HTML>
+	public static $html_parse=self::P_HTTP;
+
+	// " et $ ignorés
+	const STR_SRC=  "' !#%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\]^_`abcdefghijklmnopqrstuvwxyz{|}~€?‚ƒ„…†‡ˆ‰Š‹Œ?Ž??‘’“”•–—˜™š›œ?žŸ ¡¢£¤¥¦§¨©ª«¬­®¯°±²³´µ¶·¸¹º»¼½¾¿ÀÁÂÃÄÅÆÇÈÉÊËÌÍÎÏÐÑÒÓÔÕÖ×ØÙÚÛÜÝÞßàáâãäåæçèéêëìíîïðñòóôõö÷øùúûüýþ";
+	const STR_UPPER="' !#%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\]^_`ABCDEFGHIJKLMNOPQRSTUVWXYZ{|}~€?,F,_†‡ˆ%S‹O?Z??''“”.--˜TS›O?ZY IC£¤¥|§¨C2<¬­R¯°±23'UQ.¸10>¼½¾?AAAAAAACEEEEIIIIDNOOOOOXOUUUUYþBAAAAAAACEEEEIIIIONOOOOO/OUUUUYþ";
 
 
 	// *****************
 	// Variables privées
 	// *****************
 
-	private static $footer="";					// le footer
+
+	private static $footer="";							// Footer
 
 	private static $starttime=0;
 
@@ -231,6 +231,25 @@ Class GbUtil
 
 
 	/**
+	 * Combine deux arrays
+	 * Idem que array_merge, mais sans renuméroter les clés si clé numérique
+	 *
+	 * @param array $arr1
+	 * @param array $arr2
+	 * @return array
+	 */
+	public static function array_merge(array $arr1, array $arr2)
+	{
+		// si arr2 est plus grand, échange arr1 et arr2 pour itérer sur le plus petit
+		if (count($arr2)>count($arr1))
+			list($arr1, $arr2)=array($arr2, $arr1);
+		foreach ($arr2 as $k=>$v)
+			$arr1[$k]=$v;
+		return $arr1;
+	}
+
+
+	/**
 	 * loggue dans un fichier
 	 *
 	 * @param string $sText Message à ecrire
@@ -243,16 +262,13 @@ Class GbUtil
 		$REMOTE_ADDR="";          if (isset($_SERVER["REMOTE_ADDR"]))		       $REMOTE_ADDR=         $_SERVER["REMOTE_ADDR"];
 		$HTTP_X_FORWARDED_FOR=""; if (isset($_SERVER["HTTP_X_FORWARDED_FOR"])) $HTTP_X_FORWARDED_FOR=$_SERVER["HTTP_X_FORWARDED_FOR"];
 
-		$sFName2="";
 
-		if ($sFName)
-			$sFName2=$sFName;
-		elseif (defined("LOGFILE"))
-			$sFName2=LOGFILE;
+		if (strlen($sFName)==0)
+			$sFName=self::getLogFilename();
 
-		if ($sFName2)
+		if (strlen($sFName))
 		{
-			$fd=fopen($sFName2, "a");
+			$fd=fopen($sFName, "a");
 			$sLog=date("dm His ");
 
 			if (strlen($REMOTE_ADDR) || strlen($HTTP_X_FORWARDED_FOR))
@@ -266,8 +282,8 @@ Class GbUtil
 			if (strlen($sLog)<40)
 				$sLog.=substr("                                                       ",0,40-strlen($sLog));
 
-			if (strlen(session_id()))
-				$sLog.="sid=".substr(session_id(),0,12)." ";
+			if (isset($_SESSION[__CLASS__."_uniqId"]))
+				$sLog.="uid=".$_SESSION[__CLASS__."_uniqId"]." ";
 
 			if (strlen($REMOTE_USER))
 				$sLog.="user=".$REMOTE_USER." ";
@@ -275,7 +291,8 @@ Class GbUtil
 			$sLog.=$sText." ";
 
 			$vd=debug_backtrace();
-			$vd=$vd[1];
+			if (isset($vd[1]))  $vd=$vd[1];
+			else                $vd=$vd[0];
 			$sLog.="file:".substr($vd["file"],-30)." line:".$vd["line"]." in ".$vd["function"]."(";
 
 			$sLog.=self::dump_array($vd["args"], "%s");
@@ -292,8 +309,9 @@ Class GbUtil
 	public static function log($level=GbUtil::LOG_DEBUG, $text="")
 	{
 			$vd=debug_backtrace();
-			$vd0=$vd[0];
-			$vd1=$vd[1];
+			$vd0=$vd1=$vd[0];
+			if (isset($vd[1]))
+				$vd1=$vd[1];
 
 			self::writelog($level, $text, $vd0["file"], $vd0["line"], $vd1["function"], "...", null);
 	}
@@ -302,13 +320,14 @@ Class GbUtil
 
 	protected static function writelog($level, $text, $file, $line, $fxname="", $fxparam="", $fxreturn="")
 	{
+		$logFilename=self::getLogFilename();
+
 		$sLevel=GbUtil::$aLevels[$level];
 		$timecode=microtime(true)-self::$starttime;
 		$timecode=sprintf("%.03f", $timecode);
 		$REMOTE_USER="";          if (isset($_SERVER["REMOTE_USER"]))		       $REMOTE_USER=         $_SERVER["REMOTE_USER"];
 		$REMOTE_ADDR="";          if (isset($_SERVER["REMOTE_ADDR"]))		       $REMOTE_ADDR=         $_SERVER["REMOTE_ADDR"];
 		$HTTP_X_FORWARDED_FOR=""; if (isset($_SERVER["HTTP_X_FORWARDED_FOR"])) $HTTP_X_FORWARDED_FOR=$_SERVER["HTTP_X_FORWARDED_FOR"];
-		$logfilename=self::$logfilename;
 		$date=date("dm His ");
 		$file=substr($file,-30);
 
@@ -316,7 +335,7 @@ Class GbUtil
 		{	// montre l'erreur
 			echo $text;
 		}
-		if ($level>=self::$loglevel_file && strlen($logfilename))
+		if ($level>=self::$loglevel_file && strlen($logFilename))
 		{	// ecrit dans fichier de log
 			$sLog=$date;
 			$sLog.=$REMOTE_ADDR;
@@ -329,8 +348,8 @@ Class GbUtil
 
 			$sLog.=$sLevel." ";
 
-			if (strlen(session_id()))
-				$sLog.="sid=".substr(session_id(),0,12)." ";
+			if (isset($_SESSION[__CLASS__."_uniqId"]))
+				$sLog.="uid=".$_SESSION[__CLASS__."_uniqId"]." ";
 
 			if (strlen($REMOTE_USER))
 				$sLog.="user=".$REMOTE_USER." ";
@@ -343,7 +362,7 @@ Class GbUtil
 				$sLog.=" in $fxname($fxparam) --> $fxreturn";
 			$sLog.=" )\n";
 
-			if ($fd=@fopen($logfilename, "a"))
+			if ($fd=@fopen($logFilename, "a"))
 			{
 				fwrite($fd, $sLog);
 				fclose ($fd);
@@ -360,7 +379,6 @@ Class GbUtil
 				$sLog.=" in $fxname($fxparam) --> $fxreturn";
 			$sLog.=" )<br />\n";
 			GbUtil::$footer.=$sLog;
-//			GbUtil::$footer.=$sLog;
 		}
 
 	}
@@ -623,7 +641,7 @@ Class GbUtil
 	  if (get_magic_quotes_gpc())
 		if (is_array($str))
 		{
-			array_walk_recursive($str, array("GbUtil", "gpcStripSlashesArray"));
+			array_walk_recursive($str, array(__CLASS__, "gpcStripSlashesArray"));
 			return $str;
 		}
 		else
@@ -731,10 +749,158 @@ Class GbUtil
 		return $num2;
 	}
 
-	
+
+
+
+
+
+
+	/**
+	 * Renvoit le nom du repertoire de la session
+	 * crée le répertoire si besoin
+	 *
+	 * @return string sessionDir
+	 */
+	public static function getSessionDir()
+	{
+		$sessionDir=self::$sessionDir;
+
+		if ($sessionDir=="")
+		{
+			$updir=session_save_path();
+			$updir2=$updir.DIRECTORY_SEPARATOR.self::getProjectName();
+			if ((!is_dir($updir2) || !is_writable($updir2)) && is_dir($updir) && is_writable($updir))
+				@mkdir($updir2, 0700);
+			$updir3=$updir2.DIRECTORY_SEPARATOR."sessions";
+			if ((!is_dir($updir3) || !is_writable($updir3)) && is_dir($updir2) && is_writable($updir2))
+				@mkdir($updir3, 0700);
+
+			if (is_dir($updir3) && is_writable($updir3))
+				session_save_path($updir3);
+			else throw new GbUtilException("Impossible de créer le répertoire $updir3 pour stocker les sessions !");
+		}
+		return $sessionDir;
+	}
+
+
+	/**
+	 * Renvoit le nom du fichier de log
+	 *
+	 * @return string logFilename
+	 */
+	public static function getLogFilename()
+	{
+		$logFilename=self::$logFilename;
+		if ($logFilename=="")
+		{	// met le logFilename sur error_log/{PROJECTNAME}.LOG
+			$logFilename=ini_get("error_log");
+			$d=DIRECTORY_SEPARATOR;
+			// 1: /var/log/php5 2:php_error.log
+			preg_match("@^(.+$d)(.+)\$@", $logFilename, $matches);
+			$logFilename=$matches[1].self::getProjectName().".log";
+
+			self::$logFilename=$logFilename;
+		}
+		return $logFilename;
+	}
+
+	/**
+	 * Renvoit le nom du projet, par défaut le répertoire du script php
+	 *
+	 * @return string projectName
+	 */
+	public static function getProjectName()
+	{
+		$sProjectName=self::$projectName;
+		if ($sProjectName=="")
+		{	// Met le nom du projet sur le nom du répertoire contenant le script
+			// "/gbo/gestion_e_mvc/bootstrap.php" --> "__gbo__gestion_e_mvc__bootstrap.php"
+			$sProjectName=__CLASS__;                          // par défaut, nom de la classe
+			$d=DIRECTORY_SEPARATOR;
+			$php_self=$_SERVER["PHP_SELF"];
+			// 1: [////]   2: le répertoire    3: /    4:nomfich.php[/]
+			preg_match("@^($d*)(.*)($d+)(.+$d*)$@", $php_self, $matches);
+			if (isset($matches[2]) && strlen($matches[2]))
+				$sProjectName=str_replace($d, "__", $matches[2]);
+			self::$projectName=$sProjectName;
+		}
+		return $sProjectName;
+	}
+
+
+
+	/**
+	 * Démarre une session sécurisée (id changeant, watch ip et l'user agent)
+	 * Mettre echo GbUtil::session_start() au début du script.
+	 *
+	 * @param int[optional] $relTimeOutMinutes Timeout depuis la dernière page (1h défaut)
+	 * @param int[optional] $grandTimeOutMinutes Timeout depuis création de la session (6h défaut)
+	 * @throws GbUtilException si impossible de créer répertoire pour le sessions
+	 * @return string	texte de warning ou ""
+	 */
+	public static function session_start($relTimeOutMinutes=60, $grandTimeOutMinutes=360)
+	{
+		session_name(self::getProjectName()."_PHPID");
+		self::getSessionDir();
+		session_start();
+
+		$client=md5("U:".$_SERVER["HTTP_USER_AGENT"]." IP:". $_SERVER["REMOTE_ADDR"]);
+
+		$sVarName=__CLASS__."_client";
+		$sVarNameUniqId=__CLASS__."_uniqId";
+		$sVarNameGrandTimeout=__CLASS__."_grandTimeout";
+		$sVarNameRelTimeout=__CLASS__."_relTimeout";
+		$uniqId=GbUtil::getForm("uniqId");
+
+		$sWarning="";
+
+		if ( isset($_SESSION[$sVarName]) && $_SESSION[$sVarName]!=$client )
+		{ // session hijacking ? Teste l'IP et l'user agent du client
+			$_SESSION=array();
+			session_regenerate_id(true);
+			$sWarning.="<b>Votre adresse IP ou votre navigateur a changé depuis la dernière page demandée.";
+			$sWarning.=" Pour protéger votre confidentialité, veuillez vous réidentifier.</b><br />\n";
+		}
+		elseif( strlen($uniqId) && isset($_SESSION[$sVarNameUniqId]) && $uniqId != $_SESSION[$sVarNameUniqId] )
+		{ // session hijacking ? Teste l'uniqId du formulaire (ou get)
+			$_SESSION=array();
+			session_regenerate_id(true);
+			$sWarning.="<b>Votre session n'est pas authentifiée";
+			$sWarning.=" Pour protéger votre confidentialité, veuillez vous réidentifier.</b><br />\n";
+		}
+		elseif( (isset($_SESSION[$sVarNameGrandTimeout]) && time()>$_SESSION[$sVarNameGrandTimeout])
+		     || (isset($_SESSION[$sVarNameRelTimeout])   && time()>$_SESSION[$sVarNameRelTimeout])		 )
+		{
+			$_SESSION=array();
+			session_regenerate_id(true);
+			$sWarning.="<b>Votre session a expiré";
+			$sWarning.=" Pour protéger votre confidentialité, veuillez vous réidentifier.</b><br />\n";
+		}
+
+		if (empty($_SESSION[$sVarName]))
+		{ // premier appel de la session: initialisation  du client
+			$a='abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+			$u=$a{mt_rand(0, 61)}; $u.=$a{mt_rand(0, 61)}; $u.=$a{mt_rand(0, 61)}; $u.=$a{mt_rand(0, 61)}; $u.=$a{mt_rand(0, 61)};
+			$_SESSION[$sVarNameUniqId]=$u;
+			$_SESSION[$sVarName]=$client;
+			$_SESSION[$sVarNameGrandTimeout]=time()+60*$grandTimeOutMinutes;
+		}
+		elseif (rand(1, 100)<=20)
+		{	// 20% de chance de regénérer l'ID de session
+			session_regenerate_id(true);
+		}
+
+		$_SESSION[$sVarNameRelTimeout]=time()+60*$relTimeOutMinutes;
+
+		return $sWarning;
+	}
+
 
 
 }
+
+
+
 
 
 
@@ -909,8 +1075,9 @@ Class GbUtilDb extends Zend_Db
 		if (isset($aIn["user"]))						$user=$aIn["user"];
 		if (isset($aIn["pass"]))						$pass=$aIn["pass"];
 		if (isset($aIn["name"]))						$name=$aIn["name"];
-		if     (strtoupper($driver)=="MYSQL")			$driver="Pdo_Mysql";
-		elseif (strtoupper($driver)=="OCI8")			$driver="Pdo_Oci";
+		if     (strtoupper($driver)=="MYSQL")				$driver="Pdo_Mysql";
+		elseif (strtoupper($driver)=="OCI8")				$driver="Pdo_Oci";
+		elseif (strtoupper($driver)=="OCI")					$driver="Pdo_Oci";
 		elseif (strtoupper($driver)=="PDO_OCI")			$driver="Pdo_Oci";
 		elseif (strtoupper($driver)=="PDO_MYSQL")		$driver="Pdo_Mysql";
 		elseif (strtoupper($driver)=="MYSQLI")			$driver="Pdo_Mysql";
@@ -1194,3 +1361,6 @@ Class GbUtilDb extends Zend_Db
 		return $this->conn->quoteInto($text, $value);
 	}
 }
+
+
+
