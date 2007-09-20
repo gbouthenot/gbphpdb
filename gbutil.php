@@ -1440,6 +1440,20 @@ Class GbForm
 	protected $where;
 	protected $tableName;
 
+  protected $_commonRegex = array(
+		'HexColor' => '/^#?([\dA-F]{3}){1,2}$/i',
+		'UsTelephone' => '/^\(?([2-9]\d{2})\)?[\.\s-]?([2-4|6-9]\d\d|5([0-4|6-9]\d|\d[0-4|6-9]))[\.\s-]?(\d{4})$/',
+		'Email' => '/(^[\w\.!#$%"*+\/=?`{}|~^-]+)@(([-\w]+\.)+[A-Za-z]{2,})$/',
+		'Url' => '/^(https?|ftp):\/\/([-\w]+\.)+[A-Za-z]{2,}(:\d+)?([\\\\\/]\S+)*?[\\\\\/]?(\?\S*)?$/i',
+		'PositiveInteger' => '/^\d+$/',
+		'RelativeInteger' => '/^-?\d+$/',
+		'DecimalNumber' => '/^-?(\d*\.)?\d+$/',
+		'AlphaNumeric' => '/^[\w\s]+$/i',
+		'DateFr' => '/^[0-3][0-9]\/$/',
+		'PostalCodeFr' => '/^[0-9]{5}$/',
+	);
+
+
 	public function __construct($tableName="", array $where=array())
 	{
 		$this->tableName=$tableName;
@@ -1475,6 +1489,7 @@ Class GbForm
 			case "SELECT":
 				if (!isset($aParams["args"]) || !is_array($aParams["args"]))
 					throw new Exception("Paramètres de $nom incorrects");
+				//remplit value avec le numéro sélectionné.
 				$num=0;
 				foreach($aParams["args"] as $ordre=>$val) {
 					if ($ordre==="default") {
@@ -1486,6 +1501,19 @@ Class GbForm
 				}
 				if (!isset($aParams["value"]))
 					$aParams["value"]="0";		// par défaut, 1er élément de la liste
+				$this->formElements[$nom]=$aParams;
+				break;
+
+			case "TEXT":
+				if (isset($aParams["args"]["regexp"])){
+					$regexp=&$aParams["args"]["regexp"];
+					if (isset($this->_commonRegex[$regexp])) {
+						//regexp connu: remplace par le contenu
+						$regexp=$this->_commonRegex[$regexp];
+					}
+				}
+				if (!isset($aParams["value"]))
+					$aParams["value"]="";		// par défaut, chaine vide
 				$this->formElements[$nom]=$aParams;
 				break;
 
@@ -1537,10 +1565,12 @@ Class GbForm
 	 */
 	public function getHtml($nom, $html="")
 	{
-		$ret="";
 		if (!isset($this->formElements[$nom])) {
 			throw new Exception("Variable de formulaire inexistante");
 		}
+
+		$ret="";
+
 		$aElement=$this->formElements[$nom];
 
 		$type=$aElement["type"];
@@ -1548,8 +1578,7 @@ Class GbForm
 			case "SELECT":
 				$aValues=$aElement["args"];
 				$value=$aElement["value"];
-				$sNom=htmlspecialchars($nom, ENT_QUOTES);
-				$ret.="<select name='GBFORM_$sNom' $html>\n";
+				$ret.="<select id='GBFORM_$nom' name='GBFORM_$nom' $html onchange='javascript:validate_GBFORM_$nom();' onkeyup='javascript:validate_GBFORM_$nom();'>\n";
 				$num=0;
 				foreach ($aValues as $ordre=>$aOption){
 					$sVal=htmlspecialchars($aOption[0], ENT_QUOTES);
@@ -1563,10 +1592,78 @@ Class GbForm
 				$ret.="</select>\n";
 				break;
 
+			case "TEXT":
+				$sValue=htmlspecialchars($aElement["value"], ENT_QUOTES);
+				$ret.="<input type='text' id='GBFORM_$nom' name='GBFORM_$nom' value='$sValue' $html onchange='javascript:validate_GBFORM_$nom();' onkeyup='javascript:validate_GBFORM_$nom();' />\n";
+				break;
+
+			default:
+				throw new Exception("Type inconnu");
+		}
+
+		$ret.="<script type='text/javascript'>\n";
+		$ret.="function validate_GBFORM_$nom()\n";
+		$ret.="{\n";
+		$ret.=$this->getJavascript($nom);
+		$ret.="}\n";
+		$ret.="validate_GBFORM_$nom();\n";
+		$ret.="</script>\n";
+		return $ret;
+	}
+
+
+	protected function getJavascript($nom)
+	{
+		$ret="";
+				if (!isset($this->formElements[$nom])) {
+			throw new Exception("Variable de formulaire inexistante");
+		}
+		$ret.="	\$('GBFORM_{$nom}_div').className='GBFORM_OK';\n";
+		$aElement=$this->formElements[$nom];
+
+		$type=$aElement["type"];
+		// attention utilise prototype String.strip()
+		$ret.="var value=\$F('GBFORM_$nom').strip();\n";
+		switch ($type) {
+			case "SELECT":
+				if (isset($aElement["fMandatory"]) && $aElement["fMandatory"]) {
+					$aValues="";
+					foreach($aElement["args"] as $ordre=>$val) {
+						$val=$val[0];
+						if ($val===false) $val="false";
+						$aValues[]="'$ordre':'$val'";
+					}
+					$ret.="var GBFORM_{$nom}_values = { ".implode(", ",$aValues)."};\n";
+					$ret.="if ((GBFORM_{$nom}_values[value])=='false') {\n";
+					$ret.="	\$('GBFORM_{$nom}_div').className='GBFORM_NOK';\n";
+					$ret.="}\n";
+				}
+				break;
+
+			case "TEXT":
+				if (isset($aElement["fMandatory"]) && $aElement["fMandatory"]) {
+					$ret.="if (value=='') {\n";
+					$ret.="	\$('GBFORM_{$nom}_div').className='GBFORM_NOK';\n";
+					$ret.="}\n";
+				}
+				if (isset($aElement["args"]["regexp"])){
+					$regexp=$aElement["args"]["regexp"];
+					if (isset($this->_commonRegex[$regexp])) {
+						//regexp connu: remplace par le contenu
+						$regexp=$this->_commonRegex[$regexp];
+					}
+					$ret.="var regexp=$regexp\n";
+					$ret.="if (!regexp.test(value)) {\n";
+					$ret.="	\$('GBFORM_{$nom}_div').className='GBFORM_NOK';\n";
+					$ret.="}\n";
+				}
+				break;
+
 			default:
 				throw new Exception("Type inconnu");
 		}
 		return $ret;
+
 	}
 
 	/**
@@ -1599,12 +1696,11 @@ Class GbForm
 		foreach ($this->formElements as $nom=>$aElement) {
 			$type=$aElement["type"];
 			if (isset($_POST["GBFORM_".$nom])) {
-				if ( ($type=="SELECT" )) {
 					$this->formElements[$nom]["value"]=$_POST["GBFORM_".$nom];
 					$fPost=true;
-				}
 			}
 		}
+		return $fPost;
 	}
 
 
@@ -1617,21 +1713,34 @@ Class GbForm
 		$aErrs=array();
 		foreach ($this->formElements as $nom=>$aElement) {
 			$type=$aElement["type"];
-			$value=$aElement["value"];
+			$value=trim($aElement["value"]);
 
-			if ($type=="SELECT") {
-				// Vérifie que la valeur est bien dans la liste et maj $value
-				if (isset($aElement["args"][$value])) {
-					$value=$aElement["args"][$value][0];
-				} else {
-					$aErrs[$nom]="Choix invalide";
-					continue;
-				}
+			switch ($type) {
+				case "SELECT":
+					// Vérifie que la valeur est bien dans la liste et maj $value
+					if (isset($aElement["args"][$value])) {
+						$value=$aElement["args"][$value][0];
+					} else {
+						$aErrs[$nom]="Choix invalide";
+						continue;
+					}
+
+				break;
+				case "TEXT":
+					if (strlen($value) && isset($aElement["args"]["regexp"])) {
+						$regexp=$aElement["args"]["regexp"];
+						if (!preg_match($regexp, $value)) {
+							$aErrs[$nom]="Valeur incorrecte";
+							continue;
+						}
+					}
+
+
 			}
 
 			if (isset($aElement["fMandatory"]) && $aElement["fMandatory"]) {
 				// Vérifie que le champ et bien rempli
-				if ( ($type=="SELECT" && $value===null) || ($type!="SELECT" && strlen($value)==0) ) {
+				if ( ($type=="SELECT" && $value===false) || ($type!="SELECT" && strlen($value)==0) ) {
 					$aErrs[$nom]="Champ non renseigné";
 					continue;
 				}
