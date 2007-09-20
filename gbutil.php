@@ -1451,6 +1451,8 @@ Class GbForm
 		'AlphaNumeric' => '/^[\w\s]+$/i',
 		'DateFr' => '/^[0-3][0-9]\/$/',
 		'PostalCodeFr' => '/^[0-9]{5}$/',
+		'Year' => '/^((19)|(20))[0-9]{2}$/',
+		'Year20xx' => '/^20[0-9]{2}$/',
 	);
 
 
@@ -1482,6 +1484,13 @@ Class GbForm
 
 		if (!isset($aParams["type"]))
 			throw new Exception("Type de variable de formulaire non précisé");
+
+		if (!isset($aParams["preInput"]))
+			$aParams["preInput"]="";
+		if (!isset($aParams["inInput"]))
+			$aParams["inInput"]="";
+		if (!isset($aParams["postInput"]))
+			$aParams["postInput"]="";
 
 		$type=$aParams["type"];
 		switch($type)
@@ -1560,24 +1569,25 @@ Class GbForm
 	 * Renvoit le code HTML approprié (valeur par défaut, préselectionné, etc)
 	 *
 	 * @param string $nom
-	 * @param string $html[optional] donnée supplémentaire à mettre dans le code HTML
 	 * @throws Exception
 	 */
-	public function getHtml($nom, $html="")
+	public function getHtml($nom)
 	{
 		if (!isset($this->formElements[$nom])) {
 			throw new Exception("Variable de formulaire inexistante");
 		}
 
-		$ret="";
-
 		$aElement=$this->formElements[$nom];
+		$ret="";
+		$ret.="<div id='GBFORM_${nom}_div'>\n";
+		$ret.=$aElement["preInput"];
 
 		$type=$aElement["type"];
 		switch ($type) {
 			case "SELECT":
 				$aValues=$aElement["args"];
 				$value=$aElement["value"];
+				$html=$aElement["inInput"];
 				$ret.="<select id='GBFORM_$nom' name='GBFORM_$nom' $html onchange='javascript:validate_GBFORM_$nom();' onkeyup='javascript:validate_GBFORM_$nom();'>\n";
 				$num=0;
 				foreach ($aValues as $ordre=>$aOption){
@@ -1594,12 +1604,14 @@ Class GbForm
 
 			case "TEXT":
 				$sValue=htmlspecialchars($aElement["value"], ENT_QUOTES);
-				$ret.="<input type='text' id='GBFORM_$nom' name='GBFORM_$nom' value='$sValue' $html onchange='javascript:validate_GBFORM_$nom();' onkeyup='javascript:validate_GBFORM_$nom();' />\n";
+				$ret.="<input type='text' id='GBFORM_$nom' name='GBFORM_$nom' value='$sValue' onchange='javascript:validate_GBFORM_$nom();' onkeyup='javascript:validate_GBFORM_$nom();' />\n";
 				break;
 
 			default:
 				throw new Exception("Type inconnu");
 		}
+		$ret.=$aElement["postInput"];
+		$ret.="</div>\n";
 
 		$ret.="<script type='text/javascript'>\n";
 		$ret.="function validate_GBFORM_$nom()\n";
@@ -1623,7 +1635,7 @@ Class GbForm
 
 		$type=$aElement["type"];
 		// attention utilise prototype String.strip()
-		$ret.="var value=\$F('GBFORM_$nom').strip();\n";
+		$ret.="var value=remove_accents(\$F('GBFORM_$nom').strip());\n";
 		switch ($type) {
 			case "SELECT":
 				if (isset($aElement["fMandatory"]) && $aElement["fMandatory"]) {
