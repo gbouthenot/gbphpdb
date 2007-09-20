@@ -1579,7 +1579,7 @@ Class GbForm
 
 		$aElement=$this->formElements[$nom];
 		$ret="";
-		$ret.="<div id='GBFORM_${nom}_div'>\n";
+		$ret.="<div id='GBFORM_${nom}_div' class='GBFORM_OK'>\n";
 		$ret.=$aElement["preInput"];
 
 		$type=$aElement["type"];
@@ -1618,7 +1618,8 @@ Class GbForm
 		$ret.="{\n";
 		$ret.=$this->getJavascript($nom);
 		$ret.="}\n";
-		$ret.="validate_GBFORM_$nom();\n";
+//		$ret.="\$(GBFORM_{$nom}_div).className='GBFORM_NOK';\n";
+//		$ret.="validate_GBFORM_$nom();\n";
 		$ret.="</script>\n";
 		return $ret;
 	}
