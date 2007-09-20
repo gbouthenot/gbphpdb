@@ -1432,3 +1432,215 @@ Class GbUtilDb extends Zend_Db
 
 
 
+
+Class GbForm
+{
+
+	protected $formElements=array();
+	protected $where;
+	protected $tableName;
+
+	public function __construct($tableName="", array $where=array())
+	{
+		$this->tableName=$tableName;
+		$this->where=$where;
+	}
+
+	/**
+	 * Ajoute un élément
+	 *
+	 * @param string $nom Nom unique, défini le NAME de l'élément doit commencer par une lettre et ne comporter que des caractères alphanumériques
+	 * @param array $aParams
+	 * @throws Exception
+	 */
+	public function addElement($nom, array $aParams)
+	{
+		// $aParams["type"]="SELECT":
+		// $aParams["args"]       : array["default"]=array(value=>libelle) (value est recodé dans le html mais renvoie la bonne valeur)
+		// $aParams["dbCol"]      : optionnel: nom de la colonne
+		// $aParams["fMandatory"] : obligatoire: ne peut pas être false
+
+		if (!preg_match("/^[a-zA-Z][a-zA-Z0-9]*/", $nom))
+			throw new Exception("Nom de variable de formulaire invalide");
+
+		if (isset($this->formElement[$nom]))
+			throw new Exception("Nom de variable de formulaire déjà défini");
+
+		if (!isset($aParams["type"]))
+			throw new Exception("Type de variable de formulaire non précisé");
+
+		$type=$aParams["type"];
+		switch($type)
+		{
+			case "SELECT":
+				if (!isset($aParams["args"]) || !is_array($aParams["args"]))
+					throw new Exception("Paramètres de $nom incorrects");
+				$num=0;
+				foreach($aParams["args"] as $ordre=>$val) {
+					if ($ordre==="default") {
+						unset($aParams["args"]["default"]);
+						$aParams["args"][$num]=$val;
+						$aParams["value"]=$num;
+					}
+					$num++;
+				}
+				if (!isset($aParams["value"]))
+					$aParams["value"]="0";		// par défaut, 1er élément de la liste
+				$this->formElements[$nom]=$aParams;
+				break;
+
+				default:
+				throw new Exception("Type de variable de formulaire inconnu pour $nom");
+		}
+
+	}
+
+
+
+	public function set($nom, $value)
+	{
+		if (!isset($this->formElements[$nom]))
+			throw new Exception("Set impossible: nom=$nom non défini");
+
+		$type=$this->formElements[$nom]["type"];
+		if ($type=="SELECT") {
+			foreach ($this->formElements[$nom]["args"] as $ordre=>$val) {
+				if ($val[0]==$value) {
+					$value=$ordre;
+					break;
+				}
+			}
+		}
+		$this->formElements[$nom]["value"]=$value;
+	}
+
+
+	public function get($nom)
+	{
+		if (!isset($this->formElements[$nom]))
+			throw new Exception("Set impossible: nom=$nom non défini");
+
+		$value=$this->formElements[$nom]["value"];
+
+		if ($this->formElements[$nom]["type"]=="SELECT" && isset($this->formElements[$nom]["args"][$value])) {
+			$value=$this->formElements[$nom]["args"][$value][0];
+		}
+		return $value;
+	}
+
+	/**
+	 * Renvoit le code HTML approprié (valeur par défaut, préselectionné, etc)
+	 *
+	 * @param string $nom
+	 * @param string $html[optional] donnée supplémentaire à mettre dans le code HTML
+	 * @throws Exception
+	 */
+	public function getHtml($nom, $html="")
+	{
+		$ret="";
+		if (!isset($this->formElements[$nom])) {
+			throw new Exception("Variable de formulaire inexistante");
+		}
+		$aElement=$this->formElements[$nom];
+
+		$type=$aElement["type"];
+		switch ($type) {
+			case "SELECT":
+				$aValues=$aElement["args"];
+				$value=$aElement["value"];
+				$sNom=htmlspecialchars($nom, ENT_QUOTES);
+				$ret.="<select name='GBFORM_$sNom' $html>\n";
+				$num=0;
+				foreach ($aValues as $ordre=>$aOption){
+					$sVal=htmlspecialchars($aOption[0], ENT_QUOTES);
+					$sLib=htmlspecialchars($aOption[1], ENT_QUOTES);
+					$sSelected="";
+					if ($ordre==$value)
+						$sSelected="selected='selected'";
+					$ret.="<option value='$num' $sSelected>$sLib</option>\n";
+					$num++;
+				}
+				$ret.="</select>\n";
+				break;
+
+			default:
+				throw new Exception("Type inconnu");
+		}
+		return $ret;
+	}
+
+	/**
+	 * Remplit les valeurs depuis la base de données
+	 * @return true si données trouvées
+	 */
+	public function getFromDb(GbUtilDb $db)
+	{
+		$aCols=array();
+		foreach ($this->formElements as $nom=>$aElement) {
+			if (isset($aElement["dbCol"])) {
+				$dbCol=$aElement["dbCol"];
+				$aCols[]=$dbCol;
+			}
+		}
+
+		if (count($aCols)) {
+			$sql="SELECT ".implode(",", $aCols)." FROM ".$this->tableName." WHERE ".GbUtil::Dump($this->where);
+			echo $sql;
+		}
+	}
+
+	/**
+	 * Remplit les valeurs depuis $_POST
+	 * @return true si données trouvées
+	 */
+	public function getFromPost()
+	{
+		$fPost=false;
+		foreach ($this->formElements as $nom=>$aElement) {
+			$type=$aElement["type"];
+			if (isset($_POST["GBFORM_".$nom])) {
+				if ( ($type=="SELECT" )) {
+					$this->formElements[$nom]["value"]=$_POST["GBFORM_".$nom];
+					$fPost=true;
+				}
+			}
+		}
+	}
+
+
+	/**
+	 * Valide le formulaire
+	 * @return array("nom" => "erreur")
+	 */
+	public function validate()
+	{
+		$aErrs=array();
+		foreach ($this->formElements as $nom=>$aElement) {
+			$type=$aElement["type"];
+			$value=$aElement["value"];
+
+			if ($type=="SELECT") {
+				// Vérifie que la valeur est bien dans la liste et maj $value
+				if (isset($aElement["args"][$value])) {
+					$value=$aElement["args"][$value][0];
+				} else {
+					$aErrs[$nom]="Choix invalide";
+					continue;
+				}
+			}
+
+			if (isset($aElement["fMandatory"]) && $aElement["fMandatory"]) {
+				// Vérifie que le champ et bien rempli
+				if ( ($type=="SELECT" && $value===null) || ($type!="SELECT" && strlen($value)==0) ) {
+					$aErrs[$nom]="Champ non renseigné";
+					continue;
+				}
+			}
+		}//foreach
+		return $aErrs;
+	}
+
+
+}
+
+
