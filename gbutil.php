@@ -1681,22 +1681,47 @@ Class GbForm
 
 	/**
 	 * Remplit les valeurs depuis la base de données
-	 * @return true si données trouvées
+
+	 * @param GbUtilDb $db
+	 * @return boolean true si données trouvées
 	 */
 	public function getFromDb(GbUtilDb $db)
 	{
 		$aCols=array();
 		foreach ($this->formElements as $nom=>$aElement) {
 			if (isset($aElement["dbCol"])) {
-				$dbCol=$aElement["dbCol"];
-				$aCols[]=$dbCol;
+				$aCols[$nom]=$aElement["dbCol"];
 			}
 		}
 
-		if (count($aCols)) {
-			$sql="SELECT ".implode(",", $aCols)." FROM ".$this->tableName." WHERE ".GbUtil::Dump($this->where);
-			echo $sql;
+		if (count($aCols)==0) {
+			return false;
 		}
+
+		$sql="SELECT ".implode(", ", $aCols)." FROM ".$this->tableName;
+		if (count($this->where)) {
+			$sql.=" WHERE";
+			$sWhere="";
+			foreach ($this->where as $col=>$val)
+			{ if (strlen($sWhere)) {
+					$sWhere.=" AND";
+				}
+				$sWhere.=" $col='$val'";
+			}
+			$sql.=$sWhere;
+		}
+
+		$aLigne=$db->retrieve_one($sql);
+		if ($aLigne===false) {
+		// La requête n'a pas renvoyé de ligne
+			return $true;
+		}
+
+		// La requête a renvoyé une ligne
+		foreach ($aCols as $nom=>$dbcol) {
+			$this->set($nom, $aLigne[$dbcol]);
+		}
+		return true;
 	}
 
 	/**
