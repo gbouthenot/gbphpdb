@@ -1842,7 +1842,7 @@ Class GbForm
 		$aErrs=array();
 		foreach ($this->formElements as $nom=>$aElement) {
 			$type=$aElement["type"];
-			$value=trim($aElement["value"]);
+			$value=strtolower(GbUtil::mystrtoupper(trim($aElement["value"])));
 
 			switch ($type) {
 				case "SELECT":
