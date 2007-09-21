@@ -1512,7 +1512,7 @@ Class GbForm
 			$aParams["class"]=$aParams["classOK"];
 		$aParams["errorMsg"]="";
 
-			$type=$aParams["type"];
+		$type=$aParams["type"];
 		switch($type)
 		{
 			case "SELECT":
@@ -1543,6 +1543,14 @@ Class GbForm
 				}
 				if (!isset($aParams["value"]))
 					$aParams["value"]="";		// par défaut, chaine vide
+				$this->formElements[$nom]=$aParams;
+				break;
+
+			case "CHECKBOX":
+				if (isset($aParams["value"]) && $aParams["value"]==true)
+					$aParams["value"]=true;
+				else
+					$aParams["value"]=false;
 				$this->formElements[$nom]=$aParams;
 				break;
 
@@ -1604,10 +1612,10 @@ Class GbForm
 		$ret.=$aElement["preInput"];
 
 		$type=$aElement["type"];
+		$value=$aElement["value"];
 		switch ($type) {
 			case "SELECT":
 				$aValues=$aElement["args"];
-				$value=$aElement["value"];
 				$html=$aElement["inInput"];
 				$ret.="<select id='GBFORM_$nom' name='GBFORM_$nom' $html onchange='javascript:validate_GBFORM_$nom();' onkeyup='javascript:validate_GBFORM_$nom();'>\n";
 				$num=0;
@@ -1624,8 +1632,15 @@ Class GbForm
 				break;
 
 			case "TEXT":
-				$sValue=htmlspecialchars($aElement["value"], ENT_QUOTES);
+				$sValue=htmlspecialchars($value, ENT_QUOTES);
 				$ret.="<input type='text' id='GBFORM_$nom' name='GBFORM_$nom' value='$sValue' onchange='javascript:validate_GBFORM_$nom();' onkeyup='javascript:validate_GBFORM_$nom();' />\n";
+				break;
+
+			case "CHECKBOX":
+				$sValue="";
+				if ($value==true)
+					$sValue=" checked='checked'";
+				$ret.="<input type='checkbox' id='GBFORM_$nom' name='GBFORM_$nom' value='true' $sValue onchange='javascript:validate_GBFORM_$nom();' onkeyup='javascript:validate_GBFORM_$nom();' />\n";
 				break;
 
 			default:
@@ -1688,6 +1703,11 @@ Class GbForm
 	}
 
 
+	/**
+	 * Renvoie le code javascript pour la validation dynamique
+	 *
+	 * @param $nom string
+	 */
 	protected function getJavascript($nom)
 	{
 		$ret="";
@@ -1698,10 +1718,10 @@ Class GbForm
 		$aElement=$this->formElements[$nom];
 
 		$type=$aElement["type"];
-		// attention utilise prototype String.strip()
-		$ret.="var value=remove_accents(\$F('GBFORM_$nom').strip());\n";
 		switch ($type) {
 			case "SELECT":
+				// attention utilise prototype String.strip()
+				$ret.="var value=remove_accents(\$F('GBFORM_$nom').strip());\n";
 				if ($aElement["fMandatory"]) {
 					$aValues="";
 					foreach($aElement["args"] as $ordre=>$val) {
@@ -1717,6 +1737,8 @@ Class GbForm
 				break;
 
 			case "TEXT":
+				// attention utilise prototype String.strip()
+				$ret.="var value=remove_accents(\$F('GBFORM_$nom').strip());\n";
 				if ($aElement["fMandatory"]) {
 					$ret.="if (value=='') {\n";
 					$ret.="	\$('GBFORM_{$nom}_div').className='GBFORM_NOK';\n";
@@ -1763,6 +1785,14 @@ Class GbForm
 				}
 				break;
 
+			case "CHECKBOX":
+				$ret.="var value=\$F('GBFORM_$nom');\n";
+				if ($aElement["fMandatory"]) {
+					$ret.="if (value!='true') {\n";
+					$ret.="	\$('GBFORM_{$nom}_div').className='GBFORM_NOK';\n";
+					$ret.="}\n";
+				}
+				break;
 			default:
 				throw new GbUtilException("Type inconnu");
 		}
@@ -1778,6 +1808,7 @@ Class GbForm
 	 */
 	public function getFromDb(GbUtilDb $db)
 	{
+		//todo: checkbox
 		$aCols=array();
 		foreach ($this->formElements as $nom=>$aElement) {
 			if (isset($aElement["dbCol"])) {
@@ -1822,8 +1853,16 @@ Class GbForm
 	public function getFromPost()
 	{
 		$fPost=false;
+		if (isset($_POST["GBFORMPOST"])) {
+			// detecte que le formulaire a été soumis. Utile pour les checkbox
+			$fPost=true;
+		}
 		foreach ($this->formElements as $nom=>$aElement) {
 			$type=$aElement["type"];
+			if ($fPost && $type=="CHECKBOX") {
+				// met les checkbox à false
+				$this->formElements[$nom]["value"]=false;
+			}
 			if (isset($_POST["GBFORM_".$nom])) {
 					$this->formElements[$nom]["value"]=$_POST["GBFORM_".$nom];
 					$fPost=true;
@@ -1835,6 +1874,8 @@ Class GbForm
 
 	/**
 	 * Valide le formulaire
+	 * En cas d'erreur, appelle $this->setClass() et $this->setErrorMsg pour chaque $nom incorrect
+	 *
 	 * @return array("nom" => "erreur")
 	 */
 	public function validate()
@@ -1895,14 +1936,16 @@ Class GbForm
 							}
 						}
 					}
-
-
+
 			}
 
 			if ($aElement["fMandatory"]) {
 				// Vérifie que le champ et bien rempli
 				if ( ($type=="SELECT" && $value===false) || ($type!="SELECT" && strlen($value)==0) ) {
-					$aErrs[$nom]="Champ non renseigné";
+					if ($type=="SELECT")	$aErrs[$nom]="Aucun choix sélectionné";
+					elseif ($type=="TEXT")	$aErrs[$nom]="Valeur non renseignée";
+					elseif ($type=="CHECKBOX")	$aErrs[$nom]="Case non cochée";
+					else	$aErrs[$nom]="Champ non renseigné";
 					continue;
 				}
 			}
