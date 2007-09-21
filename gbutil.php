@@ -1477,9 +1477,13 @@ Class GbForm
 		// $aParams["fMandatory"]  : doit être rempli ? défaut: false
 		// $aParams["classOK"]     : nom de la classe pour élément valide défaut: GBFORM_OK
 		// $aParams["classNOK"]    : nom de la classe pour élément non valide défaut: GBFORM_NOK
+		// $aParams["classERROR"]  : nom de la classe pour erreur: GBFORM_ERROR
 		// $aParams["preInput"]    :
 		// $aParams["inInput"]     :
 		// $aParams["postInput"]   :
+		// renseignés automatiquement:
+		// $aParams["class"]       : nom de la classe en cours
+		// $aParams["errorMsg"]    : message d'erreur
 
 		if (!preg_match("/^[a-zA-Z][a-zA-Z0-9]*/", $nom))
 			throw new GbUtilException("Nom de variable de formulaire invalide");
@@ -1502,8 +1506,11 @@ Class GbForm
 			$aParams["classOK"]="GBFORM_OK";
 		if (!isset($aParams["classNOK"]))
 			$aParams["classNOK"]="GBFORM_NOK";
+		if (!isset($aParams["classERROR"]))
+			$aParams["classERROR"]="GBFORM_ERROR";
 		if (!isset($aParams["class"]))
 			$aParams["class"]=$aParams["classOK"];
+		$aParams["errorMsg"]="";
 
 			$type=$aParams["type"];
 		switch($type)
@@ -1624,6 +1631,11 @@ Class GbForm
 			default:
 				throw new GbUtilException("Type inconnu");
 		}
+		$errorMsg=$aElement["errorMsg"];
+		if (strlen($errorMsg)) {
+			$class=$aElement["classERROR"];
+			$ret.="<div class='$class'>$errorMsg</div>";
+		}
 		$ret.=$aElement["postInput"];
 		$ret.="</div>\n";
 
@@ -1640,7 +1652,7 @@ Class GbForm
 
 
 	/**
-	 * Change la class d'un elément
+	 * Change la classe d'un elément
 	 *
 	 * @param string $nom
 	 * @param boolean|string $class : false/true: met a classNOK/classOK string: met a la classe spécifiée
@@ -1657,6 +1669,22 @@ Class GbForm
 		}
 
 		$this->formElements[$nom]["class"]=$class;
+	}
+
+
+
+	/**
+	 * Change le message d'erreur d'un elément
+	 *
+	 * @param string $nom
+	 * @param string $errorMsg
+	 * @throws GbUtilException
+	 */
+	public function setErrorMsg($nom, $errorMsg="")
+	{
+		if (!isset($this->formElements[$nom]))
+			throw new GbUtilException("Element de fomulaire non défini");
+		$this->formElements[$nom]["errorMsg"]=$errorMsg;
 	}
 
 
@@ -1819,6 +1847,13 @@ Class GbForm
 				}
 			}
 		}//foreach
+
+		foreach($aErrs as $nom=>$reason)
+		{
+			$this->setClass($nom, false);
+			$this->setErrorMsg($nom, $reason);
+		}
+
 		return $aErrs;
 	}
 
