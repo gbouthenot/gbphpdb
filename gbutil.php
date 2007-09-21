@@ -1733,6 +1733,34 @@ Class GbForm
 					$ret.="	\$('GBFORM_{$nom}_div').className='GBFORM_NOK';\n";
 					$ret.="}\n";
 				}
+				if (isset($aElement["MINVALUE"])){
+					$aMinValues=$aElement["MINVALUE"];
+					foreach ($aMinValues as $borne)
+					{	if (strpos($borne, "GBFORM_")===0) {
+							// borne commence par GBFORM_
+							$borne="\$F('$borne')";
+						}
+						$ret.=" var arg=\"$borne\";\n";
+						$ret.=" var arg=eval(arg);\n";
+						$ret.=" if (value < arg) {";
+						$ret.="	\$('GBFORM_{$nom}_div').className='GBFORM_NOK';";
+						$ret.="}\n";
+					}
+				}
+				if (isset($aElement["MAXVALUE"])){
+					$aMaxValues=$aElement["MAXVALUE"];
+					foreach ($aMaxValues as $borne)
+					{	if (strpos($borne, "GBFORM_")===0) {
+							// $borne commence par GBFORM_
+							$borne="\$F('$borne')";
+						}
+						$ret.=" var arg=\"$borne\";\n";
+						$ret.=" var arg=eval(arg);\n";
+						$ret.=" if (value > arg) {";
+						$ret.="	\$('GBFORM_{$nom}_div').className='GBFORM_NOK';";
+						$ret.="}\n";
+					}
+				}
 				break;
 
 			default:
@@ -1833,6 +1861,38 @@ Class GbForm
 						if (!preg_match($regexp, $value)) {
 							$aErrs[$nom]="Valeur incorrecte";
 							continue;
+						}
+					}
+					if (strlen($value) && isset($aElement["MINVALUE"])) {
+						$aBornes=$aElement["MINVALUE"];
+						foreach ($aBornes as $borne) {
+							$sBorne=$borne;
+							if (strpos($borne, "GBFORM_")===0) {
+								// borne commence par GBFORM_
+								$sBorne=substr($borne,7);
+								$borne=$this->get($sBorne);
+								$sBorne.=" ($borne)";
+							}
+							if ($value < $borne) {
+								$aErrs[$nom]="Doit être supérieur ou égal à $sBorne";
+								continue;
+							}
+						}
+					}
+					if (strlen($value) && isset($aElement["MAXVALUE"])) {
+						$aBornes=$aElement["MAXVALUE"];
+						foreach ($aBornes as $borne) {
+							$sBorne=$borne;
+							if (strpos($borne, "GBFORM_")===0) {
+								// borne commence par GBFORM_
+								$sBorne=substr($borne,7);
+								$borne=$this->get($sBorne);
+								$sBorne.=" ($borne)";
+							}
+							if ($value > $borne) {
+								$aErrs[$nom]="Doit être inférieur ou égal à $sBorne";
+								continue;
+							}
 						}
 					}
 
