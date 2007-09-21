@@ -16,7 +16,7 @@ if (	(isset($globals["debug"]) && $globals["debug"]==1)
 	$globals["debug"]=1;
 }
 
-define("GBPHPDBVERSION","1.71");
+define("GBPHPDBVERSION","1.72");
 
 // Variables globales à l'ensemble du projet
 
@@ -1494,7 +1494,7 @@ Class gbdb
 	 * @param array[optional] $bindargurment exemple array("PE2")
 	 * @param string[optional] $col Si spécifié, renvoie directement la valeur
 	 *
-	 * @return array|string
+	 * @return array|string|false si aucune ligne
 	 * @throws Exception
 	 */
 	public function retrieve_one($sql, $bindargs=array(), $col="")
@@ -1508,7 +1508,9 @@ Class gbdb
 		$fCol=(strlen($col)>0);						// True si on veut juste une valeur
 
 		$ret=array();
-		$this->fetch_array(&$rResult);
+		if ($this->fetch_array(&$rResult)===false)
+			return false;
+
 		if ($fCol)
 		{	// on veut juste la valeur
 			$ret=$rResult["aRow"][$col];

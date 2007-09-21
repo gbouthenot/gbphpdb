@@ -36,6 +36,9 @@
 /*
  globals.p:
  
+// 2008 sep 21 : 1.72
+// gbdb::retrieve_one renvoit false si pas de resultat
+
 // 2008 sep 08 : 1.71
 // gbdb::__construct() accepte les type Oracle, Pdo_Oracle et Pdo_Mysql, mappés sur MYSQL ou OCI
 
