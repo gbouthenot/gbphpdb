@@ -947,7 +947,7 @@ Class GbUtil
 
 
 /**
- * Class GbTimer
+ * Class GbUtilTimer
  *
  * @author Gilles Bouthenot
  * @version 1.00
@@ -1439,6 +1439,7 @@ Class GbForm
 	protected $formElements=array();
 	protected $where;
 	protected $tableName;
+	protected $fPostIndicator=false;
 
   protected $_commonRegex = array(
 		'HexColor' => '/^#?([\dA-F]{3}){1,2}$/i',
@@ -1605,9 +1606,16 @@ Class GbForm
 			throw new GbUtilException("Variable de formulaire inexistante");
 		}
 
+		$ret="";
+
+		if (self::$fPostIndicator==false) {
+			// positionnement de la variable statique indiquand que l'indicateur a été mis.
+			$ret.="<input type='hidden' name='GBFORMPOST' value='true' />\n";
+			self::$fPostIndicator=true;
+		}
+
 		$aElement=$this->formElements[$nom];
 		$class=$aElement["class"];
-		$ret="";
 		$ret.="<div id='GBFORM_${nom}_div' class='$class'>\n";
 		$ret.=$aElement["preInput"];
 
