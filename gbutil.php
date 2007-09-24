@@ -1362,12 +1362,12 @@ Class GbUtilDb extends Zend_Db
 			// compte le nombre de lignes correspondantes
 			$select=$this->conn->select();
 			$select->from($table, array("A"=>"COUNT(*)"));
-			foreach ($where as $w)
+			foreach ($where as $w) {
 				$select->where($w);
+			}
 			$stmt=$this->conn->query($select);
 			$nb=$stmt->fetchAll();
 			$nb=$nb[0]["A"];
-
 			if ($nb==0) {
 				// Insertion nouvelle ligne: ajoute le where array("col=val"...)
 				foreach ($where as $w) {
@@ -1439,7 +1439,7 @@ Class GbForm
 	protected $formElements=array();
 	protected $where;
 	protected $tableName;
-	protected $fPostIndicator=false;
+	protected static $fPostIndicator=false;
 
   protected $_commonRegex = array(
 		'HexColor' => '/^#?([\dA-F]{3}){1,2}$/i',
@@ -1555,6 +1555,12 @@ Class GbForm
 				$this->formElements[$nom]=$aParams;
 				break;
 
+			case "RADIO":
+				if (!isset($aParams["value"]))
+					$aParams["value"]="";		// par défaut, chaine vide
+				$this->formElements[$nom]=$aParams;
+				break;
+
 				default:
 				throw new GbUtilException("Type de variable de formulaire inconnu pour $nom");
 		}
@@ -1598,9 +1604,10 @@ Class GbForm
 	 * Renvoit le code HTML approprié (valeur par défaut, préselectionné, etc)
 	 *
 	 * @param string $nom
+	 * @param string[optional] $radioValue
 	 * @throws GbUtilException
 	 */
-	public function getHtml($nom)
+	public function getHtml($nom, $radioValue="")
 	{
 		if (!isset($this->formElements[$nom])) {
 			throw new GbUtilException("Variable de formulaire inexistante");
@@ -1651,6 +1658,13 @@ Class GbForm
 				$ret.="<input type='checkbox' id='GBFORM_$nom' name='GBFORM_$nom' value='true' $sValue onchange='javascript:validate_GBFORM_$nom();' onkeyup='javascript:validate_GBFORM_$nom();' />\n";
 				break;
 
+			case "RADIO":
+				$sValue="";
+				if ($value==$radioValue)
+					$sValue=" checked='checked'";
+				$ret.="<input type='radio' id='GBFORM_$nom' name='GBFORM_$nom' value='$radioValue' $sValue onchange='javascript:validate_GBFORM_$nom();' onkeyup='javascript:validate_GBFORM_$nom();' />\n";
+				break;
+
 			default:
 				throw new GbUtilException("Type inconnu");
 		}
@@ -1662,14 +1676,16 @@ Class GbForm
 		$ret.=$aElement["postInput"];
 		$ret.="</div>\n";
 
-		$ret.="<script type='text/javascript'>\n";
-		$ret.="function validate_GBFORM_$nom()\n";
-		$ret.="{\n";
-		$ret.=$this->getJavascript($nom);
-		$ret.="}\n";
-//		$ret.="\$(GBFORM_{$nom}_div).className='GBFORM_NOK';\n";
-//		$ret.="validate_GBFORM_$nom();\n";
-		$ret.="</script>\n";
+		$js=$this->getJavascript($nom);
+		if (strlen($js))
+		{
+			$ret.="<script type='text/javascript'>\n";
+			$ret.="function validate_GBFORM_$nom()\n";
+			$ret.="{\n";
+			$ret.=$js;
+			$ret.="}\n";
+			$ret.="</script>\n";
+		}
 		return $ret;
 	}
 
@@ -1719,15 +1735,15 @@ Class GbForm
 	protected function getJavascript($nom)
 	{
 		$ret="";
-				if (!isset($this->formElements[$nom])) {
+		if (!isset($this->formElements[$nom])) {
 			throw new GbUtilException("Variable de formulaire inexistante");
 		}
-		$ret.="	\$('GBFORM_{$nom}_div').className='GBFORM_OK';\n";
 		$aElement=$this->formElements[$nom];
 
 		$type=$aElement["type"];
 		switch ($type) {
 			case "SELECT":
+				$ret.="	\$('GBFORM_{$nom}_div').className='{$aElement["classOK"]}';\n";
 				// attention utilise prototype String.strip()
 				$ret.="var value=remove_accents(\$F('GBFORM_$nom').strip());\n";
 				if ($aElement["fMandatory"]) {
@@ -1739,17 +1755,18 @@ Class GbForm
 					}
 					$ret.="var GBFORM_{$nom}_values = { ".implode(", ",$aValues)."};\n";
 					$ret.="if ((GBFORM_{$nom}_values[value])=='false') {\n";
-					$ret.="	\$('GBFORM_{$nom}_div').className='GBFORM_NOK';\n";
+					$ret.="	\$('GBFORM_{$nom}_div').className='{$aElement["classNOK"]}';\n";
 					$ret.="}\n";
 				}
 				break;
 
 			case "TEXT":
+				$ret.="	\$('GBFORM_{$nom}_div').className='{$aElement["classOK"]}';\n";
 				// attention utilise prototype String.strip()
 				$ret.="var value=remove_accents(\$F('GBFORM_$nom').strip());\n";
 				if ($aElement["fMandatory"]) {
 					$ret.="if (value=='') {\n";
-					$ret.="	\$('GBFORM_{$nom}_div').className='GBFORM_NOK';\n";
+					$ret.="	\$('GBFORM_{$nom}_div').className='{$aElement["classNOK"]}';\n";
 					$ret.="}\n";
 				}
 				if (isset($aElement["args"]["regexp"])){
@@ -1760,7 +1777,7 @@ Class GbForm
 					}
 					$ret.="var regexp=$regexp\n";
 					$ret.="if (!regexp.test(value)) {\n";
-					$ret.="	\$('GBFORM_{$nom}_div').className='GBFORM_NOK';\n";
+					$ret.="	\$('GBFORM_{$nom}_div').className='{$aElement["classNOK"]}';\n";
 					$ret.="}\n";
 				}
 				if (isset($aElement["MINVALUE"])){
@@ -1773,7 +1790,7 @@ Class GbForm
 						$ret.=" var arg=\"$borne\";\n";
 						$ret.=" var arg=eval(arg);\n";
 						$ret.=" if (value < arg) {";
-						$ret.="	\$('GBFORM_{$nom}_div').className='GBFORM_NOK';";
+						$ret.="	\$('GBFORM_{$nom}_div').className='{$aElement["classNOK"]}';";
 						$ret.="}\n";
 					}
 				}
@@ -1787,20 +1804,25 @@ Class GbForm
 						$ret.=" var arg=\"$borne\";\n";
 						$ret.=" var arg=eval(arg);\n";
 						$ret.=" if (value > arg) {";
-						$ret.="	\$('GBFORM_{$nom}_div').className='GBFORM_NOK';";
+						$ret.="	\$('GBFORM_{$nom}_div').className='{$aElement["classNOK"]}';";
 						$ret.="}\n";
 					}
 				}
 				break;
 
 			case "CHECKBOX":
-				$ret.="var value=\$F('GBFORM_$nom');\n";
+				$ret.="	\$('GBFORM_{$nom}_div').className='{$aElement["classOK"]}';\n";
 				if ($aElement["fMandatory"]) {
+					$ret.="var value=\$F('GBFORM_$nom');\n";
 					$ret.="if (value!='true') {\n";
-					$ret.="	\$('GBFORM_{$nom}_div').className='GBFORM_NOK';\n";
+					$ret.="	\$('GBFORM_{$nom}_div').className='{$aElement["classNOK"]}';\n";
 					$ret.="}\n";
 				}
 				break;
+
+			case "RADIO":
+				break;
+
 			default:
 				throw new GbUtilException("Type inconnu");
 		}
@@ -1810,13 +1832,14 @@ Class GbForm
 
 	/**
 	 * Remplit les valeurs depuis la base de données
-
+	 *
 	 * @param GbUtilDb $db
 	 * @return boolean true si données trouvées
 	 */
 	public function getFromDb(GbUtilDb $db)
 	{
 		//todo: checkbox
+		// obient le nom des colonnes
 		$aCols=array();
 		foreach ($this->formElements as $nom=>$aElement) {
 			if (isset($aElement["dbCol"])) {
@@ -1832,11 +1855,11 @@ Class GbForm
 		if (count($this->where)) {
 			$sql.=" WHERE";
 			$sWhere="";
-			foreach ($this->where as $col=>$val)
+			foreach ($this->where as $w)
 			{ if (strlen($sWhere)) {
 					$sWhere.=" AND";
 				}
-				$sWhere.=" $col='$val'";
+				$sWhere.=" $w";
 			}
 			$sql.=$sWhere;
 		}
@@ -1844,7 +1867,7 @@ Class GbForm
 		$aLigne=$db->retrieve_one($sql);
 		if ($aLigne===false) {
 		// La requête n'a pas renvoyé de ligne
-			return $true;
+			return false;
 		}
 
 		// La requête a renvoyé une ligne
@@ -1853,6 +1876,40 @@ Class GbForm
 		}
 		return true;
 	}
+
+
+	/**
+	 * Insère/update les valeurs dans la bdd
+	 *
+	 * @param GbUtilDb $db
+	 * @param array $moreData
+	 * @return boolean true si données ecrites
+	 */
+	public function putInDb(GbUtilDb $db, array $moreData=array())
+	{
+		//todo: checkbox
+		// obient le nom des colonnes
+		$aCols=$moreData;
+		foreach ($this->formElements as $nom=>$aElement) {
+			if (isset($aElement["dbCol"])) {
+				$col=$aElement["dbCol"];
+				$val=$this->get($nom);
+				$aCols[$col]=$val;
+			}
+		}
+
+		if (count($aCols)==0) {
+			return false;
+		}
+
+		$nb=$db->replace($this->tableName, $aCols, $this->where);
+		if ($nb)
+			return true;
+		else
+			return false;
+	}
+
+
 
 	/**
 	 * Remplit les valeurs depuis $_POST
@@ -1884,7 +1941,7 @@ Class GbForm
 	 * Valide le formulaire
 	 * En cas d'erreur, appelle $this->setClass() et $this->setErrorMsg pour chaque $nom incorrect
 	 *
-	 * @return array("nom" => "erreur")
+	 * @return array("nom" => "erreur") ou true si aucune erreur (attention utiliser ===)
 	 */
 	public function validate()
 	{
@@ -1944,7 +2001,8 @@ Class GbForm
 							}
 						}
 					}
-
+
+
 			}
 
 			if ($aElement["fMandatory"]) {
@@ -1953,6 +2011,7 @@ Class GbForm
 					if ($type=="SELECT")	$aErrs[$nom]="Aucun choix sélectionné";
 					elseif ($type=="TEXT")	$aErrs[$nom]="Valeur non renseignée";
 					elseif ($type=="CHECKBOX")	$aErrs[$nom]="Case non cochée";
+					elseif ($type=="RADIO")	$aErrs[$nom]="?";
 					else	$aErrs[$nom]="Champ non renseigné";
 					continue;
 				}
@@ -1965,7 +2024,10 @@ Class GbForm
 			$this->setErrorMsg($nom, $reason);
 		}
 
-		return $aErrs;
+		if (count($aErrs)==0)
+			return true;
+		else
+			return $aErrs;
 	}
 
 
