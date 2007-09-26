@@ -1446,16 +1446,15 @@ Class GbForm
 	protected static $fPostIndicator=false;
 
   protected $_commonRegex = array(
-		'HexColor'        => '/^#?([\dA-F]{3}){1,2}$/i',
-		'UsTelephone'     => '/^\(?([2-9]\d{2})\)?[\.\s-]?([2-4|6-9]\d\d|5([0-4|6-9]\d|\d[0-4|6-9]))[\.\s-]?(\d{4})$/',
-		'Email'           => '/(^[\w\.!#$%"*+\/=?`{}|~^-]+)@(([-\w]+\.)+[A-Za-z]{2,})$/',
-		'Url'             => '/^(https?|ftp):\/\/([-\w]+\.)+[A-Za-z]{2,}(:\d+)?([\\\\\/]\S+)*?[\\\\\/]?(\?\S*)?$/i',
-		'PositiveInteger' => '/^\d+$/',
-		'RelativeInteger' => '/^-?\d+$/',
-		'DecimalNumber'   => '/^-?(\d*\.)?\d+$/',
-		'AlphaNumeric'    => '/^[\w\s]+$/i',
-		'DateFr'          => '/^$/',
-		'PostalCodeFr'    => '/^[0-9]{5}$/',
+		'HexColor'        => '/^(#?([\dA-F]{3}){1,2})$/i',
+		'UsTelephone'     => '/^(\(?([2-9]\d{2})\)?[\.\s-]?([2-4|6-9]\d\d|5([0-4|6-9]\d|\d[0-4|6-9]))[\.\s-]?(\d{4}))$/',
+		'Email'           => '/((^[\w\.!#$%"*+\/=?`{}|~^-]+)@(([-\w]+\.)+[A-Za-z]{2,}))$/',
+		'Url'             => '/^((https?|ftp):\/\/([-\w]+\.)+[A-Za-z]{2,}(:\d+)?([\\\\\/]\S+)*?[\\\\\/]?(\?\S*)?)$/i',
+		'PositiveInteger' => '/^(\d+)$/',
+		'RelativeInteger' => '/^(-?\d+)$/',
+		'DecimalNumber'   => '/^(-?(\d*\.)?\d+$)/',
+		'AlphaNumeric'    => '/^([\w\s]+)$/i',
+		'PostalCodeFr'    => '/^([0-9]{5})$/',
 		'Year'            => '/^(((19)|(20))[0-9]{2})$/', // aaaa 1900<=aaaa<=2099
 		'Year20xx'        => '/^(20[0-9]{2})$/',          // aaaa 2000<=aaaa<=2099
 		'DateFr'          => '/^(((0[1-9])|[1|2][0-9])|(30|31))\/((0[1-9])|10|11|12)\/(((19)|(20))[0-9]{2})$/',	// jj/mm/aaaa   \1:jj \2:mm \3:aaaa   1900<=aaaa<=2099
