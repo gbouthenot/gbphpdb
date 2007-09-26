@@ -1446,18 +1446,20 @@ Class GbForm
 	protected static $fPostIndicator=false;
 
   protected $_commonRegex = array(
-		'HexColor' => '/^#?([\dA-F]{3}){1,2}$/i',
-		'UsTelephone' => '/^\(?([2-9]\d{2})\)?[\.\s-]?([2-4|6-9]\d\d|5([0-4|6-9]\d|\d[0-4|6-9]))[\.\s-]?(\d{4})$/',
-		'Email' => '/(^[\w\.!#$%"*+\/=?`{}|~^-]+)@(([-\w]+\.)+[A-Za-z]{2,})$/',
-		'Url' => '/^(https?|ftp):\/\/([-\w]+\.)+[A-Za-z]{2,}(:\d+)?([\\\\\/]\S+)*?[\\\\\/]?(\?\S*)?$/i',
+		'HexColor'        => '/^#?([\dA-F]{3}){1,2}$/i',
+		'UsTelephone'     => '/^\(?([2-9]\d{2})\)?[\.\s-]?([2-4|6-9]\d\d|5([0-4|6-9]\d|\d[0-4|6-9]))[\.\s-]?(\d{4})$/',
+		'Email'           => '/(^[\w\.!#$%"*+\/=?`{}|~^-]+)@(([-\w]+\.)+[A-Za-z]{2,})$/',
+		'Url'             => '/^(https?|ftp):\/\/([-\w]+\.)+[A-Za-z]{2,}(:\d+)?([\\\\\/]\S+)*?[\\\\\/]?(\?\S*)?$/i',
 		'PositiveInteger' => '/^\d+$/',
 		'RelativeInteger' => '/^-?\d+$/',
-		'DecimalNumber' => '/^-?(\d*\.)?\d+$/',
-		'AlphaNumeric' => '/^[\w\s]+$/i',
-		'DateFr' => '/^[0-3][0-9]\/$/',
-		'PostalCodeFr' => '/^[0-9]{5}$/',
-		'Year' => '/^((19)|(20))[0-9]{2}$/',
-		'Year20xx' => '/^20[0-9]{2}$/',
+		'DecimalNumber'   => '/^-?(\d*\.)?\d+$/',
+		'AlphaNumeric'    => '/^[\w\s]+$/i',
+		'DateFr'          => '/^$/',
+		'PostalCodeFr'    => '/^[0-9]{5}$/',
+		'Year'            => '/^(((19)|(20))[0-9]{2})$/', // aaaa 1900<=aaaa<=2099
+		'Year20xx'        => '/^(20[0-9]{2})$/',          // aaaa 2000<=aaaa<=2099
+		'DateFr'          => '/^(((0[1-9])|[1|2][0-9])|(30|31))\/((0[1-9])|10|11|12)\/(((19)|(20))[0-9]{2})$/',	// jj/mm/aaaa   \1:jj \2:mm \3:aaaa   1900<=aaaa<=2099
+		'DateFr20xx'      => '/^(((0[1-9])|[1|2][0-9])|(30|31))\/((0[1-9])|10|11|12)\/($20[0-9]{2})/',          // jj/mm/aaaa   \1:jj \2:mm \3:aaaa   2000<=aaaa<=2099
 	);
 
 
@@ -1786,28 +1788,44 @@ Class GbForm
 				}
 				if (isset($aElement["MINVALUE"])){
 					$aMinValues=$aElement["MINVALUE"];
-					foreach ($aMinValues as $borne)
-					{	if (strpos($borne, "GBFORM_")===0) {
+					foreach ($aMinValues as $borne) {
+						$ret.=" var bornevalue=value;\n";
+						if (is_array($borne) && isset($aElement["args"]["regexp"])) {
+							// si array, alors extrait la valeur du regexp avant de comparer
+							$ret.=" var bornevalue=value.replace({$aElement["args"]["regexp"]}, \"{$borne[0]}\");\n";
+							$borne=$borne[1];
+						}
+						else {
+							$ret.=" var bornevalue=value;\n";
+						}
+						if (strpos($borne, "GBFORM_")===0) {
 							// borne commence par GBFORM_
 							$borne="\$F('$borne')";
 						}
-						$ret.=" var arg=\"$borne\";\n";
-						$ret.=" var arg=eval(arg);\n";
-						$ret.=" if (value < arg) {";
+						$ret.=" var borne=eval({$borne});\n";
+						$ret.=" if (bornevalue < borne) {";
 						$ret.="	\$('GBFORM_{$nom}_div').className='{$aElement["classNOK"]}';";
 						$ret.="}\n";
 					}
 				}
 				if (isset($aElement["MAXVALUE"])){
 					$aMaxValues=$aElement["MAXVALUE"];
-					foreach ($aMaxValues as $borne)
-					{	if (strpos($borne, "GBFORM_")===0) {
-							// $borne commence par GBFORM_
+					foreach ($aMaxValues as $borne) {
+						$ret.=" var bornevalue=value;\n";
+						if (is_array($borne) && isset($aElement["args"]["regexp"])) {
+							// si array, alors extrait la valeur du regexp avant de comparer
+							$ret.=" var bornevalue=value.replace({$aElement["args"]["regexp"]}, \"{$borne[0]}\");\n";
+							$borne=$borne[1];
+						}
+						else {
+							$ret.=" var bornevalue=value;\n";
+						}
+						if (strpos($borne, "GBFORM_")===0) {
+							// borne commence par GBFORM_
 							$borne="\$F('$borne')";
 						}
-						$ret.=" var arg=\"$borne\";\n";
-						$ret.=" var arg=eval(arg);\n";
-						$ret.=" if (value > arg) {";
+						$ret.=" var borne=eval({$borne});\n";
+						$ret.=" if (bornevalue > borne) {";
 						$ret.="	\$('GBFORM_{$nom}_div').className='{$aElement["classNOK"]}';";
 						$ret.="}\n";
 					}
@@ -1976,6 +1994,12 @@ Class GbForm
 					if (strlen($value) && isset($aElement["MINVALUE"])) {
 						$aBornes=$aElement["MINVALUE"];
 						foreach ($aBornes as $borne) {
+							$bornevalue=$value;
+							if (is_array($borne) && isset($aElement["args"]["regexp"])) {
+								// si array, alors extrait la valeur du regexp avant de comparer
+								$bornevalue=preg_replace( $aElement["args"]["regexp"],$borne[0], $value);
+								$borne=$borne[1];
+							}
 							$sBorne=$borne;
 							if (strpos($borne, "GBFORM_")===0) {
 								// borne commence par GBFORM_
@@ -1983,7 +2007,7 @@ Class GbForm
 								$borne=$this->get($sBorne);
 								$sBorne.=" ($borne)";
 							}
-							if ($value < $borne) {
+							if ($bornevalue < $borne) {
 								$aErrs[$nom]="Doit être supérieur ou égal à $sBorne";
 								continue;
 							}
@@ -1992,6 +2016,12 @@ Class GbForm
 					if (strlen($value) && isset($aElement["MAXVALUE"])) {
 						$aBornes=$aElement["MAXVALUE"];
 						foreach ($aBornes as $borne) {
+							$bornevalue=$value;
+							if (is_array($borne) && isset($aElement["args"]["regexp"])) {
+								// si array, alors extrait la valeur du regexp avant de comparer
+								$bornevalue=preg_replace( $aElement["args"]["regexp"],$borne[0], $value);
+								$borne=$borne[1];
+							}
 							$sBorne=$borne;
 							if (strpos($borne, "GBFORM_")===0) {
 								// borne commence par GBFORM_
@@ -1999,7 +2029,7 @@ Class GbForm
 								$borne=$this->get($sBorne);
 								$sBorne.=" ($borne)";
 							}
-							if ($value > $borne) {
+							if ($bornevalue > $borne) {
 								$aErrs[$nom]="Doit être inférieur ou égal à $sBorne";
 								continue;
 							}
