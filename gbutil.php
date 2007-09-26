@@ -1263,7 +1263,7 @@ Class GbUtilDb extends Zend_Db
 	 * @param array[optional] $bindargurment exemple array("PE2")
 	 * @param string[optional] $col Si spécifié, renvoie directement la valeur
 	 *
-	 * @return array|string
+	 * @return array|string|false
 	 * @throws GbUtilException
 	 */
 	public function retrieve_one($sql, $bindargurment=array(), $col="")
@@ -1280,11 +1280,15 @@ Class GbUtilDb extends Zend_Db
 			if ($fCol)
 			{	// on veut juste la valeur
 				$res=$stmt->fetch(Zend_Db::FETCH_ASSOC);
+				if ($res===false)
+					return false;
 				$ret=$res[$col];
 			}
 			else
 			{	//on veut un array
 				$res=$stmt->fetch(Zend_Db::FETCH_ASSOC);
+				if ($res===false)
+					return false;
 				$ret=$res;
 			}
 
