@@ -1651,23 +1651,26 @@ Class GbForm
 				$ret.="</select>\n";
 				break;
 
-			case "TEXT":
+			case "TEXT": case "PASSWORD":
+				$html=$aElement["inInput"];
 				$sValue=htmlspecialchars($value, ENT_QUOTES);
-				$ret.="<input type='text' class='text' id='GBFORM_$nom' name='GBFORM_$nom' value='$sValue' onchange='javascript:validate_GBFORM_$nom();' onkeyup='javascript:validate_GBFORM_$nom();' />\n";
+				$ret.="<input type='text' class='text' id='GBFORM_$nom' name='GBFORM_$nom' $html value='$sValue' onchange='javascript:validate_GBFORM_$nom();' onkeyup='javascript:validate_GBFORM_$nom();' />\n";
 				break;
 
 			case "CHECKBOX":
 				$sValue="";
 				if ($value==true)
 					$sValue=" checked='checked'";
-				$ret.="<input type='checkbox' class='checkbox' id='GBFORM_$nom' name='GBFORM_$nom' value='true' $sValue onchange='javascript:validate_GBFORM_$nom();' onkeyup='javascript:validate_GBFORM_$nom();' />\n";
+				$html=$aElement["inInput"];
+				$ret.="<input type='checkbox' class='checkbox' id='GBFORM_$nom' name='GBFORM_$nom' value='true' $sValue $html onchange='javascript:validate_GBFORM_$nom();' onkeyup='javascript:validate_GBFORM_$nom();' />\n";
 				break;
 
 			case "RADIO":
 				$sValue="";
 				if ($value==$radioValue)
 					$sValue=" checked='checked'";
-				$ret.="<input type='radio' class='radio' id='GBFORM_$nom' name='GBFORM_$nom' value='$radioValue' $sValue onchange='javascript:validate_GBFORM_$nom();' onkeyup='javascript:validate_GBFORM_$nom();' />\n";
+				$html=$aElement["inInput"];
+				$ret.="<input type='radio' class='radio' id='GBFORM_$nom' name='GBFORM_$nom' value='$radioValue' $sValue $html onchange='javascript:validate_GBFORM_$nom();' onkeyup='javascript:validate_GBFORM_$nom();' />\n";
 				break;
 
 			default:
@@ -1765,7 +1768,7 @@ Class GbForm
 				}
 				break;
 
-			case "TEXT":
+			case "TEXT": case "PASSWORD":
 				$ret.="	\$('GBFORM_{$nom}_div').className='{$aElement["classOK"]}';\n";
 				// attention utilise prototype String.strip()
 				$ret.="var value=remove_accents(\$F('GBFORM_$nom').strip());\n";
@@ -1982,7 +1985,7 @@ Class GbForm
 					}
 
 				break;
-				case "TEXT":
+				case "TEXT": case "PASSWORD":
 					if (strlen($value) && isset($aElement["args"]["regexp"])) {
 						$regexp=$aElement["args"]["regexp"];
 						if (!preg_match($regexp, $value)) {
@@ -2045,6 +2048,7 @@ Class GbForm
 					elseif ($type=="TEXT")	$aErrs[$nom]="Valeur non renseignée";
 					elseif ($type=="CHECKBOX")	$aErrs[$nom]="Case non cochée";
 					elseif ($type=="RADIO")	$aErrs[$nom]="?";
+					elseif ($type=="PASSWORD")	$aErrs[$nom]="Mot de passe vide";
 					else	$aErrs[$nom]="Champ non renseigné";
 					continue;
 				}
