@@ -1653,21 +1653,21 @@ Class GbForm
 
 			case "TEXT":
 				$sValue=htmlspecialchars($value, ENT_QUOTES);
-				$ret.="<input type='text' id='GBFORM_$nom' name='GBFORM_$nom' value='$sValue' onchange='javascript:validate_GBFORM_$nom();' onkeyup='javascript:validate_GBFORM_$nom();' />\n";
+				$ret.="<input type='text' class='text' id='GBFORM_$nom' name='GBFORM_$nom' value='$sValue' onchange='javascript:validate_GBFORM_$nom();' onkeyup='javascript:validate_GBFORM_$nom();' />\n";
 				break;
 
 			case "CHECKBOX":
 				$sValue="";
 				if ($value==true)
 					$sValue=" checked='checked'";
-				$ret.="<input type='checkbox' id='GBFORM_$nom' name='GBFORM_$nom' value='true' $sValue onchange='javascript:validate_GBFORM_$nom();' onkeyup='javascript:validate_GBFORM_$nom();' />\n";
+				$ret.="<input type='checkbox' class='checkbox' id='GBFORM_$nom' name='GBFORM_$nom' value='true' $sValue onchange='javascript:validate_GBFORM_$nom();' onkeyup='javascript:validate_GBFORM_$nom();' />\n";
 				break;
 
 			case "RADIO":
 				$sValue="";
 				if ($value==$radioValue)
 					$sValue=" checked='checked'";
-				$ret.="<input type='radio' id='GBFORM_$nom' name='GBFORM_$nom' value='$radioValue' $sValue onchange='javascript:validate_GBFORM_$nom();' onkeyup='javascript:validate_GBFORM_$nom();' />\n";
+				$ret.="<input type='radio' class='radio' id='GBFORM_$nom' name='GBFORM_$nom' value='$radioValue' $sValue onchange='javascript:validate_GBFORM_$nom();' onkeyup='javascript:validate_GBFORM_$nom();' />\n";
 				break;
 
 			default:
