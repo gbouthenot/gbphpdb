@@ -21,10 +21,10 @@ Class GbUtil
 	const LOG_EMERG=8;
 	const LOG_ALERT=7;
 	const LOG_CRIT=6;
-	const LOG_ERROR=5;
+	const LOG_ERROR=5;						// Ecriture bdd NOK
 	const LOG_WARNING=4;
 	const LOG_NOTICE=3;
-	const LOG_INFO=2;
+	const LOG_INFO=2;							// Ecriture bdd OK
 	const LOG_DEBUG=1;
 	const LOG_ALL=0;
 	private static $aLevels=array(1=>"db--       ",
@@ -1927,10 +1927,14 @@ Class GbForm
 		}
 
 		$nb=$db->replace($this->tableName, $aCols, $this->where);
-		if ($nb)
+		if ($nb) {
+			GbUtil::Log(GbUtil::LOG_INFO, "GBFORM->putInDb OK table:{$this->tableName} where:".GbUtil::Dump($this->where)."" );
 			return true;
-		else
+		}
+		else {
+			GbUtil::Log(GbUtil::LOG_ERROR, "GBFORM->putInDb Erreur: replace impossible ! table:{$this->tableName} where:".GbUtil::Dump($this->where)." data:".GbUtil::Dump($aCols) );
 			return false;
+		}
 	}
 
 
