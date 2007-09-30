@@ -3,14 +3,14 @@
 require_once("Zend/Db.php");
 
 /**
- * Class GbUtilDb
+ * Class GbDb
  *
  * @author Gilles Bouthenot
  * @version 1.01
  *
  * @todo retrieve_one
  */
-Class GbUtilDb extends Zend_Db
+Class GbDb extends Zend_Db
 {
 	/**
 	 * @var Zend_Db_Adapter_Abstract
@@ -28,7 +28,7 @@ Class GbUtilDb extends Zend_Db
 	 * type est le driver à utiliser (MYSQL, OCI8)
 	 *
 	 * @param array("type"=>"MYSQL/OCI8", "host"=>"", "user"=>"", "pass"=>"", "name"=>"") $aIn
-	 * @return GbUtilDb
+	 * @return GbDb
 	 */
 	function __construct(array $aIn)
 	{

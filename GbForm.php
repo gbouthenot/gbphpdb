@@ -429,10 +429,10 @@ Class GbForm
 	/**
 	 * Remplit les valeurs depuis la base de données
 	 *
-	 * @param GbUtilDb $db
+	 * @param GbDb $db
 	 * @return boolean true si données trouvées
 	 */
-	public function getFromDb(GbUtilDb $db)
+	public function getFromDb(GbDb $db)
 	{
 		//todo: checkbox
 		// obient le nom des colonnes
@@ -477,11 +477,11 @@ Class GbForm
 	/**
 	 * Insère/update les valeurs dans la bdd
 	 *
-	 * @param GbUtilDb $db
+	 * @param GbDb $db
 	 * @param array $moreData
 	 * @return boolean true si données ecrites
 	 */
-	public function putInDb(GbUtilDb $db, array $moreData=array())
+	public function putInDb(GbDb $db, array $moreData=array())
 	{
 		//todo: checkbox
 		// obient le nom des colonnes

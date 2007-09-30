@@ -4,8 +4,8 @@
  */
 
 require_once("GbForm.php");
-require_once("GbUtilDb.php");
-require_once("GbUtilTimer.php");
+require_once("GbDb.php");
+require_once("GbTimer.php");
 
 
 Class Gb
@@ -154,7 +154,7 @@ Class GbUtil extends Gb
 		// Affichage du footer
 		if (self::$debug || self::$show_footer)
 		{		$totaltime=microtime(true)-self::$starttime;
-				$sqltime=GbUtilDb::get_sqlTime();
+				$sqltime=GbDb::get_sqlTime();
 				$sqlpercent=$sqltime*100/$totaltime;
 				self::$footer=htmlspecialchars(self::$footer, ENT_QUOTES);
 				self::$footer.=sprintf("Total time: %s s (%.2f%% sql) ", GbUtil::roundCeil($totaltime), $sqlpercent);
@@ -163,10 +163,10 @@ Class GbUtil extends Gb
 				if ($timetotal)
 					self::$footer.="GbTimer:{total:$timetotal peak:$timepeak} ";
 
-				$dbpeak=GbUtilDb::get_nbInstance_peak();
-				$dbtotal=GbUtilDb::get_nbInstance_total();
+				$dbpeak=GbDb::get_nbInstance_peak();
+				$dbtotal=GbDb::get_nbInstance_total();
 				if ($dbtotal)
-					self::$footer.="GbUtilDb:{total:$dbtotal peak:$dbpeak} ";
+					self::$footer.="GbDb:{total:$dbtotal peak:$dbpeak} ";
 				self::$footer.="\n";
 
 				if (self::$debug && self::$domParser)
