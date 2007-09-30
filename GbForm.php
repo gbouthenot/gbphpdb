@@ -248,16 +248,6 @@ Class GbForm
 		$ret.=$aElement["postInput"];
 		$ret.="</div>\n";
 
-		$js=$this->getJavascript($nom);
-		if (strlen($js))
-		{
-			$ret.="<script type='text/javascript'>\n";
-			$ret.="function validate_GBFORM_$nom()\n";
-			$ret.="{\n";
-			$ret.=$js;
-			$ret.="}\n";
-			$ret.="</script>\n";
-		}
 		return $ret;
 	}
 
@@ -302,11 +292,21 @@ Class GbForm
 	/**
 	 * Renvoie le code javascript pour la validation dynamique
 	 *
-	 * @param $nom string
+	 * @param string[optinal] $nom élément à récupérér ou vide pour tous
+	 * @return string
 	 */
-	protected function getJavascript($nom)
+	public function getJavascript($nom="")
 	{
 		$ret="";
+
+		// si nom vide, rappelle la fonction pour tous les éléments
+		if ($nom==="") {
+			foreach ($this->formElements as $nom=>$aElement) {
+				$ret.=$this->getJavascript($nom);
+			}
+				return $ret;
+		}
+
 		if (!isset($this->formElements[$nom])) {
 			throw new GbUtilException("Variable de formulaire inexistante");
 		}
@@ -414,8 +414,16 @@ Class GbForm
 			default:
 				throw new GbUtilException("Type inconnu");
 		}
-		return $ret;
 
+		if (strlen($ret)) {
+			$ret2="function validate_GBFORM_$nom()\n";
+			$ret2.="{\n";
+			$ret2.=$ret;
+			$ret2.="}\n";
+			return $ret2;
+		}
+
+		return "";
 	}
 
 	/**
