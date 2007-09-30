@@ -8,6 +8,12 @@ require_once("GbUtilDb.php");
 require_once("GbUtilTimer.php");
 
 
+Class Gb
+{
+	protected static $footer="";
+}
+
+
 
 /**
  * class GbUtil
@@ -18,7 +24,7 @@ require_once("GbUtilTimer.php");
  *	function str_readfile($filename) : à remplacer par file_get_contents($filename)
  *
  */
-Class GbUtil
+Class GbUtil extends Gb
 {
 	const GbUtilVERSION="2alpha";
 
@@ -104,19 +110,8 @@ Class GbUtil
 	// *****************
 
 
-	private static $footer="";							// Footer
-
 	private static $starttime=0;
 
-	private static $sqlTime=0;
-	private static $sqlNbExec=0;
-	private static $sqlNbFetch=0;
-
-	// les variables suivantes sont publiques, parce que gbUtilDb hérite déjà de Zend_Db
-	public static $gbdb_instance_total=0;					// Nombre de classes gbdb ouvertes au total
-	public static $gbdb_instance_max=0;						// maximum ouvertes simultanément
-
-	protected static $GbTimer_instance_max=0;
 
 	/**
 	 * Cette classe ne doit pas être instancée !
@@ -159,17 +154,20 @@ Class GbUtil
 		// Affichage du footer
 		if (self::$debug || self::$show_footer)
 		{		$totaltime=microtime(true)-self::$starttime;
-				$sqltime=self::$sqlTime;
+				$sqltime=GbUtilDb::get_sqlTime();
 				$sqlpercent=$sqltime*100/$totaltime;
-				$sqlExec=self::$sqlNbExec;
-				$sqlFetch=self::$sqlNbFetch;
 				self::$footer=htmlspecialchars(self::$footer, ENT_QUOTES);
-				self::$footer.=sprintf("Total time: %s s (%.2f%% sql) sqlExec:%d sqlFetch:%d ", GbUtil::roundCeil($totaltime), $sqlpercent, $sqlExec, $sqlFetch);
-				if (self::$GbTimer_instance_max)
-					self::$footer.=sprintf("GbTimer_instances: %s ", self::$GbTimer_instance_max);
-				if (self::$gbdb_instance_total)
-					self::$footer.=sprintf("gbdb_total:%s gbdb_max:%s ", self::$gbdb_instance_total, self::$gbdb_instance_max);
-				self::$footer.="<br />\n";
+				self::$footer.=sprintf("Total time: %s s (%.2f%% sql) ", GbUtil::roundCeil($totaltime), $sqlpercent);
+				$timepeak=GbTimer::get_nbInstance_peak();
+				$timetotal=GbTimer::get_nbInstance_total();
+				if ($timetotal)
+					self::$footer.="GbTimer:{total:$timetotal peak:$timepeak} ";
+
+				$dbpeak=GbUtilDb::get_nbInstance_peak();
+				$dbtotal=GbUtilDb::get_nbInstance_total();
+				if ($dbtotal)
+					self::$footer.="GbUtilDb:{total:$dbtotal peak:$dbpeak} ";
+				self::$footer.="\n";
 
 				if (self::$debug && self::$domParser)
 				{

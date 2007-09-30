@@ -6,12 +6,16 @@
  * @version 1.00
  *
  */
-Class GbUtilTimer extends GbUtil
+Class GbTimer extends Gb
 {
-	private $startime;
-	private $intance=0;
-	private $name;
-	private $pause=0;
+	protected $startime;
+	protected $intance=0;
+	protected $name;
+	protected $pause=0;
+
+  protected static $nbInstance_total=0;           // Nombre de classes ouvertes au total       
+  protected static $nbInstance_peak=0;            // maximum ouvertes simultanément                 
+  protected static $nbInstance_current=0;         // nom d'instances ouvertes en ce moment          
 
 	/**
 	 * Initialise le timer.
@@ -23,6 +27,25 @@ Class GbUtilTimer extends GbUtil
 		$this->intance=++GbUtil::$GbTimer_instance_max;
 		$this->startime=microtime(true);
 		$this->name=$name;
+
+    self::$nbInstance_total++;
+    self::$nbInstance_current++;
+    self::$nbInstance_peak=max(self::$nbInstance_peak, self::$nbInstance_current);
+	}
+
+	public function __destruct()
+	{
+		self::$nbInstance_current--;
+	}
+
+	public static function get_nbInstance_peak()
+	{
+		return self::$nbInstance_peak;
+	}
+
+	public static function get_nbInstance_total()
+	{
+		return self::$nbInstance_total;
 	}
 
 	/**

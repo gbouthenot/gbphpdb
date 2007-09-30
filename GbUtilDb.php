@@ -17,6 +17,11 @@ Class GbUtilDb extends Zend_Db
 	 */
 	protected $conn;
 
+  protected static $sqlTime=0;
+  protected static $nbInstance_total=0;						// Nombre de classes gbdb ouvertes au total
+  protected static $nbInstance_peak=0;						// maximum ouvertes simultanément
+  protected static $nbInstance_current=0;					// nom d'instances ouvertes en ce moment
+
 	/**
 	 * Renvoie une nouvelle connexion
 	 *
@@ -27,6 +32,7 @@ Class GbUtilDb extends Zend_Db
 	 */
 	function __construct(array $aIn)
 	{
+		$time=microtime(true);
 		$user=$pass=$name="";
 		$driver=$aIn["type"];
 		$host=$aIn["host"];
@@ -51,31 +57,63 @@ Class GbUtilDb extends Zend_Db
 			}
 		} catch (Exception $e)
 		{
+			self::$sqlTime+=microtime(true)-$time;
 			throw new GbUtilException($e->getMessage());
 		}
 
-		GbUtil::$gbdb_instance_total++;
-		GbUtil::$gbdb_instance_max++;
+		self::$nbInstance_total++;
+		self::$nbInstance_current++;
+		self::$nbInstance_peak=max(self::$nbInstance_peak, self::$nbInstance_current);
+		self::$sqlTime+=microtime(true)-$time;
 	}
 
 	function __destruct()
 	{
-		GbUtil::$gbdb_instance_max--;
+		$time=microtime(true);
+		self::$nbInstance_current--;
+		$this->conn->closeConnection();
+		self::$sqlTime+=microtime(true)-$time;  
 	}
+
+
+	public static function get_nbInstance_peak()
+	{
+		return self::$nbInstance_peak;
+	}
+
+	public static function get_nbInstance_total()
+	{
+		return self::$nbInstance_total;
+	}
+
+	public static function get_sqlTime()
+	{
+		return self::$sqlTime;
+	}
+
 
 	function fetchAll($a, $b)
 	{
-		return $this->conn->fetchAll($a, $b);
+		$time=microtime(true);
+		$ret=$this->conn->fetchAll($a, $b);
+		self::$sqlTime+=microtime(true)-$time;
+		return $ret;
 	}
 
 	function fetchAssoc($a, $b)
 	{
-		return $this->conn->fetchAssoc($a, $b);
+		$time=microtime(true);
+		$ret=$this->conn->fetchAssoc($a, $b);
+		self::$sqlTime+=microtime(true)-$time;
+		return $ret;
 	}
 
 	function query($sql, $bindarguments=array())
 	{
-		return $this->conn->query($sql, $bindargument);
+		$time=microtime(true);
+		$ret=$this->conn->query($sql, $bindargument);
+		self::$sqlTime+=microtime(true)-$time;
+		return $ret;
 	}
 
 
@@ -84,7 +122,10 @@ Class GbUtilDb extends Zend_Db
 	 */
 	function exec($sql)
 	{
-		return $this->conn->getConnection()->exec($sql);
+		$time=microtime(true);
+		$ret=$this->conn->getConnection()->exec($sql);
+		self::$sqlTime+=microtime(true)-$time;
+		return $ret;
 	}
 
 	/**
@@ -125,10 +166,12 @@ Class GbUtilDb extends Zend_Db
 	 */
 	public function retrieve_all($sql, $bindargurment=array(), $index="", $col="")
 	{
+		$time=microtime(true);
+
 		if ($bindargurment===False)
 			$bindargurment=array();
 
-			try
+		try
 		{
 			/**
 			 * @var Zend_Db_Statement
@@ -168,9 +211,10 @@ Class GbUtilDb extends Zend_Db
 				}
 			}
 
+			self::$sqlTime+=microtime(true)-$time;
 			return $ret;
-
 		} catch (Exception $e){
+			self::$sqlTime+=microtime(true)-$time;
 			throw new GbUtilException($e);
 		}
 
@@ -188,6 +232,8 @@ Class GbUtilDb extends Zend_Db
 	 */
 	public function retrieve_one($sql, $bindargurment=array(), $col="")
 	{
+		$time=microtime(true);
+
 		if ($bindargurment===False)
 			$bindargurment=array();
 		try
@@ -200,37 +246,51 @@ Class GbUtilDb extends Zend_Db
 			if ($fCol)
 			{	// on veut juste la valeur
 				$res=$stmt->fetch(Zend_Db::FETCH_ASSOC);
-				if ($res===false)
+				if ($res===false) {
+					self::$sqlTime+=microtime(true)-$time;
 					return false;
+				}
 				$ret=$res[$col];
 			}
 			else
 			{	//on veut un array
 				$res=$stmt->fetch(Zend_Db::FETCH_ASSOC);
-				if ($res===false)
+				if ($res===false) {
+					self::$sqlTime+=microtime(true)-$time;
 					return false;
+				}
 				$ret=$res;
 			}
-
+			self::$sqlTime+=microtime(true)-$time;
 			return $ret;
 		} catch (Exception $e){
+			self::$sqlTime+=microtime(true)-$time;
 			throw new GbUtilException($e);
 		}
 	}
 
 	public function beginTransaction()
 	{
-		return $this->conn->beginTransaction();
+		$time=microtime(true);
+		$ret=$this->conn->beginTransaction();
+		self::$sqlTime+=microtime(true)-$time;
+		return $ret;
 	}
 
 	public function rollBack()
 	{
-		return $this->conn->rollBack();
+		$time=microtime(true);
+		$ret=$this->conn->rollBack();
+		self::$sqlTime+=microtime(true)-$time;
+		return $ret;
 	}
 
 	public function commit()
 	{
-		return $this->conn->commit();
+		$time=microtime(true);
+		$ret=$this->conn->commit();
+		self::$sqlTime+=microtime(true)-$time;
+		return $ret;
 	}
 
 	/**
@@ -243,7 +303,10 @@ Class GbUtilDb extends Zend_Db
 	 */
 	public function update($table, array $data, array $where=array())
 	{
-		return $this->conn->update($table, $data, $where);
+		$time=microtime(true);
+		$ret=$this->conn->update($table, $data, $where);
+		self::$sqlTime+=microtime(true)-$time;
+		return $ret;
 	}
 
 	/**
@@ -255,7 +318,10 @@ Class GbUtilDb extends Zend_Db
 	 */
 	public function delete($table, array $where)
 	{
-		return $this->conn->delete($table, $where);
+		$time=microtime(true);
+		$ret=$this->conn->delete($table, $where);
+		self::$sqlTime+=microtime(true)-$time;
+		return $ret;
 	}
 
 	/**
@@ -267,7 +333,10 @@ Class GbUtilDb extends Zend_Db
 	 */
 	public function insert($table, array $data)
 	{
-		return $this->conn->insert($table, $data);
+		$time=microtime(true);
+		$ret=$this->conn->insert($table, $data);
+		self::$sqlTime+=microtime(true)-$time;
+		return $ret;
 	}
 
 	/**
@@ -282,6 +351,7 @@ Class GbUtilDb extends Zend_Db
 	 */
 	public function replace($table, array $data, array $where)
 	{
+		$time=microtime(true);
 		try {
 			// compte le nombre de lignes correspondantes
 			$select=$this->conn->select();
@@ -305,16 +375,22 @@ Class GbUtilDb extends Zend_Db
 					else throw new GbUtilException("Pas de guillements trouvés dans la clause where !");
 					$data[$col]=$val;
 				}
-				return $this->conn->insert($table, $data);
+				$ret=$this->conn->insert($table, $data);
+				self::$sqlTime+=microtime(true)-$time;
+				return $ret;
 			}
 			elseif ($nb==1) {
-				return $this->conn->update($table, $data, $where);
+				$ret=$this->conn->update($table, $data, $where);
+				self::$sqlTime+=microtime(true)-$time;
+				return $ret;
 			}
 			else {
+				self::$sqlTime+=microtime(true)-$time;
 				throw new GbUtilException("replace impossible: plus d'une ligne correspond !");
 			}
 		} catch (Exception $e)
 		{
+			self::$sqlTime+=microtime(true)-$time;
 			throw new GbUtilException($e);
 		}
 	}
@@ -327,7 +403,10 @@ Class GbUtilDb extends Zend_Db
 	 */
 	public function quote($var)
 	{
-		return $this->conn->quote($var);
+		$time=microtime(true);
+		$ret=$this->conn->quote($var);
+		self::$sqlTime+=microtime(true)-$time;
+		return $ret;
 	}
 
 	/**
@@ -338,18 +417,21 @@ Class GbUtilDb extends Zend_Db
 	 * @return string chaine quotée
 	 */
 	public function quoteInto($text, $value)
-	{	if (is_array($value))
-		{
-			foreach($value as $val)
-			{
+	{
+		$time=microtime(true);
+		if (is_array($value)) {
+			foreach($value as $val) {
 				$pos = strpos($text, "?");
-				if ($pos=== false)
+				if ($pos=== false) {
 					break;
-				else
+				} else {
 					$text=substr($text, 0, $pos).$val.substr($text, $pos+1);
+				}
 			}
+		} else {
+			$ret=$this->conn->quoteInto($text, $value);
+			self::$sqlTime+=microtime(true)-$time;
+			return $ret;
 		}
-		else
-			return $this->conn->quoteInto($text, $value);
 	}
 }
