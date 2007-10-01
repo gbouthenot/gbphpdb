@@ -3,14 +3,14 @@
 require_once("Zend/Db.php");
 
 /**
- * Class GbDb
+ * Class Gb_Db
  *
  * @author Gilles Bouthenot
  * @version 1.01
  *
  * @todo retrieve_one
  */
-Class GbDb extends Zend_Db
+Class Gb_Db extends Zend_Db
 {
 	/**
 	 * @var Zend_Db_Adapter_Abstract
@@ -58,7 +58,7 @@ Class GbDb extends Zend_Db
 		} catch (Exception $e)
 		{
 			self::$sqlTime+=microtime(true)-$time;
-			throw new GbUtilException($e->getMessage());
+			throw new Gb_Exception($e->getMessage());
 		}
 
 		self::$nbInstance_total++;
@@ -137,7 +137,7 @@ Class GbDb extends Zend_Db
 	 * @param string[optional] $col Si spécifié, ne renvoie que cette colonne
 	 *
 	 * @return array|string
-	 * @throws GbUtilException
+	 * @throws Gb_Exception
 	 *
 	 *  exemple:
 	 *
@@ -215,7 +215,7 @@ Class GbDb extends Zend_Db
 			return $ret;
 		} catch (Exception $e){
 			self::$sqlTime+=microtime(true)-$time;
-			throw new GbUtilException($e);
+			throw new Gb_Exception($e);
 		}
 
 	}
@@ -228,7 +228,7 @@ Class GbDb extends Zend_Db
 	 * @param string[optional] $col Si spécifié, renvoie directement la valeur
 	 *
 	 * @return array|string|false
-	 * @throws GbUtilException
+	 * @throws Gb_Exception
 	 */
 	public function retrieve_one($sql, $bindargurment=array(), $col="")
 	{
@@ -265,7 +265,7 @@ Class GbDb extends Zend_Db
 			return $ret;
 		} catch (Exception $e){
 			self::$sqlTime+=microtime(true)-$time;
-			throw new GbUtilException($e);
+			throw new Gb_Exception($e);
 		}
 	}
 
@@ -347,7 +347,7 @@ Class GbDb extends Zend_Db
 	 * @param string $table Table à mettre à jour
 	 * @param array $data Données à modifier
 	 * @param array[optional] $where array("col='val'", ...)
-	 * @throws GbUtilException
+	 * @throws Gb_Exception
 	 */
 	public function replace($table, array $data, array $where)
 	{
@@ -366,13 +366,13 @@ Class GbDb extends Zend_Db
 				// Insertion nouvelle ligne: ajoute le where array("col=val"...)
 				foreach ($where as $w) {
 					$pos=strpos($w, '=');
-					if ($pos===false)	throw new GbUtilException("= introuvable dans clause where !");
+					if ($pos===false)	throw new Gb_Exception("= introuvable dans clause where !");
 					$col=substr($w, 0, $pos);
 					$val=substr($w, $pos+1);
 					//enlève les quote autour de $val
 					if     (substr($val,0,1)=="'" && substr($val,-1)=="'")	$val=substr($val, 1, -1);
 					elseif (substr($val,0,1)=='"' && substr($val,-1)=='"')	$val=substr($val, 1, -1);
-					else throw new GbUtilException("Pas de guillements trouvés dans la clause where !");
+					else throw new Gb_Exception("Pas de guillements trouvés dans la clause where !");
 					$data[$col]=$val;
 				}
 				$ret=$this->conn->insert($table, $data);
@@ -386,12 +386,12 @@ Class GbDb extends Zend_Db
 			}
 			else {
 				self::$sqlTime+=microtime(true)-$time;
-				throw new GbUtilException("replace impossible: plus d'une ligne correspond !");
+				throw new Gb_Exception("replace impossible: plus d'une ligne correspond !");
 			}
 		} catch (Exception $e)
 		{
 			self::$sqlTime+=microtime(true)-$time;
-			throw new GbUtilException($e);
+			throw new Gb_Exception($e);
 		}
 	}
 

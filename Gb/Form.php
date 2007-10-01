@@ -1,7 +1,7 @@
 <?php
 
 
-Class GbForm
+Class Gb_Form
 {
 
 	protected $formElements=array();
@@ -37,7 +37,7 @@ Class GbForm
 	 *
 	 * @param string $nom Nom unique, défini le NAME de l'élément doit commencer par une lettre et ne comporter que des caractères alphanumériques
 	 * @param array $aParams
-	 * @throws GbUtilException
+	 * @throws Gb_Exception
 	 */
 	public function addElement($nom, array $aParams)
 	{
@@ -56,13 +56,13 @@ Class GbForm
 		// $aParams["errorMsg"]    : message d'erreur
 
 		if (!preg_match("/^[a-zA-Z][a-zA-Z0-9]*/", $nom))
-			throw new GbUtilException("Nom de variable de formulaire invalide");
+			throw new Gb_Exception("Nom de variable de formulaire invalide");
 
 		if (isset($this->formElement[$nom]))
-			throw new GbUtilException("Nom de variable de formulaire déjà défini");
+			throw new Gb_Exception("Nom de variable de formulaire déjà défini");
 
 		if (!isset($aParams["type"]))
-			throw new GbUtilException("Type de variable de formulaire non précisé");
+			throw new Gb_Exception("Type de variable de formulaire non précisé");
 
 		if (!isset($aParams["fMandatory"]))
 			$aParams["fMandatory"]=false;
@@ -87,7 +87,7 @@ Class GbForm
 		{
 			case "SELECT":
 				if (!isset($aParams["args"]) || !is_array($aParams["args"]))
-					throw new gbUtilException("Paramètres de $nom incorrects");
+					throw new Gb_Exception("Paramètres de $nom incorrects");
 				//remplit value avec le numéro sélectionné.
 				$num=0;
 				foreach($aParams["args"] as $ordre=>$val) {
@@ -131,7 +131,7 @@ Class GbForm
 				break;
 
 				default:
-				throw new GbUtilException("Type de variable de formulaire inconnu pour $nom");
+				throw new Gb_Exception("Type de variable de formulaire inconnu pour $nom");
 		}
 
 	}
@@ -141,7 +141,7 @@ Class GbForm
 	public function set($nom, $value)
 	{
 		if (!isset($this->formElements[$nom]))
-			throw new gbUtilException("Set impossible: nom=$nom non défini");
+			throw new Gb_Exception("Set impossible: nom=$nom non défini");
 
 		$type=$this->formElements[$nom]["type"];
 		if ($type=="SELECT") {
@@ -159,7 +159,7 @@ Class GbForm
 	public function get($nom)
 	{
 		if (!isset($this->formElements[$nom]))
-			throw new GbUtilException("Set impossible: nom=$nom non défini");
+			throw new Gb_Exception("Set impossible: nom=$nom non défini");
 
 		$value=$this->formElements[$nom]["value"];
 
@@ -174,12 +174,12 @@ Class GbForm
 	 *
 	 * @param string $nom
 	 * @param string[optional] $radioValue
-	 * @throws GbUtilException
+	 * @throws Gb_Exception
 	 */
 	public function getHtml($nom, $radioValue="")
 	{
 		if (!isset($this->formElements[$nom])) {
-			throw new GbUtilException("Variable de formulaire inexistante");
+			throw new Gb_Exception("Variable de formulaire inexistante");
 		}
 
 		$ret="";
@@ -238,7 +238,7 @@ Class GbForm
 				break;
 
 			default:
-				throw new GbUtilException("Type inconnu");
+				throw new Gb_Exception("Type inconnu");
 		}
 		$errorMsg=$aElement["errorMsg"];
 		if (strlen($errorMsg)) {
@@ -257,12 +257,12 @@ Class GbForm
 	 *
 	 * @param string $nom
 	 * @param boolean|string $class : false/true: met a classNOK/classOK string: met a la classe spécifiée
-	 * @throws GbUtilException
+	 * @throws Gb_Exception
 	 */
 	public function setClass($nom, $class=false)
 	{
 		if (!isset($this->formElements[$nom]))
-			throw new GbUtilException("Element de fomulaire non défini");
+			throw new Gb_Exception("Element de fomulaire non défini");
 		if ($class===false) {
 			$class=$this->formElements[$nom]["classNOK"];
 		} elseif ($class===true) {
@@ -279,12 +279,12 @@ Class GbForm
 	 *
 	 * @param string $nom
 	 * @param string $errorMsg
-	 * @throws GbUtilException
+	 * @throws Gb_Exception
 	 */
 	public function setErrorMsg($nom, $errorMsg="")
 	{
 		if (!isset($this->formElements[$nom]))
-			throw new GbUtilException("Element de fomulaire non défini");
+			throw new Gb_Exception("Element de fomulaire non défini");
 		$this->formElements[$nom]["errorMsg"]=$errorMsg;
 	}
 
@@ -308,7 +308,7 @@ Class GbForm
 		}
 
 		if (!isset($this->formElements[$nom])) {
-			throw new GbUtilException("Variable de formulaire inexistante");
+			throw new Gb_Exception("Variable de formulaire inexistante");
 		}
 		$aElement=$this->formElements[$nom];
 
@@ -412,7 +412,7 @@ Class GbForm
 				break;
 
 			default:
-				throw new GbUtilException("Type inconnu");
+				throw new Gb_Exception("Type inconnu");
 		}
 
 		if (strlen($ret)) {
@@ -429,10 +429,10 @@ Class GbForm
 	/**
 	 * Remplit les valeurs depuis la base de données
 	 *
-	 * @param GbDb $db
+	 * @param Gb_Db $db
 	 * @return boolean true si données trouvées
 	 */
-	public function getFromDb(GbDb $db)
+	public function getFromDb(Gb_Db $db)
 	{
 		//todo: checkbox
 		// obient le nom des colonnes
@@ -477,11 +477,11 @@ Class GbForm
 	/**
 	 * Insère/update les valeurs dans la bdd
 	 *
-	 * @param GbDb $db
+	 * @param Gb_Db $db
 	 * @param array $moreData
 	 * @return boolean true si données ecrites
 	 */
-	public function putInDb(GbDb $db, array $moreData=array())
+	public function putInDb(Gb_Db $db, array $moreData=array())
 	{
 		//todo: checkbox
 		// obient le nom des colonnes

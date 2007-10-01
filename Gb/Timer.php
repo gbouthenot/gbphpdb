@@ -1,15 +1,14 @@
 <?php
 /**
- * Class GbUtilTimer
+ * Class Gb_Timer
  *
  * @author Gilles Bouthenot
  * @version 1.00
  *
  */
-Class GbTimer extends Gb
+Class Gb_Timer
 {
 	protected $startime;
-	protected $intance=0;
 	protected $name;
 	protected $pause=0;
 
@@ -24,7 +23,6 @@ Class GbTimer extends Gb
 	 */
 	public function __construct($name='')
 	{
-		$this->intance=++GbUtil::$GbTimer_instance_max;
 		$this->startime=microtime(true);
 		$this->name=$name;
 

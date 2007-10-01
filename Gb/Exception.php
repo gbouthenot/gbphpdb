@@ -1,0 +1,22 @@
+<?php
+/**
+ * Class Gb_Exception
+ *
+ * @author Gilles Bouthenot
+ */
+class Gb_Exception extends Exception
+{
+	public function __toString()
+	{
+		//	$message=__CLASS__ . ": [{$this->code}]: {$this->message}";
+		$message=__CLASS__ . ": \n";
+		$trace=$this->getTrace();
+		$file=$trace[0]["file"];
+		$line=$trace[0]["line"];
+		$function=$trace[0]["function"];
+		$message.="Erreur dans $function(...): ".$this->getMessage()."\n";
+		$message.="thrown in $file on line $line\n";
+		return $message;
+	}
+}
+
