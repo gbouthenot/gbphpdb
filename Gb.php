@@ -3,9 +3,10 @@
  *
  */
 
-require_once("Gb/Form.php");
-require_once("Gb/Db.php");
-require_once("Gb/Timer.php");
+$path=realpath(dirname(__FILE__).DIRECTORY_SEPARATOR."Gb").DIRECTORY_SEPARATOR;
+require_once($path."Form.php");
+require_once($path."Db.php");
+require_once($path."Timer.php");
 
 
 Class Gb

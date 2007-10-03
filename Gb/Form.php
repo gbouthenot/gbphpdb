@@ -192,13 +192,13 @@ Class Gb_Form
 
 		$aElement=$this->formElements[$nom];
 		$class=$aElement["class"];
-		$ret.="<div id='GBFORM_${nom}_div' class='$class'>\n";
-		$ret.=$aElement["preInput"];
 
 		$type=$aElement["type"];
 		$value=$aElement["value"];
 		switch ($type) {
 			case "SELECT":
+				$ret.="<div id='GBFORM_${nom}_div' class='$class'>\n";
+				$ret.=$aElement["preInput"];
 				$aValues=$aElement["args"];
 				$html=$aElement["inInput"];
 				$ret.="<select id='GBFORM_$nom' name='GBFORM_$nom' $html onchange='javascript:validate_GBFORM_$nom();' onkeyup='javascript:validate_GBFORM_$nom();'>\n";
@@ -216,12 +216,16 @@ Class Gb_Form
 				break;
 
 			case "TEXT": case "PASSWORD":
+				$ret.="<div id='GBFORM_${nom}_div' class='$class'>\n";
+				$ret.=$aElement["preInput"];
 				$html=$aElement["inInput"];
 				$sValue=htmlspecialchars($value, ENT_QUOTES);
 				$ret.="<input type='text' class='text' id='GBFORM_$nom' name='GBFORM_$nom' $html value='$sValue' onchange='javascript:validate_GBFORM_$nom();' onkeyup='javascript:validate_GBFORM_$nom();' />\n";
 				break;
 
 			case "CHECKBOX":
+				$ret.="<div id='GBFORM_${nom}_div' class='$class'>\n";
+				$ret.=$aElement["preInput"];
 				$sValue="";
 				if ($value==true)
 					$sValue=" checked='checked'";
@@ -230,11 +234,13 @@ Class Gb_Form
 				break;
 
 			case "RADIO":
+				$ret.="<div class='$class'>\n";
+				$ret.=$aElement["preInput"];
 				$sValue="";
 				if ($value==$radioValue)
 					$sValue=" checked='checked'";
 				$html=$aElement["inInput"];
-				$ret.="<input type='radio' class='radio' id='GBFORM_$nom' name='GBFORM_$nom' value='$radioValue' $sValue $html onchange='javascript:validate_GBFORM_$nom();' onkeyup='javascript:validate_GBFORM_$nom();' />\n";
+				$ret.="<input type='radio' class='radio' name='GBFORM_$nom' value='$radioValue' $sValue $html onchange='javascript:validate_GBFORM_$nom();' onkeyup='javascript:validate_GBFORM_$nom();' />\n";
 				break;
 
 			default:
