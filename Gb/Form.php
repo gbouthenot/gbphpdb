@@ -172,17 +172,25 @@ Class Gb_Form
 	/**
 	 * Renvoit le code HTML approprié (valeur par défaut, préselectionné, etc)
 	 *
-	 * @param string $nom
+	 * @param string[optional] $nom
 	 * @param string[optional] $radioValue
 	 * @throws Gb_Exception
 	 */
-	public function getHtml($nom, $radioValue="")
+	public function getHtml($nom="", $radioValue="")
 	{
+		$ret="";
+
+		// si nom vide, rappelle la fonction pour tous les éléments
+		if ($nom==="") {
+			foreach ($this->formElements as $nom=>$aElement) {
+				$ret.=$this->getHtml($nom);
+			}
+			return $ret;
+		}
+
 		if (!isset($this->formElements[$nom])) {
 			throw new Gb_Exception("Variable de formulaire inexistante");
 		}
-
-		$ret="";
 
 		if (self::$fPostIndicator==false) {
 			// positionnement de la variable statique indiquand que l'indicateur a été mis.
@@ -284,7 +292,7 @@ Class Gb_Form
 	 * Change le message d'erreur d'un elément
 	 *
 	 * @param string $nom
-	 * @param string $errorMsg
+	 * @param string[optional] $errorMsg
 	 * @throws Gb_Exception
 	 */
 	public function setErrorMsg($nom, $errorMsg="")
