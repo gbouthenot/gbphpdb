@@ -41,7 +41,7 @@ Class Gb_Form
 	 */
 	public function addElement($nom, array $aParams)
 	{
-		// $aParams["type"]="SELECT":
+		// $aParams["type"]="SELECT" "SELECTMULTIPLE" "TEXT" "PASSWORD" "RADIO" "CHECKBOX"
 		// $aParams["args"]        : array["default"]=array(value=>libelle) (value est recodé dans le html mais renvoie la bonne valeur)
 		// $aParams["dbCol"]       : optionnel: nom de la colonne
 		// $aParams["fMandatory"]  : doit être rempli ? défaut: false
@@ -100,6 +100,14 @@ Class Gb_Form
 				}
 				if (!isset($aParams["value"]))
 					$aParams["value"]="0";		// par défaut, 1er élément de la liste
+				$this->formElements[$nom]=$aParams;
+				break;
+
+			case "SELECTMULTIPLE":
+				if (!isset($aParams["args"]) || !is_array($aParams["args"]))
+					throw new Gb_Exception("Paramètres de $nom incorrects");
+				if (!isset($aParams["value"]))
+					$aParams["value"]=array();		// par défaut, aucune selection
 				$this->formElements[$nom]=$aParams;
 				break;
 
@@ -223,6 +231,23 @@ Class Gb_Form
 				$ret.="</select>\n";
 				break;
 
+			case "SELECTMULTIPLE":
+				$ret.="<div id='GBFORM_${nom}_div' class='$class'>\n";
+				$ret.=$aElement["preInput"];
+				$aValues=$aElement["args"];
+				$html=$aElement["inInput"];
+				$ret.="<select multiple='multiple' id='GBFORM_$nom' name='GBFORM_{$nom}[]' $html onchange='javascript:validate_GBFORM_$nom();' onkeyup='javascript:validate_GBFORM_$nom();'>\n";
+				foreach ($aValues as $ordre=>$aOption){
+					$sVal=htmlspecialchars($aOption[0], ENT_QUOTES);
+					$sLib=htmlspecialchars($aOption[1], ENT_QUOTES);
+					$sSelected="";
+					if (in_array($sVal,$value))
+						$sSelected="selected='selected'";
+					$ret.="<option value='$sVal' $sSelected>$sLib</option>\n";
+				}
+				$ret.="</select>\n";
+				break;
+
 			case "TEXT": case "PASSWORD":
 				$ret.="<div id='GBFORM_${nom}_div' class='$class'>\n";
 				$ret.=$aElement["preInput"];
@@ -328,6 +353,9 @@ Class Gb_Form
 
 		$type=$aElement["type"];
 		switch ($type) {
+			case "SELECTMULTIPLE":
+				break;
+
 			case "SELECT":
 				$ret.="	\$('GBFORM_{$nom}_div').className='{$aElement["classOK"]}';\n";
 				// attention utilise prototype String.strip()
@@ -497,7 +525,7 @@ Class Gb_Form
 	 */
 	public function putInDb(Gb_Db $db, array $moreData=array())
 	{
-		//todo: checkbox
+		//todo: checkbox, radio, selectmultiple
 		// obient le nom des colonnes
 		$aCols=$moreData;
 		foreach ($this->formElements as $nom=>$aElement) {
@@ -562,10 +590,10 @@ Class Gb_Form
 		$aErrs=array();
 		foreach ($this->formElements as $nom=>$aElement) {
 			$type=$aElement["type"];
-			$value=strtolower(GbUtil::mystrtoupper(trim($aElement["value"])));
 
 			switch ($type) {
 				case "SELECT":
+					$value=strtolower(GbUtil::mystrtoupper(trim($aElement["value"])));
 					// Vérifie que la valeur est bien dans la liste et maj $value
 					if (isset($aElement["args"][$value])) {
 						$value=$aElement["args"][$value][0];
@@ -573,9 +601,17 @@ Class Gb_Form
 						$aErrs[$nom]="Choix invalide";
 						continue;
 					}
+					break;
 
+				case "SELECTMULTIPLE":
 				break;
+
+				case "RADIO": case "CHECKBOX":
+					$value=strtolower(GbUtil::mystrtoupper(trim($aElement["value"])));
+					break;
+
 				case "TEXT": case "PASSWORD":
+					$value=strtolower(GbUtil::mystrtoupper(trim($aElement["value"])));
 					if (strlen($value) && isset($aElement["args"]["regexp"])) {
 						$regexp=$aElement["args"]["regexp"];
 						if (!preg_match($regexp, $value)) {
@@ -633,7 +669,7 @@ Class Gb_Form
 
 			if ($aElement["fMandatory"]) {
 				// Vérifie que le champ et bien rempli
-				if ( ($type=="SELECT" && $value===false) || ($type!="SELECT" && strlen($value)==0) ) {
+				if ( ($type=="SELECT" && $value===false) || (($type!="SELECT" && $type!="SELECTMULTIPLE") && strlen($value)==0) ) {
 					if ($type=="SELECT")	$aErrs[$nom]="Aucun choix sélectionné";
 					elseif ($type=="TEXT")	$aErrs[$nom]="Valeur non renseignée";
 					elseif ($type=="CHECKBOX")	$aErrs[$nom]="Case non cochée";
