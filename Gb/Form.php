@@ -6,7 +6,7 @@ Class Gb_Form
 
 	protected $formElements=array();
 	protected $where;
-	protected $tableName;
+	protected $tableName="";
 	protected static $fPostIndicator=false;
 
   protected $_commonRegex = array(
@@ -372,6 +372,20 @@ Class Gb_Form
 					$ret.="	\$('GBFORM_{$nom}_div').className='{$aElement["classNOK"]}';\n";
 					$ret.="}\n";
 				}
+				if (isset($aElement["NOTVALUE"])){
+					$aNotValues=$aElement["NOTVALUE"];
+					foreach ($aNotValues as $notValue) {
+						$ret.=" var bornevalue=value;\n";
+						if (strpos($notValue, "GBFORM_")===0) {
+							// borne commence par GBFORM_
+							$notValue="\$F('$notValue')";
+						}
+						$ret.=" var notvalue=eval({$notValue});\n";
+						$ret.=" if (bornevalue == notvalue) {";
+						$ret.="	\$('GBFORM_{$nom}_div').className='{$aElement["classNOK"]}';";
+						$ret.="}\n";
+					}
+				}
 				break;
 
 			case "TEXT": case "PASSWORD":
@@ -397,7 +411,6 @@ Class Gb_Form
 				if (isset($aElement["MINVALUE"])){
 					$aMinValues=$aElement["MINVALUE"];
 					foreach ($aMinValues as $borne) {
-						$ret.=" var bornevalue=value;\n";
 						if (is_array($borne) && isset($aElement["args"]["regexp"])) {
 							// si array, alors extrait la valeur du regexp avant de comparer
 							$ret.=" var bornevalue=value.replace({$aElement["args"]["regexp"]}, \"{$borne[0]}\");\n";
@@ -419,7 +432,6 @@ Class Gb_Form
 				if (isset($aElement["MAXVALUE"])){
 					$aMaxValues=$aElement["MAXVALUE"];
 					foreach ($aMaxValues as $borne) {
-						$ret.=" var bornevalue=value;\n";
 						if (is_array($borne) && isset($aElement["args"]["regexp"])) {
 							// si array, alors extrait la valeur du regexp avant de comparer
 							$ret.=" var bornevalue=value.replace({$aElement["args"]["regexp"]}, \"{$borne[0]}\");\n";
@@ -434,6 +446,27 @@ Class Gb_Form
 						}
 						$ret.=" var borne=eval({$borne});\n";
 						$ret.=" if (bornevalue > borne) {";
+						$ret.="	\$('GBFORM_{$nom}_div').className='{$aElement["classNOK"]}';";
+						$ret.="}\n";
+					}
+				}
+				if (isset($aElement["NOTVALUE"])){
+					$aNotValues=$aElement["NOTVALUE"];
+					foreach ($aNotValues as $notValue) {
+						if (is_array($notValue) && isset($aElement["args"]["regexp"])) {
+							// si array, alors extrait la valeur du regexp avant de comparer
+							$ret.=" var bornevalue=value.replace({$aElement["args"]["regexp"]}, \"{$notValue[0]}\");\n";
+							$notValue=$notValue[1];
+						}
+						else {
+							$ret.=" var bornevalue=value;\n";
+						}
+						if (strpos($notValue, "GBFORM_")===0) {
+							// borne commence par GBFORM_
+							$notValue="\$F('$notValue')";
+						}
+						$ret.=" var notvalue=eval({$notValue});\n";
+						$ret.=" if (bornevalue == notvalue) {";
 						$ret.="	\$('GBFORM_{$nom}_div').className='{$aElement["classNOK"]}';";
 						$ret.="}\n";
 					}
@@ -485,7 +518,7 @@ Class Gb_Form
 			}
 		}
 
-		if (count($aCols)==0) {
+		if (strlen($this->tableName)==0 || count($aCols)==0) {
 			return false;
 		}
 
@@ -536,7 +569,7 @@ Class Gb_Form
 			}
 		}
 
-		if (count($aCols)==0) {
+		if (strlen($this->tableName)==0 || count($aCols)==0) {
 			return false;
 		}
 
@@ -601,6 +634,23 @@ Class Gb_Form
 						$aErrs[$nom]="Choix invalide";
 						continue;
 					}
+					if (strlen($value) && isset($aElement["NOTVALUE"])) {
+						$aBornes=$aElement["NOTVALUE"];
+						foreach ($aBornes as $borne) {
+							$bornevalue=$value;
+							$sBorne=$borne;
+							if (strpos($borne, "GBFORM_")===0) {
+								// borne commence par GBFORM_
+								$sBorne=substr($borne,7);
+								$borne=$this->get($sBorne);
+								$sBorne.=" ($borne)";
+							}
+							if ($bornevalue == $borne) {
+								$aErrs[$nom]="Doit être différent de $sBorne";
+								continue;
+							}
+						}
+					}
 					break;
 
 				case "SELECTMULTIPLE":
@@ -659,6 +709,28 @@ Class Gb_Form
 							}
 							if ($bornevalue > $borne) {
 								$aErrs[$nom]="Doit être inférieur ou égal à $sBorne";
+								continue;
+							}
+						}
+					}
+					if (strlen($value) && isset($aElement["NOTVALUE"])) {
+						$aBornes=$aElement["NOTVALUE"];
+						foreach ($aBornes as $borne) {
+							$bornevalue=$value;
+							if (is_array($borne) && isset($aElement["args"]["regexp"])) {
+								// si array, alors extrait la valeur du regexp avant de comparer
+								$bornevalue=preg_replace( $aElement["args"]["regexp"],$borne[0], $value);
+								$borne=$borne[1];
+							}
+							$sBorne=$borne;
+							if (strpos($borne, "GBFORM_")===0) {
+								// borne commence par GBFORM_
+								$sBorne=substr($borne,7);
+								$borne=$this->get($sBorne);
+								$sBorne.=" ($borne)";
+							}
+							if ($bornevalue == $borne) {
+								$aErrs[$nom]="Doit être différent de $sBorne";
 								continue;
 							}
 						}
