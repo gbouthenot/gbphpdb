@@ -164,6 +164,23 @@ Class Gb_Form
 
 	}
 
+	public function getElementParam($nom, $paramName)
+	{
+		if (!isset($this->formElements[$nom]))
+			throw new Gb_Exception("Get elementParam: nom=$nom non défini");
+		$aElement=$this->formElements[$nom];
+		if (isset($aElement[$paramName]))
+			return $aElement[$paramName];
+		else
+			return false;
+	}
+
+	public function setElementParam($nom, $paramName, $value)
+	{
+		if (!isset($this->formElements[$nom]))
+			throw new Gb_Exception("Set elementParam: nom=$nom non défini");
+		$aElement=$this->formElements[$nom][$paramName]=$value;
+	}
 
 
 	public function set($nom, $value)
