@@ -36,7 +36,7 @@ Class GbUtil extends Gb
 	const LOG_CRIT=6;
 	const LOG_ERROR=5;						// Ecriture bdd NOK
 	const LOG_WARNING=4;
-	const LOG_NOTICE=3;
+	const LOG_NOTICE=3;						// Génération INE
 	const LOG_INFO=2;							// Ecriture bdd OK
 	const LOG_DEBUG=1;
 	const LOG_ALL=0;

@@ -297,7 +297,7 @@ Class Gb_Db extends Zend_Db
 	 * SQL update
 	 *
 	 * @param string $table
-	 * @param array $data array("col"=>"val"...)
+	 * @param array $data array("col"=>"val", "col2"=>new Zend_Db_Expr("NOW()"), ...)
 	 * @param array[optional] $where array("col='val'", ...)
 	 * @return int nombre de lignes modifiées
 	 */
@@ -328,7 +328,7 @@ Class Gb_Db extends Zend_Db
 	 * SQL insert
 	 *
 	 * @param string $table
-	 * @param array $data array("col"=>"val"...)
+	 * @param array $data array("col"=>"val", "col2"=>new Zend_Db_Expr("NOW()"), ...)
 	 * @return int nombre de lignes modifiées
 	 */
 	public function insert($table, array $data)
@@ -345,7 +345,7 @@ Class Gb_Db extends Zend_Db
 	 *
 	 *
 	 * @param string $table Table à mettre à jour
-	 * @param array $data Données à modifier
+	 * @param array $data array("col"=>"val", "col2"=>new Zend_Db_Expr("NOW()"), ...)
 	 * @param array[optional] $where array("col='val'", ...)
 	 * @throws Gb_Exception
 	 */
@@ -434,6 +434,80 @@ Class Gb_Db extends Zend_Db
 
 		self::$sqlTime+=microtime(true)-$time;
 		return $text;
+	}
+
+	/**
+	 * Quote an identifier
+	 *
+	 * @param string|array|Zend_Db_expr $ident
+	 * @param boolean $auto
+	 * @return string the quoted string
+	 */
+	public function quoteIdentifier($ident, boolean $auto)
+	{
+		$time=microtime(true);
+		$ret=$this->conn->quoteIdentifier($ident, $auto);
+		self::$sqlTime+=microtime(true)-$time;
+		return $ret;
+	}
+
+	/**
+	 * Enter description here...
+	 *
+	 * @param string[optional] $tableName
+	 * @param string[optional] $primaryKey
+	 * @return unknown
+	 */
+	public function lastInsertId($tableName=null, $primaryKey=null)
+	{
+		$time=microtime(true);
+		$ret=$this->conn->lastInsertId($tableName, $primaryKey);
+		self::$sqlTime+=microtime(true)-$time;
+		return $ret;
+	}
+
+	/**
+	 * Renvoit la valeur suivant d'une séquence
+	 *
+	 * 	la table doit etre de la forme::
+	 * 	create table seq_sise_numero (id int not null);
+	 * 	insert into seq_sise_numero values (0);
+	 * 	update seq_sise_numero set id=LAST_INSERT_ID(id+1);
+	 *
+	 * @param string $tableName
+	 * @param string[optionel] $colName
+	 * @throws Gb_Exception
+	 */
+	public function sequenceNext($tableName, $colName="id")
+	{
+		$time=microtime(true);
+		$nb=$this->update($tableName, array( $colName=>new Zend_Db_Expr("LAST_INSERT_ID(".$this->conn->quoteIdentifier($colName)."+1)") ));
+		if ($nb!=1) {
+			throw new Gb_Exception("erreur sequenceNext($tableName.$colName)");
+		}
+		self::$sqlTime+=microtime(true)-$time;
+		return $this->conn->lastInsertId();
+	}
+
+	/**
+	 * Renvoit la valeur courante d'une séquence
+	 *
+	 * @param string $tableName
+	 * @param string[optionel] $colName
+	 * @throws Gb_Exception
+	 */
+	public function sequenceCurrent($tableName, $colName="id")
+	{
+		$time=microtime(true);
+		$sql="SELECT ".$this->conn->quoteIdentifier($colName)." FROM ".$this->conn->quoteIdentifier($tableName);
+		$stmt=$this->conn->query($sql);
+		$res=$stmt->fetch(Zend_Db::FETCH_NUM);
+		if ($stmt->fetch(Zend_Db::FETCH_NUM)) {
+			throw new Gb_Exception("erreur sequenceCurrent($tableName.$colName)");
+		}
+		$res=$res[0];
+		self::$sqlTime+=microtime(true)-$time;
+		return $res;
 	}
 
 }
