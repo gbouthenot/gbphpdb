@@ -3,13 +3,15 @@
 
 Class Gb_Form
 {
-
 	protected $formElements=array();
+
+	protected $db=false;
 	protected $where;
-	protected $tableName="";
+	protected $tableName;
+
 	protected static $fPostIndicator=false;
 
-  protected $_commonRegex = array(
+	protected $_commonRegex = array(
 		'HexColor'        => '/^(#?([\dA-F]{3}){1,2})$/i',
 		'UsTelephone'     => '/^(\(?([2-9]\d{2})\)?[\.\s-]?([2-4|6-9]\d\d|5([0-4|6-9]\d|\d[0-4|6-9]))[\.\s-]?(\d{4}))$/',
 		'Email'           => '/((^[\w\.!#$%"*+\/=?`{}|~^-]+)@(([-\w]+\.)+[A-Za-z]{2,}))$/',
@@ -26,10 +28,28 @@ Class Gb_Form
 	);
 
 
-	public function __construct($tableName="", array $where=array())
+	/**
+	 * constructeur de Gb_Form
+	 *
+	 * @param Gb_Db[optional] $db
+	 * @param string[optional] $tableName si vide, pas de bdd
+	 * @param array[optional] $where array(condition, array("usa_login='?'", "gbo"), ...)
+	 */
+	public function __construct(Gb_Db $db=null, $tableName="", array $where=array())
 	{
+		$this->db=$db;
 		$this->tableName=$tableName;
-		$this->where=$where;
+
+		// transforme la condition avec quoteInto, si nécéssaire
+		$where2=array();
+		foreach ($where as $cond) {
+			if (is_array($cond)) {
+				$str=array_shift(&$cond);
+				$cond=$db->quoteInto($str, $cond);
+			}
+			$where2[]=$cond;
+		}
+		$this->where=$where2;
 	}
 
 	/**
@@ -507,8 +527,11 @@ Class Gb_Form
 	 * @param Gb_Db $db
 	 * @return boolean true si données trouvées
 	 */
-	public function getFromDb(Gb_Db $db)
+	public function getFromDb()
 	{
+		if ($this->db===null)
+			return false;
+
 		//todo: checkbox
 		// obient le nom des colonnes
 		$aCols=array();
@@ -535,6 +558,7 @@ Class Gb_Form
 			$sql.=$sWhere;
 		}
 
+		$db=$this->db;
 		$aLigne=$db->retrieve_one($sql);
 		if ($aLigne===false) {
 		// La requête n'a pas renvoyé de ligne
@@ -552,13 +576,15 @@ Class Gb_Form
 	/**
 	 * Insère/update les valeurs dans la bdd
 	 *
-	 * @param Gb_Db $db
 	 * @param array $moreData
 	 * @return boolean true si données ecrites
 	 */
-	public function putInDb(Gb_Db $db, array $moreData=array())
+	public function putInDb(array $moreData=array())
 	{
-		//todo: checkbox, radio, selectmultiple
+		if ($this->db===null)
+			return false;
+
+			//todo: checkbox, radio, selectmultiple
 		// obient le nom des colonnes
 		$aCols=$moreData;
 		foreach ($this->formElements as $nom=>$aElement) {
@@ -573,6 +599,7 @@ Class Gb_Form
 			return false;
 		}
 
+		$db=$this->db;
 		$nb=$db->replace($this->tableName, $aCols, $this->where);
 		if ($nb) {
 			GbUtil::Log(GbUtil::LOG_INFO, "GBFORM->putInDb OK table:{$this->tableName} where:".GbUtil::Dump($this->where)."" );

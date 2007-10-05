@@ -72,7 +72,7 @@ Class Gb_Db extends Zend_Db
 		$time=microtime(true);
 		self::$nbInstance_current--;
 		$this->conn->closeConnection();
-		self::$sqlTime+=microtime(true)-$time;  
+		self::$sqlTime+=microtime(true)-$time;
 	}
 
 
@@ -410,7 +410,7 @@ Class Gb_Db extends Zend_Db
 	}
 
 	/**
-	 * Quote une valeur dans une chaine
+	 * Quote une/des valeur(s) dans une chaine
 	 *
 	 * @param string $text ex SELECT * WHERE uid=?
 	 * @param  string/array $value ex login (pas de quote !)
@@ -429,9 +429,11 @@ Class Gb_Db extends Zend_Db
 				}
 			}
 		} else {
-			$ret=$this->conn->quoteInto($text, $value);
-			self::$sqlTime+=microtime(true)-$time;
-			return $ret;
+			$text=$this->conn->quoteInto($text, $value);
 		}
+
+		self::$sqlTime+=microtime(true)-$time;
+		return $text;
 	}
+
 }
