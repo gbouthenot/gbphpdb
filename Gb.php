@@ -6,6 +6,7 @@
 $path=realpath(dirname(__FILE__).DIRECTORY_SEPARATOR."Gb").DIRECTORY_SEPARATOR;
 require_once($path."Form.php");
 require_once($path."Db.php");
+require_once($path."Exception.php");
 require_once($path."Timer.php");
 
 
