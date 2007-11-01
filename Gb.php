@@ -3,11 +3,14 @@
  *
  */
 
-$path=realpath(dirname(__FILE__).DIRECTORY_SEPARATOR."Gb").DIRECTORY_SEPARATOR;
-require_once($path."Form.php");
-require_once($path."Db.php");
-require_once($path."Exception.php");
-require_once($path."Timer.php");
+if (!defined("_GB_PATH")) {
+	define("_GB_PATH", realpath(dirname(__FILE__).DIRECTORY_SEPARATOR."Gb").DIRECTORY_SEPARATOR);
+}
+
+require_once(_GB_PATH."Form.php");
+require_once(_GB_PATH."Db.php");
+require_once(_GB_PATH."Exception.php");
+require_once(_GB_PATH."Timer.php");
 
 
 Class Gb
@@ -456,7 +459,7 @@ Class GbUtil extends Gb
 	// $sTime doit être formaté en "jj/mm/aaaa hh:mm:ss" ou "jj/mm/aaaa hh:mm:ss.xxxxxx"
 	// ou "aaaa-mm-jj hh:mm:ss" ou "aaaa-mm-jj hh:mm:ss.xxxxxx"
 
-	public static function str_to_time($sTime, $outTime)
+	public static function str_to_time($sTime, &$outTime)
 	{
 		$sTime=self::date_fr($sTime);
 		if (strlen($sTime)==23)
@@ -554,8 +557,8 @@ Class GbUtil extends Gb
 		}
 		if ($fPrint)
 			echo $ret;
-		else
-			return $ret;
+
+		return $ret;
 	} // function send_headers
 
 
@@ -718,7 +721,8 @@ Class GbUtil extends Gb
 //		$aParam=func_get_args();
 //		array_shift($aParam);
 
-		if (is_callable($fName, false, &$sCallName))	// $sCallName reçoit le nom imprimable de la fonction, utile pour les objets
+		unset($sCallName);
+		if (is_callable($fName, false, $sCallName))	// $sCallName reçoit le nom imprimable de la fonction, utile pour les objets
 			$ret=call_user_func_array($fName, $aParam);
 		else
 			throw(new GbUtilException("Fonction inexistante"));
@@ -744,7 +748,7 @@ Class GbUtil extends Gb
 		if (empty($nbdigits))
 			return $num;
 
-		$mul=pow(10,$nbdigits);
+//		$mul=pow(10,$nbdigits);
 		$div=0;
 		$num2=0;
 		if ($num>.1)while($num>1) {$num/=10; $div++;}
@@ -776,7 +780,7 @@ Class GbUtil extends Gb
 	 */
 	public static function getCacheDir()
 	{
-		$sessionDir=self::$cacheDir;
+		$cacheDir=self::$cacheDir;
 
 		if ($cacheDir=="")
 		{
@@ -816,10 +820,9 @@ Class GbUtil extends Gb
 			$updir3=$updir2.DIRECTORY_SEPARATOR."sessions";
 			if ((!is_dir($updir3) || !is_writable($updir3)) && is_dir($updir2) && is_writable($updir2))
 				@mkdir($updir3, 0700);
-
 			if (is_dir($updir3) && is_writable($updir3))
 				session_save_path($updir3);
-			else throw new GbUtilException("Impossible de créer le répertoire $updir3 pour stocker les sessions !");
+			else throw new GbUtilException("Impossible de créer le répertoire $updir3 pour stocker les sessions ! session_save_path()=$updir");
 		}
 		return $sessionDir;
 	}
@@ -838,6 +841,7 @@ Class GbUtil extends Gb
 			$logFilename=ini_get("error_log");
 			$d=DIRECTORY_SEPARATOR;
 			// 1: /var/log/php5 2:php_error.log
+			unset($matches);
 			preg_match("@^(.+$d)(.+)\$@", $logFilename, $matches);
 			$logFilename=$matches[1].self::getProjectName().".log";
 
@@ -861,6 +865,7 @@ Class GbUtil extends Gb
 			$d=DIRECTORY_SEPARATOR;
 			$php_self=$_SERVER["PHP_SELF"];
 			// 1: [////]   2: le répertoire    3: /    4:nomfich.php[/]
+			unset($matches);
 			preg_match("@^($d*)(.*)($d+)(.+$d*)$@", $php_self, $matches);
 			if (isset($matches[2]) && strlen($matches[2]))
 				$sProjectName=str_replace($d, "__", $matches[2]);
@@ -897,7 +902,7 @@ Class GbUtil extends Gb
 
 		$uniqId="";
 		if (isset($_SESSION[$sVarNameUniqId]))	$uniqId=$_SESSION[$sVarNameUniqId];
-		$uniqIdForm=GbUtil::getForm("uniqId");
+		$uniqId=GbUtil::getForm("uniqId");
 		if ( isset($_SESSION[$sVarName]) && $_SESSION[$sVarName]!=$client )
 		{ // session hijacking ? Teste l'IP et l'user agent du client
 			$_SESSION=array();
