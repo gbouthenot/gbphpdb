@@ -106,8 +106,8 @@ Class GbUtil extends Gb
 	public static $html_parse=self::P_HTTP;
 
 	// " et $ ignorés
-	const STR_SRC=  "' !#%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\]^_`abcdefghijklmnopqrstuvwxyz{|}~€?‚ƒ„…†‡ˆ‰Š‹Œ?Ž??‘’“”•–—˜™š›œ?žŸ ¡¢£¤¥¦§¨©ª«¬­®¯°±²³´µ¶·¸¹º»¼½¾¿ÀÁÂÃÄÅÆÇÈÉÊËÌÍÎÏÐÑÒÓÔÕÖ×ØÙÚÛÜÝÞßàáâãäåæçèéêëìíîïðñòóôõö÷øùúûüýþ";
-	const STR_UPPER="' !#%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\]^_`ABCDEFGHIJKLMNOPQRSTUVWXYZ{|}~€?,F,_†‡ˆ%S‹O?Z??''“”.--˜TS›O?ZY IC£¤¥|§¨C2<¬­R¯°±23'UQ.¸10>¼½¾?AAAAAAACEEEEIIIIDNOOOOOXOUUUUYþBAAAAAAACEEEEIIIIONOOOOO/OUUUUYþ";
+	const STR_SRC=  "' !#%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~€?‚ƒ„…†‡ˆ‰Š‹Œ?Ž??‘’“”•–—˜™š›œ?žŸ ¡¢£¤¥¦§¨©ª«¬­®¯°±²³´µ¶·¸¹º»¼½¾¿ÀÁÂÃÄÅÆÇÈÉÊËÌÍÎÏÐÑÒÓÔÕÖ×ØÙÚÛÜÝÞßàáâãäåæçèéêëìíîïðñòóôõö÷øùúûüýþ";
+	const STR_UPPER="' !#%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`ABCDEFGHIJKLMNOPQRSTUVWXYZ{|}~€?,F,_†‡ˆ%S‹O?Z??''“”.--˜TS›O?ZY IC£¤¥|§¨C2<¬­R¯°±23'UQ.¸10>¼½¾?AAAAAAACEEEEIIIIDNOOOOOXOUUUUYþBAAAAAAACEEEEIIIIONOOOOO/OUUUUYþ";
 
 
 	// *****************
@@ -253,8 +253,9 @@ Class GbUtil extends Gb
 	public static function array_merge(array $arr1, array $arr2)
 	{
 		// si arr2 est plus grand, échange arr1 et arr2 pour itérer sur le plus petit
-		if (count($arr2)>count($arr1))
+		if (count($arr2)>count($arr1)) {
 			list($arr1, $arr2)=array($arr2, $arr1);
+		}
 		foreach ($arr2 as $k=>$v)
 			$arr1[$k]=$v;
 		return $arr1;
@@ -266,7 +267,6 @@ Class GbUtil extends Gb
 	 *
 	 * @param string $sText Message à ecrire
 	 * @param string[optional] $sFName Fichier dans lequel ecrire
-	 * @todo errorlevel, filename
 	 */
 	public static function log_file($sText, $sFName="")
 	{
@@ -276,7 +276,7 @@ Class GbUtil extends Gb
 
 
 		if (!is_string($sText))
-			$text=self::dump($sText);
+			$sText=self::dump($sText);
 
 		if (strlen($sFName)==0)
 			$sFName=self::getLogFilename();
@@ -379,8 +379,7 @@ Class GbUtil extends Gb
 				$sLog.=" in $fxname($fxparam) --> $fxreturn";
 			$sLog.=" )\n";
 
-			if ($fd=@fopen($logFilename, "a"))
-			{
+			if ( $fd = @fopen($logFilename, "a") ) {
 				fwrite($fd, $sLog);
 				fclose ($fd);
 			}
@@ -415,7 +414,7 @@ Class GbUtil extends Gb
 			{
 		    $pr=var_export($arg, true);
 		    $pr=preg_replace("/^ +/m", "", $pr);                // enlève les espaces en début de ligne
-		    $pr=preg_replace("/,\n\)/m", ")", $pr);             // remplace les ,) par )
+		    $pr=preg_replace("/,\n\\)/m", ")", $pr);             // remplace les ,) par )
 		    $pr=preg_replace("/,$/m", ", ", $pr);               // remplace "," par ", " en fin de ligne
 		    $pr=str_replace("\n", "", $pr);                     // met tout sur une ligne
 		    $pr=str_replace(" => ", "=>", $pr);                 // enlève les espaces avant et après "=>"
@@ -444,7 +443,7 @@ Class GbUtil extends Gb
 			return self::dump_array($var);
     $pr=var_export($var, true);
     $pr=preg_replace("/^ +/m", "", $pr);                // enlève les espaces en début de ligne
-    $pr=preg_replace("/,\n\)/m", ")", $pr);             // remplace les ,) par )
+    $pr=preg_replace("/,\n\\)/m", ")", $pr);             // remplace les ,) par )
     $pr=preg_replace("/,$/m", ", ", $pr);               // remplace "," par ", " en fin de ligne
     $pr=str_replace("\n", "", $pr);                     // met tout sur une ligne
     $pr=str_replace(" => ", "=>", $pr);                 // enlève les espaces avant et après "=>"
