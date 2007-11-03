@@ -119,7 +119,7 @@ Class Gb_Util
 			self::$debug=0;
 
 		if (is_array($function) || function_exists($function))
-			Gb_Log::log_function(self::LOG_DEBUG, "", $function, $param);
+			Gb_Log::log_function(Gb_Log::LOG_DEBUG, "", $function, $param);
 		else
 			throw new Gb_Exception("function main() does not exist !");
 

@@ -11,7 +11,7 @@ require_once(_GB_PATH."Exception.php");
 require_once(_GB_PATH."Util.php");
 
 
-class Log
+class Gb_Log
 {
     const LOG_EMERG=8;
     const LOG_ALERT=7;
