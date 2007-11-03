@@ -1,6 +1,5 @@
 <?php
 /**
- *
  */
 
 if (!defined("_GB_PATH")) {
@@ -22,6 +21,7 @@ class Gb_Log
     const LOG_NONE=9;
     const LOG_ALL=0;
 
+	public static $logFilename="";		        			// Fichier de log, par défaut error_log/PROJECTNAME.log
     public static $loglevel_footer=self::LOG_DEBUG;
     public static $loglevel_file=self::LOG_WARNING;
     public static $loglevel_showuser=self::LOG_CRIT;
@@ -44,8 +44,27 @@ class Gb_Log
 	private function __construct()
 	{
 	}
-    
+
+
     /**
+     * Renvoit le nom du fichier de log
+     *
+     * @return string logFilename
+     */
+    public static function getLogFilename()
+    {
+        $logFilename=self::$logFilename;
+        if ( $logFilename=="" ) { // met le logFilename sur error_log/{PROJECTNAME}.LOG            $logFilename=ini_get("error_log");
+            $d=DIRECTORY_SEPARATOR;
+            // 1: /var/log/php5 2:php_error.log            unset($matches);
+            preg_match("@^(.+$d)(.+)\$@", $logFilename, $matches);
+            $logFilename=$matches[1].Gb_Util::getProjectName().".log";
+            self::$logFilename=$logFilename;
+        }
+        return $logFilename;
+    }
+	
+	/**
 	 * Loggue dans un fichier
 	 *
 	 * @param string $sText Message à ecrire
@@ -294,5 +313,3 @@ class Gb_Log
     
     
 }
-
-?>
