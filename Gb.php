@@ -4,7 +4,7 @@
  */
 
 if (!defined("_GB_PATH")) {
-	define("_GB_PATH", realpath(dirname(__FILE__).DIRECTORY_SEPARATOR."Gb").DIRECTORY_SEPARATOR);
+	define("_GB_PATH", realpath(dirname(__FILE__).DIRECTORY_SEPARATOR."Gb2alpha1").DIRECTORY_SEPARATOR);
 }
 
 require_once(_GB_PATH."Form.php");
@@ -31,7 +31,7 @@ Class Gb
  */
 Class GbUtil extends Gb
 {
-	const GbUtilVERSION="2alpha";
+	const GbUtilVERSION="2alpha1";
 
 	// pour log
 	const LOG_NONE=9;
