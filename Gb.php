@@ -1,4 +1,7 @@
 <?php
+
+die("Gb.php (Gb 2alpha1) n'est plus supporté");
+
 /**
  *
  */

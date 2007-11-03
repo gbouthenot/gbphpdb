@@ -1,5 +1,15 @@
 <?php
+/**
+ */
 
+if (!defined("_GB_PATH")) {
+        define("_GB_PATH", dirname(__FILE__).DIRECTORY_SEPARATOR);
+}
+
+require_once(_GB_PATH."Db.php");
+require_once(_GB_PATH."Exception.php");
+require_once(_GB_PATH."Log.php");
+require_once(_GB_PATH."String.php");
 
 Class Gb_Form
 {
@@ -619,11 +629,11 @@ Class Gb_Form
 		$db=$this->db;
 		$nb=$db->replace($this->tableName, $aCols, $this->where);
 		if ($nb) {
-			GbUtil::Log(GbUtil::LOG_INFO, "GBFORM->putInDb OK table:{$this->tableName} where:".GbUtil::Dump($this->where)."" );
+			Gb_Log::Log(Gb_Log::LOG_INFO, "GBFORM->putInDb OK table:{$this->tableName} where:".Gb_Log::Dump($this->where)."" );
 			return true;
 		}
 		else {
-			GbUtil::Log(GbUtil::LOG_ERROR, "GBFORM->putInDb Erreur: replace impossible ! table:{$this->tableName} where:".GbUtil::Dump($this->where)." data:".GbUtil::Dump($aCols) );
+			Gb_Log::Log(Gb_Log::LOG_ERROR, "GBFORM->putInDb Erreur: replace impossible ! table:{$this->tableName} where:".Gb_Log::Dump($this->where)." data:".Gb_Log::Dump($aCols) );
 			return false;
 		}
 	}
@@ -670,7 +680,7 @@ Class Gb_Form
 
 			switch ($type) {
 				case "SELECT":
-					$value=strtolower(GbUtil::mystrtoupper(trim($aElement["value"])));
+					$value=strtolower(Gb_String::mystrtoupper(trim($aElement["value"])));
 					// Vérifie que la valeur est bien dans la liste et maj $value
 					if (isset($aElement["args"][$value])) {
 						$value=$aElement["args"][$value][0];
@@ -701,11 +711,11 @@ Class Gb_Form
 				break;
 
 				case "RADIO": case "CHECKBOX":
-					$value=strtolower(GbUtil::mystrtoupper(trim($aElement["value"])));
+					$value=strtolower(Gb_String::mystrtoupper(trim($aElement["value"])));
 					break;
 
 				case "TEXT": case "PASSWORD":
-					$value=strtolower(GbUtil::mystrtoupper(trim($aElement["value"])));
+					$value=strtolower(Gb_String::mystrtoupper(trim($aElement["value"])));
 					if (strlen($value) && isset($aElement["args"]["regexp"])) {
 						$regexp=$aElement["args"]["regexp"];
 						if (!preg_match($regexp, $value)) {

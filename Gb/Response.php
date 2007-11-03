@@ -7,6 +7,7 @@ if (!defined("_GB_PATH")) {
 
 require_once(_GB_PATH."Exception.php");
 require_once(_GB_PATH."Log.php");
+require_once(_GB_PATH."Request.php");
 require_once(_GB_PATH."Util.php");
 
 
@@ -145,7 +146,7 @@ class Gb_Response
 			ob_start("ob_gzhandler");
 
 		error_reporting(E_ERROR);
-		if ( Gb_Util::$debug || (self::getFormGet("debug") &&	!self::$forbidDebug) )
+		if ( Gb_Util::$debug || (Gb_Request::getFormGet("debug") &&	!self::$forbidDebug) )
 		{
 			error_reporting( E_ALL | E_STRICT );
 			Gb_Util::$debug=1;
