@@ -68,7 +68,7 @@ class Gb_Log
 	 * Loggue dans un fichier
 	 *
 	 * @param string $sText Message à ecrire
-	 * @param string[optional] $sFName Fichier dans lequel ecrire, sinon Gb_Util::getLogFilename
+	 * @param string[optional] $sFName Fichier dans lequel ecrire, sinon self::getLogFilename
 	 */
 	public static function log_file($sText, $sFName="")
 	{
@@ -80,7 +80,7 @@ class Gb_Log
 			$sText=self::dump($sText);
 		}
 		if (strlen($sFName)==0) {
-			$sFName=Gb_Util::getLogFilename();
+			$sFName=self::getLogFilename();
 		}
 		if (strlen($sFName)) {
 			$fd=fopen($sFName, "a");
@@ -182,13 +182,13 @@ class Gb_Log
 
 	protected static function writelog($level, $text, $file, $line, $fxname="", $fxparam="", $fxreturn="")
 	{
-		$logFilename=Gb_Util::getLogFilename();
+		$logFilename=self::getLogFilename();
 		if (!is_string($text)) {
 				$text=self::dump($text);
 		}
 
 		$sLevel=self::$aLevels[$level];
-		$timecode=microtime(true)-Gb_Util::$starttime;
+		$timecode=microtime(true)-Gb_Response::$starttime;
 		$timecode=sprintf("%.03f", $timecode);
 		$REMOTE_USER="";          if (isset($_SERVER["REMOTE_USER"]))		       $REMOTE_USER=         $_SERVER["REMOTE_USER"];
 		$REMOTE_ADDR="";          if (isset($_SERVER["REMOTE_ADDR"]))		       $REMOTE_ADDR=         $_SERVER["REMOTE_ADDR"];
@@ -243,7 +243,7 @@ class Gb_Log
 			if (strlen($fxname))
 				$sLog.=" in $fxname($fxparam) --> $fxreturn";
 			$sLog.=" )\n";
-			Gb_Util::$footer.=$sLog;
+			Gb_Response::$footer.=$sLog;
 		}
 
 	}

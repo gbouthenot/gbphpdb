@@ -10,7 +10,7 @@ require_once(_GB_PATH."Exception.php");
 require_once(_GB_PATH."Request.php");
 require_once(_GB_PATH."Util.php");
 
-Class Gb_Cache
+Class Gb_Session
 {
     public static $sessionDir="";						// Répertoire des sessions par défaut session_path/PROJECTNAME/sessions
 

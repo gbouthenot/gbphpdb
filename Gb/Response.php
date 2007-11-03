@@ -49,7 +49,7 @@ class Gb_Response
     const P_XHTML=7;									// après la balise </HTML>
     public static $html_parse=self::P_HTTP;
 
-	private static $starttime=0;
+	public static $starttime=0;
         
     public static function send_headers($fPrint=1)
 	{
@@ -145,13 +145,13 @@ class Gb_Response
 			ob_start("ob_gzhandler");
 
 		error_reporting(E_ERROR);
-		if ( self::$debug || (self::getFormGet("debug") &&	!self::$forbidDebug) )
+		if ( Gb_Util::$debug || (self::getFormGet("debug") &&	!self::$forbidDebug) )
 		{
 			error_reporting( E_ALL | E_STRICT );
-			self::$debug=1;
+			Gb_Util::$debug=1;
 		}
 		else
-			self::$debug=0;
+			Gb_Util::$debug=0;
 
 		if (is_array($function) || function_exists($function))
 			Gb_Log::log_function(Gb_Log::LOG_DEBUG, "", $function, $param);
@@ -159,11 +159,11 @@ class Gb_Response
 			throw new Gb_Exception("function main() does not exist !");
 
 		// Affichage du footer
-		if (self::$debug || self::$show_footer) {
+		if (Gb_Util::$debug || self::$show_footer) {
 			$totaltime=microtime(true)-self::$starttime;
 
 			self::$footer=htmlspecialchars(self::$footer, ENT_QUOTES);
-			self::$footer.=sprintf("Total time: %s s ", self::roundCeil($totaltime));
+			self::$footer.=sprintf("Total time: %s s ", Gb_Util::roundCeil($totaltime));
 
 			if (class_exists("Gb_Db")) {
 				$sqltime=Gb_Db::get_sqlTime();
@@ -191,7 +191,7 @@ class Gb_Response
 
 			if (!self::$noFooterEscape)
 				echo "</span></span></span></div></div></div></div></div></p>";
-			printf("\n<div class='Gb_Util_footer'>\n%s</div>\n", self::$footer);
+			printf("\n<div class='Gb_footer'>\n%s</div>\n", self::$footer);
 		}	// Affichage du footer
 
 		$hp=self::$html_parse;
