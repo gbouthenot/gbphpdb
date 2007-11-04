@@ -25,23 +25,37 @@ Class Gb_Db extends Zend_Db
   protected static $nbInstance_peak=0;						// maximum ouvertes simultanément
   protected static $nbInstance_current=0;					// nom d'instances ouvertes en ce moment
 
+	public function getAdapter()
+	{
+		return $this->conn;
+	}
+	public function getConnection()
+	{
+		return $this->conn->getConnection();
+	}
+
 	/**
 	 * Renvoie une nouvelle connexion
 	 *
 	 * type est le driver à utiliser (MYSQL, OCI8)
 	 *
-	 * @param array("type"=>"MYSQL/OCI8", "host"=>"", "user"=>"", "pass"=>"", "name"=>"") $aIn
+	 * @param array("type"=>"Pdo_Mysql/Pdo_Oci", "host"=>"localhost", "user/username"=>"", "pass/password"=>"", "name/dbname"=>"") $aIn
 	 * @return GbDb
 	 */
 	function __construct(array $aIn)
 	{
 		$time=microtime(true);
 		$user=$pass=$name="";
-		$driver=$aIn["type"];
-		$host=$aIn["host"];
+		$host="localhost";
+		$driver="Pdo_Mysql";
+		if (isset($aIn["type"]))						$driver=$aIn["type"];
+		if (isset($aIn["host"]))						$host=$aIn["host"];
 		if (isset($aIn["user"]))						$user=$aIn["user"];
+		if (isset($aIn["username"]))				$user=$aIn["username"];
 		if (isset($aIn["pass"]))						$pass=$aIn["pass"];
+		if (isset($aIn["password"]))				$pass=$aIn["password"];
 		if (isset($aIn["name"]))						$name=$aIn["name"];
+		if (isset($aIn["dbname"]))					$name=$aIn["dbname"];
 		if     (strtoupper($driver)=="MYSQL")				$driver="Pdo_Mysql";
 		elseif (strtoupper($driver)=="OCI8")				$driver="Pdo_Oci";
 		elseif (strtoupper($driver)=="OCI")					$driver="Pdo_Oci";
@@ -455,11 +469,11 @@ Class Gb_Db extends Zend_Db
 	}
 
 	/**
-	 * Enter description here...
+	 * Renvoie le dernier id inséré
 	 *
 	 * @param string[optional] $tableName
 	 * @param string[optional] $primaryKey
-	 * @return unknown
+	 * @return integer
 	 */
 	public function lastInsertId($tableName=null, $primaryKey=null)
 	{
@@ -470,10 +484,10 @@ Class Gb_Db extends Zend_Db
 	}
 
 	/**
-	 * Renvoit la valeur suivant d'une séquence
+	 * Renvoie la valeur suivante d'une séquence
 	 *
 	 * 	la table doit etre de la forme::
-	 * 	create table seq_sise_numero (id int not null);
+	 * 	create table seq_sise_numero (id int not null) ENGINE = 'MyIsam";
 	 * 	insert into seq_sise_numero values (0);
 	 * 	update seq_sise_numero set id=LAST_INSERT_ID(id+1);
 	 *
@@ -493,7 +507,7 @@ Class Gb_Db extends Zend_Db
 	}
 
 	/**
-	 * Renvoit la valeur courante d'une séquence
+	 * Renvoie la valeur courante d'une séquence
 	 *
 	 * @param string $tableName
 	 * @param string[optionel] $colName
