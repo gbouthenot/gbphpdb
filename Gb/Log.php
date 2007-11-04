@@ -188,7 +188,7 @@ class Gb_Log
 		}
 
 		$sLevel=self::$aLevels[$level];
-		$timecode=microtime(true)-Gb_Response::$starttime;
+		$timecode=microtime(true)-Gb_Util::$starttime;
 		$timecode=sprintf("%.03f", $timecode);
 		$REMOTE_USER="";          if (isset($_SERVER["REMOTE_USER"]))		       $REMOTE_USER=         $_SERVER["REMOTE_USER"];
 		$REMOTE_ADDR="";          if (isset($_SERVER["REMOTE_ADDR"]))		       $REMOTE_ADDR=         $_SERVER["REMOTE_ADDR"];

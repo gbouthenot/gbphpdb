@@ -50,8 +50,6 @@ class Gb_Response
     const P_XHTML=7;									// après la balise </HTML>
     public static $html_parse=self::P_HTTP;
 
-	public static $starttime=0;
-        
     public static function send_headers($fPrint=1)
 	{
 		$head=self::$head;
@@ -129,73 +127,50 @@ class Gb_Response
 	
 
 	/**
-	 * Initialise gzip, error_reporting, APPELLE main(), affiche le footer et quitte
-	 *
-	 * compresse en gzip
-	 * Met error_reporting si debug, ou bien si _GET["debug"] (sauf si forbidDebug)
-	 * Appelle main()
-	 * Si débug (ou showFooter), affiche le footer
-	 *
-	 * @param string[optional] $function fonction à appeler (main si non précisé)
+	 * Envoie le footer
 	 */
-	public static function startup($function="main", $param=array())
+	public static function send_footer()
 	{
-		self::$starttime=microtime(true);
+		$totaltime=microtime(true)-Gb_Util::$starttime;
 
-		if (self::$preventGzip==0)
-			ob_start("ob_gzhandler");
+		self::$footer=htmlspecialchars(self::$footer, ENT_QUOTES);
+		self::$footer.=sprintf("Total time: %s s ", Gb_Util::roundCeil($totaltime));
 
-		error_reporting(E_ERROR);
-		if ( Gb_Util::$debug || (Gb_Request::getFormGet("debug") &&	!self::$forbidDebug) )
-		{
-			error_reporting( E_ALL | E_STRICT );
-			Gb_Util::$debug=1;
+		if (class_exists("Gb_Db")) {
+			$sqltime=Gb_Db::get_sqlTime();
+			$dbpeak=Gb_Db::get_nbInstance_peak();
+			$dbtotal=Gb_Db::get_nbInstance_total();
+			if ($sqltime>0) {
+				$sqlpercent=$sqltime*100/$totaltime;
+				self::$footer.=sprintf("(%.2f%% sql) ", $sqlpercent);
+			}
+			if ($dbtotal>0) {
+				self::$footer.="Gb_Db:{total:$dbtotal peak:$dbpeak} ";
+			}
+			
 		}
-		else
-			Gb_Util::$debug=0;
 
-		if (is_array($function) || function_exists($function))
-			Gb_Log::log_function(Gb_Log::LOG_DEBUG, "", $function, $param);
-		else
-			throw new Gb_Exception("function main() does not exist !");
-
-		// Affichage du footer
-		if (Gb_Util::$debug || self::$show_footer) {
-			$totaltime=microtime(true)-self::$starttime;
-
-			self::$footer=htmlspecialchars(self::$footer, ENT_QUOTES);
-			self::$footer.=sprintf("Total time: %s s ", Gb_Util::roundCeil($totaltime));
-
-			if (class_exists("Gb_Db")) {
-				$sqltime=Gb_Db::get_sqlTime();
-				$dbpeak=Gb_Db::get_nbInstance_peak();
-				$dbtotal=Gb_Db::get_nbInstance_total();
-				if ($sqltime>0) {
-					$sqlpercent=$sqltime*100/$totaltime;
-					self::$footer.=sprintf("(%.2f%% sql) ", $sqlpercent);
-				}
-				if ($dbtotal>0) {
-					self::$footer.="Gb_Db:{total:$dbtotal peak:$dbpeak} ";
-				}
-				
+		if ( class_exists("Gb_Timer") ) {
+			$timetotal=Gb_Timer::get_nbInstance_total();
+			if ($timetotal) {
+				$timepeak=Gb_Timer::get_nbInstance_peak();
+				self::$footer.="Gb_Timer:{total:$timetotal peak:$timepeak} ";
 			}
+		}
+			
+		self::$footer.="\n";
 
-			if ( class_exists("Gb_Timer") ) {
-				$timetotal=Gb_Timer::get_nbInstance_total();
-				if ($timetotal) {
-					$timepeak=Gb_Timer::get_nbInstance_peak();
-					self::$footer.="Gb_Timer:{total:$timetotal peak:$timepeak} ";
-				}
-			}
-				
-			self::$footer.="\n";
+		if (!self::$noFooterEscape)
+			echo "</span></span></span></div></div></div></div></div></p>";
+		printf("\n<div class='Gb_footer'>\n%s</div>\n", self::$footer);
+	}
 
-			if (!self::$noFooterEscape)
-				echo "</span></span></span></div></div></div></div></div></p>";
-			printf("\n<div class='Gb_footer'>\n%s</div>\n", self::$footer);
-		}	// Affichage du footer
-
-		$hp=self::$html_parse;
+    /**
+     * Ferme les tags body, html
+     */
+	public static function close_page()
+    {
+	    $hp=self::$html_parse;
 		if ($hp>=self::P_HTML && !self::$nologo)
 			printf("<!-- built with Gb_Util v%s -->\n", self::Gb_UtilVERSION);
 		elseif (!self::$nologo)
@@ -207,7 +182,6 @@ class Gb_Response
 			print "</html>\n";
 
 		self::$html_parse=self::P_XHTML;
-		exit(0);
 	}
 	
     

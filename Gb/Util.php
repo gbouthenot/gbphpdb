@@ -8,6 +8,7 @@ if (!defined("_GB_PATH")) {
 }
 
 require_once(_GB_PATH."Exception.php");
+require_once(_GB_PATH."Request.php");
 require_once(_GB_PATH."Response.php");
 
 /**
@@ -29,8 +30,8 @@ Class Gb_Util
 	public static $projectName="";			// Nom du projet
 	public static $debug=0;                 // par défaut, pas de mode débug
 	public static $forbidDebug=0;           // ne pas interdire de passer en débug par $_GET["debug"]
-
-
+	public static $starttime=0;
+	
 
 
 	/**
@@ -43,13 +44,42 @@ Class Gb_Util
 
 	/**
 	 * Initialise gzip, error_reporting, APPELLE main(), affiche le footer et quitte
-	 * @deprecated utiliser Gb_Response::startup
+	 *
+	 * Met error_reporting si debug, ou bien si _GET["debug"] (sauf si forbidDebug)
+	 * Appelle main()
+	 * Si débug (ou showFooter), affiche le footer
+	 *
+	 * @param string[optional] $function fonction à appeler (main si non précisé)
 	 */
 	public static function startup($function="main", $param=array())
 	{
-        Gb_Response::startup($function, $param);
-	}
+		self::$starttime=microtime(true);
 
+		if (Gb_Response::$preventGzip==0)
+			ob_start("ob_gzhandler");
+
+		error_reporting(E_ERROR);
+		if ( Gb_Util::$debug || (Gb_Request::getFormGet("debug") &&	!self::$forbidDebug) )
+		{
+			error_reporting( E_ALL | E_STRICT );
+			Gb_Util::$debug=1;
+		}
+		else
+			Gb_Util::$debug=0;
+
+		if (is_array($function) || function_exists($function))
+			Gb_Log::log_function(Gb_Log::LOG_DEBUG, "", $function, $param);
+		else
+			throw new Gb_Exception("function main() does not exist !");
+
+       	if (Gb_Util::$debug || Gb_Response::$show_footer) {
+			Gb_Response::send_footer();
+       	}
+       	
+       	Gb_Response::close_page();
+		exit(0);
+	}
+	
 
 	/**
 	 * Combine deux arrays
