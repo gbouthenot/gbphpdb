@@ -15,74 +15,84 @@ require_once("Zend/Db.php");
  */
 Class Gb_Db extends Zend_Db
 {
-	/**
-	 * @var Zend_Db_Adapter_Abstract
-	 */
-	protected $conn;
+    /**
+     * @var Zend_Db_Adapter_Abstract
+     */
+    protected $conn;
+    protected $driver;      							     // Pdo_Mysql ou Pdo_Oci
+    protected $dbname;
+    protected $tablesDesc;
+	
+    protected static $sqlTime=0;
+    protected static $nbInstance_total=0;                    // Nombre de classes gbdb ouvertes au total
+    protected static $nbInstance_peak=0;                     // maximum ouvertes simultanément
+    protected static $nbInstance_current=0;                  // nom d'instances ouvertes en ce moment
 
-  protected static $sqlTime=0;
-  protected static $nbInstance_total=0;						// Nombre de classes gbdb ouvertes au total
-  protected static $nbInstance_peak=0;						// maximum ouvertes simultanément
-  protected static $nbInstance_current=0;					// nom d'instances ouvertes en ce moment
+    public function getAdapter()
+    {
+        return $this->conn;
+    }
 
-	public function getAdapter()
-	{
-		return $this->conn;
-	}
-	public function getConnection()
-	{
-		return $this->conn->getConnection();
-	}
+    public function getConnection()
+    {
+        return $this->conn->getConnection();
+    }
 
-	/**
-	 * Renvoie une nouvelle connexion
-	 *
-	 * type est le driver à utiliser (MYSQL, OCI8)
-	 *
-	 * @param array("type"=>"Pdo_Mysql/Pdo_Oci", "host"=>"localhost", "user/username"=>"", "pass/password"=>"", "name/dbname"=>"") $aIn
-	 * @return GbDb
-	 */
-	function __construct(array $aIn)
-	{
-		$time=microtime(true);
-		$user=$pass=$name="";
-		$host="localhost";
-		$driver="Pdo_Mysql";
-		if (isset($aIn["type"]))						$driver=$aIn["type"];
-		if (isset($aIn["host"]))						$host=$aIn["host"];
-		if (isset($aIn["user"]))						$user=$aIn["user"];
-		if (isset($aIn["username"]))				$user=$aIn["username"];
-		if (isset($aIn["pass"]))						$pass=$aIn["pass"];
-		if (isset($aIn["password"]))				$pass=$aIn["password"];
-		if (isset($aIn["name"]))						$name=$aIn["name"];
-		if (isset($aIn["dbname"]))					$name=$aIn["dbname"];
-		if     (strtoupper($driver)=="MYSQL")				$driver="Pdo_Mysql";
-		elseif (strtoupper($driver)=="OCI8")				$driver="Pdo_Oci";
-		elseif (strtoupper($driver)=="OCI")					$driver="Pdo_Oci";
-		elseif (strtoupper($driver)=="PDO_OCI")			$driver="Pdo_Oci";
-		elseif (strtoupper($driver)=="PDO_MYSQL")		$driver="Pdo_Mysql";
-		elseif (strtoupper($driver)=="MYSQLI")			$driver="Pdo_Mysql";
-		elseif (strtoupper($driver)=="ORACLE")			$driver="Pdo_Oci";
+    /**
+     * Renvoie une nouvelle connexion
+     *
+     * type est le driver à utiliser (MYSQL, OCI8)
+     *
+     * @param array("type"=>"Pdo_Mysql/Pdo_Oci", "host"=>"localhost", "user/username"=>"", "pass/password"=>"", "name/dbname"=>"") $aIn
+     * @return GbDb
+     */
+    function __construct(array $aIn)
+    {
+        $time=microtime(true);
+        $user=$pass=$name="";
+        $host="";
+        $driver="Pdo_Mysql";
+        if (isset($aIn["type"]))                    $driver=$aIn["type"];
+        if (isset($aIn["host"]))                    $host=$aIn["host"];
+        if (isset($aIn["user"]))                    $user=$aIn["user"];
+        if (isset($aIn["username"]))                $user=$aIn["username"];
+        if (isset($aIn["pass"]))                    $pass=$aIn["pass"];
+        if (isset($aIn["password"]))                $pass=$aIn["password"];
+        if (isset($aIn["name"]))                    $name=$aIn["name"];
+        if (isset($aIn["dbname"]))                  $name=$aIn["dbname"];
+        if     (strtoupper($driver)=="MYSQL")       $driver="Pdo_Mysql";
+        elseif (strtoupper($driver)=="OCI8")        $driver="Pdo_Oci";
+        elseif (strtoupper($driver)=="OCI")         $driver="Pdo_Oci";
+        elseif (strtoupper($driver)=="PDO_OCI")     $driver="Pdo_Oci";
+        elseif (strtoupper($driver)=="PDO_MYSQL")   $driver="Pdo_Mysql";
+        elseif (strtoupper($driver)=="MYSQLI")      $driver="Pdo_Mysql";
+        elseif (strtoupper($driver)=="ORACLE")      $driver="Pdo_Oci";
 
-		try
-		{
-			$this->conn=Zend_Db::factory($driver, array("host"=>$host, "username"=>$user, "password"=>$pass, "dbname"=>$name));
-			$conn=$this->conn->getConnection();
-			if ($driver=="Pdo_Oci")
-			{
-				$conn->exec("ALTER SESSION SET NLS_DATE_FORMAT = 'YYYY-MM-DD HH24:MI:SS'");
-			}
-		} catch (Exception $e)
-		{
-			self::$sqlTime+=microtime(true)-$time;
-			throw new Gb_Exception($e->getMessage());
-		}
+        $array=array("username"=>$user, "password"=>$pass, "dbname"=>$name);
+        if (strlen($host)) {
+            $array["host"]=$host;
+        }
 
-		self::$nbInstance_total++;
-		self::$nbInstance_current++;
-		self::$nbInstance_peak=max(self::$nbInstance_peak, self::$nbInstance_current);
-		self::$sqlTime+=microtime(true)-$time;
-	}
+        try
+        {
+            $this->conn=Zend_Db::factory($driver, $array);
+            $conn=$this->conn->getConnection();
+            if ($driver=="Pdo_Oci") {
+                $conn->exec("ALTER SESSION SET NLS_DATE_FORMAT = 'YYYY-MM-DD HH24:MI:SS'");
+            }
+        } catch (Exception $e) {
+            self::$sqlTime+=microtime(true)-$time;
+            throw new Gb_Exception($e->getMessage());
+        }
+
+        self::$nbInstance_total++;
+        self::$nbInstance_current++;
+        self::$nbInstance_peak=max(self::$nbInstance_peak, self::$nbInstance_current);
+        self::$sqlTime+=microtime(true)-$time;
+
+        $this->driver=$driver;
+        $this->dbname=$name;
+    }
 
 	function __destruct()
 	{
@@ -108,6 +118,84 @@ Class Gb_Db extends Zend_Db
 		return self::$sqlTime;
 	}
 
+	
+    public function getTablesDesc()
+    {
+        if ($this->tablesDesc==null) {
+            $sql="";
+            switch($this->driver) {
+                case "Pdo_Oci":
+                    $sql_getTablesName="
+                        SELECT OWNER || '.' || TABLE_NAME AS \"FULL_NAME\"
+                        FROM ALL_TABLES
+                        WHERE table_name NOT LIKE '%$%' AND TABLE_NAME='USAGER'";
+                    $sql_getColumns="
+                        SELECT COLUMN_NAME, DATA_TYPE AS \"TYPE\", NULLABLE, '' AS \"COMMENT\"
+                        FROM ALL_TAB_COLUMNS
+                        WHERE OWNER=? AND TABLE_NAME=?
+                        ORDER BY COLUMN_ID";
+                    $sql_getPK="
+                        SELECT COLUMN_NAME
+                        FROM all_constraints allcons, all_cons_columns allcols
+                        WHERE allcons.OWNER=? AND allcons.TABLE_NAME=?
+                        AND CONSTRAINT_TYPE='P'
+                        AND allcons.CONSTRAINT_NAME=allcols.CONSTRAINT_NAME
+                        ORDER BY position";
+                    $sql_getFKs="
+                        SELECT cols_src.COLUMN_NAME AS \"COLUMN_NAME\", cols_dst.TABLE_NAME || '.' || cols_dst.COLUMN_NAME AS \"FULL_NAME\"
+                        FROM all_constraints cons_src, all_cons_columns cols_src, all_cons_columns cols_dst
+                        WHERE cons_src.owner=? AND cons_src.table_name=?
+                        AND cons_src.constraint_type='R'
+                        AND cons_src.constraint_name=cols_src.constraint_name
+                        AND cols_dst.constraint_name=cons_src.r_constraint_name
+                        ORDER BY cols_dst.position";
+                break;
+
+                case "Pdo_Mysql":
+                    $sql_getTablesName="
+                        SELECT CONCAT(TABLE_SCHEMA, '.', TABLE_NAME) AS 'FULL_NAME'
+                        FROM information_schema.tables
+                        WHERE TABLE_SCHEMA<>'information_schema'
+                        AND TABLE_SCHEMA<>'mysql'
+                        ORDER BY TABLE_SCHEMA, TABLE_NAME";
+                    $sql_getColumns=   "
+                        SELECT COLUMN_NAME, COLUMN_TYPE AS 'TYPE', IS_NULLABLE AS 'NULLABLE', COLUMN_COMMENT AS 'COMMENT'
+                        FROM information_schema.columns
+                        WHERE TABLE_SCHEMA=? AND TABLE_NAME=?
+                        ORDER BY ORDINAL_POSITION";
+                    $sql_getPK="
+                        SELECT COLUMN_NAME
+                        FROM information_schema.key_column_usage
+                        WHERE TABLE_SCHEMA=?
+                        AND TABLE_NAME=?
+                        AND CONSTRAINT_NAME='PRIMARY'
+                        ORDER BY ORDINAL_POSITION";
+                    $sql_getFKs="
+                        SELECT kcu.COLUMN_NAME, CONCAT(kcu.REFERENCED_TABLE_NAME, '.', kcu.REFERENCED_COLUMN_NAME) AS 'FULL_NAME'
+                        FROM information_schema.key_column_usage kcu
+                        JOIN information_schema.TABLE_CONSTRAINTS tc
+                        ON CONSTRAINT_TYPE='FOREIGN KEY'
+                        AND kcu.CONSTRAINT_NAME=tc.CONSTRAINT_NAME
+                        AND kcu.TABLE_NAME=tc.TABLE_NAME
+                        AND kcu.TABLE_SCHEMA=tc.TABLE_SCHEMA
+                        WHERE kcu.TABLE_SCHEMA=?
+                        AND kcu.TABLE_NAME=?
+                        ORDER BY ORDINAL_POSITION";
+                break;
+            }
+
+            $aTablesDesc=$this->retrieve_all($sql_getTablesName, array(), "", "FULL_NAME");
+            foreach ($aTablesDesc as $table) {
+                $pos=strpos($table, ".");
+                $towner=substr($table, 0, $pos);
+                $tname=substr($table, $pos+1);
+                $this->tablesDesc[$table]["columns"]=$this->retrieve_all($sql_getColumns, array($towner, $tname), "COLUMN_NAME", ""           );
+                $this->tablesDesc[$table]["pk"]=     $this->retrieve_all($sql_getPK,      array($towner, $tname), "",            "COLUMN_NAME");
+                $this->tablesDesc[$table]["fks"]=    $this->retrieve_all($sql_getFKs,     array($towner, $tname), "COLUMN_NAME", "FULL_NAME"  );
+            }
+        }
+        return $this->tablesDesc;
+    }
 
 	function fetchAll($a, $b)
 	{
@@ -232,7 +320,7 @@ Class Gb_Db extends Zend_Db
 			return $ret;
 		} catch (Exception $e){
 			self::$sqlTime+=microtime(true)-$time;
-			throw new Gb_Exception($e);
+			throw new Gb_Exception($e->getMessage());
 		}
 
 	}
@@ -282,7 +370,7 @@ Class Gb_Db extends Zend_Db
 			return $ret;
 		} catch (Exception $e){
 			self::$sqlTime+=microtime(true)-$time;
-			throw new Gb_Exception($e);
+			throw new Gb_Exception($e->getMessage());
 		}
 	}
 
@@ -408,7 +496,7 @@ Class Gb_Db extends Zend_Db
 		} catch (Exception $e)
 		{
 			self::$sqlTime+=microtime(true)-$time;
-			throw new Gb_Exception($e);
+			throw new Gb_Exception($e->getMessage());
 		}
 	}
 
