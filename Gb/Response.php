@@ -172,9 +172,9 @@ class Gb_Response
     {
 	    $hp=self::$html_parse;
 		if ($hp>=self::P_HTML && !self::$nologo)
-			printf("<!-- built with Gb_Util v%s -->\n", self::Gb_UtilVERSION);
+			printf("<!-- built with Gb_Util v%s -->\n", Gb_Util::Gb_UtilVERSION);
 		elseif (!self::$nologo)
-			printf("built with Gb_Util v%s\n", self::Gb_UtilVERSION);
+			printf("built with Gb_Util v%s\n", Gb_Util::Gb_UtilVERSION);
 
 		if ($hp>=self::P_BODY && $hp<self::P_XBODY)
 			print "</body>\n";

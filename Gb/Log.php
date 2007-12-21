@@ -58,7 +58,11 @@ class Gb_Log
             $d=DIRECTORY_SEPARATOR;
             // 1: /var/log/php5 2:php_error.log            unset($matches);
             preg_match("@^(.+$d)(.+)\$@", $logFilename, $matches);
-            $logFilename=$matches[1].Gb_Util::getProjectName().".log";
+            if (isset($matches[1])) { 
+                $logFilename=$matches[1].Gb_Util::getProjectName().".log";
+            } else {
+                $logFilename=Gb_Util::getProjectName().".log";
+            }
             self::$logFilename=$logFilename;
         }
         return $logFilename;

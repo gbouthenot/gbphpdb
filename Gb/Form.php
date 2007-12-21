@@ -320,7 +320,7 @@ Class Gb_Form
 				if ($value==$radioValue)
 					$sValue=" checked='checked'";
 				$html=$aElement["inInput"];
-				$ret.="<input type='radio' class='radio' name='GBFORM_$nom' value='$radioValue' $sValue $html onchange='javascript:validate_GBFORM_$nom();' onkeyup='javascript:validate_GBFORM_$nom();' />\n";
+				$ret.="<input type='radio' class='radio' id='GBFORM_$nom' name='GBFORM_$nom' value='$radioValue' $sValue $html onchange='javascript:validate_GBFORM_$nom();' onkeyup='javascript:validate_GBFORM_$nom();' />\n";
 				break;
 
 			default:
