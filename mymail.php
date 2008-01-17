@@ -1,8 +1,18 @@
 <?php
 
-function mymail($to, $sujet, $body, $from)
+/**
+ * Envoit un mail en utilisant le smtp local
+ *
+ * @param string $to destinataires, séparés par virgule
+ * @param string $sujet
+ * @param string $body
+ * @param string $from
+ * @param string[optional] $bccdestinataires, séparés par virgule
+ */
+function mymail($to, $sujet, $body, $from, $bcc="")
 {
 	$aTo=explode(",", $to);
+	$aBcc=explode(",", $bcc);
 	$from=str_ireplace("From: ", "", $from);
 
 	$mail=new PHPMailer();
@@ -13,6 +23,8 @@ function mymail($to, $sujet, $body, $from)
 	$mail->FromName=substr($from, 0, strpos($from, "@"));
 	foreach ($aTo as $to)
 		$mail->AddAddress($to);
+	foreach ($aBcc as $to)
+		$mail->AddBCC($to);
 
 	$mail->Body=$body;
 	$mail->Subject=$sujet;

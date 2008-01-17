@@ -20,6 +20,7 @@ Class Gb_Db extends Zend_Db
     protected $conn;
     protected $driver;      							     // Pdo_Mysql ou Pdo_Oci
     protected $dbname;
+    protected $tables;
     protected $tablesDesc;
 	
     protected static $sqlTime=0;
@@ -117,38 +118,17 @@ Class Gb_Db extends Zend_Db
 		return self::$sqlTime;
 	}
 
-	
-    public function getTablesDesc()
-    {
-        if ($this->tablesDesc==null) {
+	public function getTables()
+	{
+        if ($this->tables==null) {
             $sql="";
             switch($this->driver) {
                 case "Pdo_Oci":
                     $sql_getTablesName="
                         SELECT OWNER || '.' || TABLE_NAME AS \"FULL_NAME\"
                         FROM ALL_TABLES
-                        WHERE table_name NOT LIKE '%$%' AND TABLE_NAME='USAGER'
+                        WHERE table_name NOT LIKE '%$%'
                         ORDER BY OWNER, TABLE_NAME";
-                    $sql_getColumns="
-                        SELECT COLUMN_NAME, DATA_TYPE AS \"TYPE\", NULLABLE, '' AS \"COMMENT\"
-                        FROM ALL_TAB_COLUMNS
-                        WHERE OWNER=? AND TABLE_NAME=?
-                        ORDER BY COLUMN_ID";
-                    $sql_getPK="
-                        SELECT COLUMN_NAME
-                        FROM all_constraints allcons, all_cons_columns allcols
-                        WHERE allcons.OWNER=? AND allcons.TABLE_NAME=?
-                              AND CONSTRAINT_TYPE='P'
-                              AND allcons.CONSTRAINT_NAME=allcols.CONSTRAINT_NAME
-                        ORDER BY position";
-                    $sql_getFKs="
-                        SELECT cols_src.COLUMN_NAME AS \"COLUMN_NAME\", cols_dst.TABLE_NAME || '.' || cols_dst.COLUMN_NAME AS \"FULL_NAME\"
-                        FROM all_constraints cons_src
-                        LEFT JOIN all_cons_columns cols_src ON (cols_src.constraint_name=cons_src.constraint_name)
-                        LEFT JOIN all_cons_columns cols_dst ON (cols_dst.constraint_name=cons_src.r_constraint_name)
-                        WHERE cons_src.owner=? AND cons_src.table_name=?
-                              AND cons_src.constraint_type='R'
-                        ORDER BY cols_dst.position";
                 break;
 
                 case "Pdo_Mysql":
@@ -157,41 +137,78 @@ Class Gb_Db extends Zend_Db
                         FROM information_schema.tables
                         WHERE TABLE_SCHEMA<>'information_schema' AND TABLE_SCHEMA<>'mysql'
                         ORDER BY TABLE_SCHEMA, TABLE_NAME";
-                    $sql_getColumns=   "
-                        SELECT COLUMN_NAME, COLUMN_TYPE AS 'TYPE', IS_NULLABLE AS 'NULLABLE', COLUMN_COMMENT AS 'COMMENT'
-                        FROM information_schema.columns
-                        WHERE TABLE_SCHEMA=? AND TABLE_NAME=?
-                        ORDER BY ORDINAL_POSITION";
-                    $sql_getPK="
-                        SELECT COLUMN_NAME
-                        FROM information_schema.key_column_usage
-                        WHERE TABLE_SCHEMA=? AND TABLE_NAME=?
-                              AND CONSTRAINT_NAME='PRIMARY'
-                        ORDER BY ORDINAL_POSITION";
-                    $sql_getFKs="
-                        SELECT kcu.COLUMN_NAME, CONCAT(kcu.REFERENCED_TABLE_NAME, '.', kcu.REFERENCED_COLUMN_NAME) AS 'FULL_NAME'
-                        FROM information_schema.key_column_usage kcu
-                        JOIN information_schema.TABLE_CONSTRAINTS tc
-                             ON CONSTRAINT_TYPE='FOREIGN KEY'
-                             AND kcu.CONSTRAINT_NAME=tc.CONSTRAINT_NAME
-                             AND kcu.TABLE_NAME=tc.TABLE_NAME
-                             AND kcu.TABLE_SCHEMA=tc.TABLE_SCHEMA
-                        WHERE kcu.TABLE_SCHEMA=? AND kcu.TABLE_NAME=?
-                        ORDER BY ORDINAL_POSITION";
                 break;
             }
 
-            $aTablesDesc=$this->retrieve_all($sql_getTablesName, array(), "", "FULL_NAME");
-            foreach ($aTablesDesc as $table) {
-                $pos=strpos($table, ".");
-                $towner=substr($table, 0, $pos);
-                $tname=substr($table, $pos+1);
-                $this->tablesDesc[$table]["columns"]=$this->retrieve_all($sql_getColumns, array($towner, $tname), "COLUMN_NAME", ""           );
-                $this->tablesDesc[$table]["pk"]=     $this->retrieve_all($sql_getPK,      array($towner, $tname), "",            "COLUMN_NAME");
-                $this->tablesDesc[$table]["fks"]=    $this->retrieve_all($sql_getFKs,     array($towner, $tname), "COLUMN_NAME", "FULL_NAME"  );
-            }
+            $this->tables=$this->retrieve_all($sql_getTablesName, array(), "", "FULL_NAME");
         }
-        return $this->tablesDesc;
+        return $this->tables;
+	}
+	
+    public function getTableDesc($table)
+    {
+        switch($this->driver) {
+            case "Pdo_Oci":
+                $sql_getColumns="
+                    SELECT COLUMN_NAME, DATA_TYPE AS \"TYPE\", NULLABLE, '' AS \"COMMENT\"
+                    FROM ALL_TAB_COLUMNS
+                    WHERE OWNER=? AND TABLE_NAME=?
+                    ORDER BY COLUMN_ID";
+                $sql_getPK="
+                    SELECT COLUMN_NAME
+                    FROM all_constraints allcons, all_cons_columns allcols
+                    WHERE allcons.OWNER=? AND allcons.TABLE_NAME=?
+                          AND CONSTRAINT_TYPE='P'
+                          AND allcons.CONSTRAINT_NAME=allcols.CONSTRAINT_NAME
+                    ORDER BY position";
+                $sql_getFKs="
+                    SELECT cols_src.COLUMN_NAME AS \"COLUMN_NAME\", cols_dst.TABLE_NAME || '.' || cols_dst.COLUMN_NAME AS \"FULL_NAME\"
+                    FROM all_constraints cons_src
+                    LEFT JOIN all_cons_columns cols_src ON (cols_src.constraint_name=cons_src.constraint_name)
+                    LEFT JOIN all_cons_columns cols_dst ON (cols_dst.constraint_name=cons_src.r_constraint_name)
+                    WHERE cons_src.owner=? AND cons_src.table_name=?
+                          AND cons_src.constraint_type='R'
+                    ORDER BY cols_dst.position";
+            break;
+
+            case "Pdo_Mysql":
+                $sql_getColumns=   "
+                    SELECT COLUMN_NAME, COLUMN_TYPE AS 'TYPE', IS_NULLABLE AS 'NULLABLE', COLUMN_COMMENT AS 'COMMENT'
+                    FROM information_schema.columns
+                    WHERE TABLE_SCHEMA=? AND TABLE_NAME=?
+                    ORDER BY ORDINAL_POSITION";
+                $sql_getPK="
+                    SELECT COLUMN_NAME
+                    FROM information_schema.key_column_usage
+                    WHERE TABLE_SCHEMA=? AND TABLE_NAME=?
+                          AND CONSTRAINT_NAME='PRIMARY'
+                    ORDER BY ORDINAL_POSITION";
+                $sql_getFKs="
+                    SELECT kcu.COLUMN_NAME, CONCAT(kcu.REFERENCED_TABLE_NAME, '.', kcu.REFERENCED_COLUMN_NAME) AS 'FULL_NAME'
+                    FROM information_schema.key_column_usage kcu
+                    JOIN information_schema.TABLE_CONSTRAINTS tc
+                         ON CONSTRAINT_TYPE='FOREIGN KEY'
+                         AND kcu.CONSTRAINT_NAME=tc.CONSTRAINT_NAME
+                         AND kcu.TABLE_NAME=tc.TABLE_NAME
+                         AND kcu.TABLE_SCHEMA=tc.TABLE_SCHEMA
+                    WHERE kcu.TABLE_SCHEMA=? AND kcu.TABLE_NAME=?
+                    ORDER BY ORDINAL_POSITION";
+            break;
+        }
+
+        $pos=strpos($table, ".");
+        $towner=substr($table, 0, $pos);
+        $tname=substr($table, $pos+1);
+/*        $desc["columns"]=$this->retrieve_all($sql_getColumns, array($towner, $tname), "COLUMN_NAME", ""           );
+        $desc["pk"]=     $this->retrieve_all($sql_getPK,      array($towner, $tname), "",            "COLUMN_NAME");
+        $desc["fks"]=    $this->retrieve_all($sql_getFKs,     array($towner, $tname), "COLUMN_NAME", "FULL_NAME"  );
+*/
+        $desc["columns"]=$this->retrieve_all($sql_getColumns, array($towner, $tname));
+        $desc["pk"]=     $this->retrieve_all($sql_getPK,      array($towner, $tname));
+        $desc["fks"]=    $this->retrieve_all($sql_getFKs,     array($towner, $tname));
+        
+        
+        return $desc;
     }
 
     function fetchAll($a, $b)
@@ -397,7 +414,7 @@ Class Gb_Db extends Zend_Db
      *
      * @param string $table
      * @param array $data array("col"=>"val", "col2"=>new Zend_Db_Expr("NOW()"), ...)
-     * @param array[optional] $where array("col='val'", ...)
+     * @param array[optional] $where array("col='val'", $db->quoteInto("usr_id=?", $usr_id), ...)
      * @return int nombre de lignes modifiées
      */
     public function update($table, array $data, array $where=array())
@@ -442,10 +459,9 @@ Class Gb_Db extends Zend_Db
      * Regarde Combien de lignes correspondant à $where existe dans la table $data
      * 0?: insére nouvelle ligne. 1?: met à jour la ligne. 2+: Throws exception
      *
-     *
      * @param string $table Table à mettre à jour
      * @param array $data array("col"=>"val", "col2"=>new Zend_Db_Expr("NOW()"), ...)
-     * @param array[optional] $where array("col='val'", ...)
+     * @param array[optional] $where array("col='val'", $db->quoteInto("usr_id=?", $usr_id), ...)
      * @throws Gb_Exception
      */
     public function replace($table, array $data, array $where)
