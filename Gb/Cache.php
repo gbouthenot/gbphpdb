@@ -33,8 +33,9 @@ Class Gb_Cache
                 @mkdir($updir3, 0700);
             if ( !is_dir($updir3)||!is_writable($updir3) )
                 throw new Gb_Exception("Impossible de créer le répertoire $updir3 pour stocker le cache !");
+            self::$cacheDir=$updir3;
         }
-        return $cacheDir;
+        return self::$cacheDir;
     }
 	
 }
