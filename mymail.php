@@ -21,10 +21,18 @@ function mymail($to, $sujet, $body, $from, $bcc="")
 
 	$mail->From=$from;
 	$mail->FromName=substr($from, 0, strpos($from, "@"));
-	foreach ($aTo as $to)
-		$mail->AddAddress($to);
-	foreach ($aBcc as $to)
-		$mail->AddBCC($to);
+
+	foreach ($aTo as $to) {
+                                            if (strlen($to)) {
+                      		$mail->AddAddress($to);
+                                            }
+                      }
+
+	foreach ($aBcc as $to) {
+                                            if (strlen($to)) {
+                      		$mail->AddBCC($to);
+                                            }
+                      }
 
 	$mail->Body=$body;
 	$mail->Subject=$sujet;
