@@ -71,7 +71,7 @@ Class Gb_Form
 	 */
 	public function addElement($nom, array $aParams)
 	{
-		// $aParams["type"]="SELECT" "SELECTMULTIPLE" "TEXT" "PASSWORD" "RADIO" "CHECKBOX"
+		// $aParams["type"]="SELECT" "SELECTMULTIPLE" "TEXT" "PASSWORD" "RADIO" "CHECKBOX" "TEXTAREA"
 		// $aParams["args"]        : array["default"]=array(value=>libelle) (value est recodé dans le html mais renvoie la bonne valeur)
 		// $aParams["dbCol"]       : optionnel: nom de la colonne
 		// $aParams["fMandatory"]  : doit être rempli ? défaut: false
@@ -141,7 +141,7 @@ Class Gb_Form
 				$this->formElements[$nom]=$aParams;
 				break;
 
-			case "TEXT":
+			case "TEXT": case "TEXTAREA":
 				if (isset($aParams["args"]["regexp"])){
 					$regexp=&$aParams["args"]["regexp"];
 					if (isset($this->_commonRegex[$regexp])) {
@@ -300,7 +300,15 @@ Class Gb_Form
 				$ret.=$aElement["preInput"];
 				$html=$aElement["inInput"];
 				$sValue=htmlspecialchars($value, ENT_QUOTES);
-				$ret.="<input type='text' class='text' id='GBFORM_$nom' name='GBFORM_$nom' $html value='$sValue' onchange='javascript:validate_GBFORM_$nom();' onkeyup='javascript:validate_GBFORM_$nom();' />\n";
+				$ret.="<input type='".strtolower($type)."' class='text' id='GBFORM_$nom' name='GBFORM_$nom' $html value='$sValue' onchange='javascript:validate_GBFORM_$nom();' onkeyup='javascript:validate_GBFORM_$nom();' />\n";
+				break;
+
+			case "TEXTAREA":
+				$ret.="<div id='GBFORM_${nom}_div' class='$class'>\n";
+				$ret.=$aElement["preInput"];
+				$html=$aElement["inInput"];
+				$sValue=htmlspecialchars($value, ENT_QUOTES);
+				$ret.="<textarea class='textarea' id='GBFORM_$nom' name='GBFORM_$nom' $html onchange='javascript:validate_GBFORM_$nom();' onkeyup='javascript:validate_GBFORM_$nom();'>$sValue</textarea>\n";
 				break;
 
 			case "CHECKBOX":
@@ -435,7 +443,7 @@ Class Gb_Form
 				}
 				break;
 
-			case "TEXT": case "PASSWORD":
+			case "TEXT": case "PASSWORD": case "TEXTAREA":
 				$ret.="	\$('GBFORM_{$nom}_div').className='{$aElement["classOK"]}';\n";
 				// attention utilise prototype String.strip()
 				$ret.="var value=remove_accents(\$F('GBFORM_$nom').strip());\n";
@@ -714,7 +722,7 @@ Class Gb_Form
 					$value=strtolower(Gb_String::mystrtoupper(trim($aElement["value"])));
 					break;
 
-				case "TEXT": case "PASSWORD":
+				case "TEXT": case "PASSWORD": case "TEXTAREA":
 					$value=strtolower(Gb_String::mystrtoupper(trim($aElement["value"])));
 					if (strlen($value) && isset($aElement["args"]["regexp"])) {
 						$regexp=$aElement["args"]["regexp"];
@@ -798,6 +806,7 @@ Class Gb_Form
 				if ( ($type=="SELECT" && $value===false) || (($type!="SELECT" && $type!="SELECTMULTIPLE") && strlen($value)==0) ) {
 					if ($type=="SELECT")	$aErrs[$nom]="Aucun choix sélectionné";
 					elseif ($type=="TEXT")	$aErrs[$nom]="Valeur non renseignée";
+					elseif ($type=="TEXTAREA")	$aErrs[$nom]="Texte non renseigné";
 					elseif ($type=="CHECKBOX")	$aErrs[$nom]="Case non cochée";
 					elseif ($type=="RADIO")	$aErrs[$nom]="?";
 					elseif ($type=="PASSWORD")	$aErrs[$nom]="Mot de passe vide";
