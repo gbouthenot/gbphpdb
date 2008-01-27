@@ -184,7 +184,18 @@ class Gb_Log
 	
 	
 
-	protected static function writelog($level, $text, $file, $line, $fxname="", $fxparam="", $fxreturn="")
+    /**
+     * Fonction privée, appelée par Gb_Log et Gb_Timer
+     *
+     * @param unknown_type $level
+     * @param unknown_type $text
+     * @param unknown_type $file
+     * @param unknown_type $line
+     * @param unknown_type $fxname
+     * @param unknown_type $fxparam
+     * @param unknown_type $fxreturn
+     */
+	public static function writelog($level, $text, $file, $line, $fxname="", $fxparam="", $fxreturn="")
 	{
 		$logFilename=self::getLogFilename();
 		if (!is_string($text)) {

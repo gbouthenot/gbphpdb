@@ -6,6 +6,13 @@
  * @version 1.00
  *
  */
+
+if (!defined("_GB_PATH")) {
+        define("_GB_PATH", dirname(__FILE__).DIRECTORY_SEPARATOR);
+}
+
+require_once(_GB_PATH."Log.php");
+
 Class Gb_Timer
 {
 	protected $startime;
@@ -72,7 +79,7 @@ Class Gb_Timer
 	 *
 	 * @param string[optional] $text
 	 */
-	public function logTimer($level=Gb_Util::LOG_DEBUG, $text="")
+	public function logTimer($level=Gb_Log::LOG_DEBUG, $text="")
 	{
 		if (!strlen($text))
 		{
@@ -87,7 +94,7 @@ Class Gb_Timer
 		$vd0=$vd[0];
 		$vd1=$vd[1];
 
-		Gb_Util::writelog($level, $text, $vd0["file"], $vd0["line"], $vd1["function"], "...", null);
+		Gb_Log::writelog($level, $text, $vd0["file"], $vd0["line"], $vd1["function"], "...", null);
 	}
 
 	/**
