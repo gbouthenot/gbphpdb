@@ -1,5 +1,6 @@
 <?php
 require_once 'Test/Gb_StringTest.php';
+require_once 'Test/Gb_TimerTest.php';
 require_once 'Test/Gb_UtilTest.php';
 /**
  * Static test suite.
@@ -15,6 +16,7 @@ class gbphpdbSuite extends PHPUnit_Framework_TestSuite
     {
         $this->setName('gbphpdbSuite');
         $this->addTestSuite('Gb_StringTest');
+        $this->addTestSuite('Gb_TimerTest');
         $this->addTestSuite('Gb_UtilTest');
     }
 

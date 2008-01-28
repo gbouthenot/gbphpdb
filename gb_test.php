@@ -25,17 +25,17 @@ function main()
 	Gb_Log::log(Gb_Log::LOG_DEBUG, "*** FOOTER ***:");
 
     echo "Connexion avec Gb_Db --> Pdo_Mysql\n";
-    $dbProt=new Gb_Db(array("type"=>"Pdo_Mysql",    "host"=>"localhost" , "name"=>"gestion_e",      "user"=>"gestion_e", "pass"=>"***REMOVED***"));
+    $dbProt=new Gb_Db(array("type"=>"Pdo_Mysql",    "host"=>"pollux3" , "name"=>"test",      "user"=>"test", "pass"=>"***REMOVED***"));
     $date=$dbProt->retrieve_one("SELECT NOW()");
     print_r($date);
     //print_r($dbProt->getTablesName());
     echo "Fin de connexion\n";
     
     echo "Connexion avec Gb_Db --> Pdo_Oci\n";
-    $dbProt=new Gb_Db(array("type"=>"Pdo_Oci",    "host"=>"172.26.12.3" , "name"=>"PROT",      "user"=>"gbouthenot", "pass"=>"***REMOVED***"));
+    $dbProt=new Gb_Db(array("type"=>"Pdo_Oci",    "host"=>"", "name"=>"PROTHEE99",      "user"=>"gbouthenot", "pass"=>"***REMOVED***"));
     $date=$dbProt->retrieve_one("SELECT SYSDATE FROM DUAL");
     print_r($date);
-    print_r($dbProt->getTablesDesc());
+    print_r($dbProt->getTables());
     echo "Fin de connexion\n";
 	
 	$c=array(0=>"a", "b"=>array(0=>"c", "d"=>"e"));
