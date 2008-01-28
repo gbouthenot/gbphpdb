@@ -49,7 +49,13 @@ class Gb_String
     }
 
 
-    // renvoie une chaine composée des premiers mots seulement de la chaine donnée    // on donne une longueur minimale à la chaîne avant laquelle on ne coupe pas.    public static function create_nom($prenoms, $lmin=4)
+    /**
+     * Renvoie les premiers mots de la chaine jusqu'à un minimum de lettres
+     *
+     * @param string $prenoms
+     * @param integer $lmin
+     * @return string
+     */    public static function create_nom($prenoms, $lmin=4)
     {
         trim($prenoms);
         $out="";

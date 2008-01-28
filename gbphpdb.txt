@@ -36,13 +36,13 @@
 /*
  globals.p:
  
-// 2008 sep 21 : 1.72
+// 2007 sep 21 : 1.72
 // gbdb::retrieve_one renvoit false si pas de resultat
 
-// 2008 sep 08 : 1.71
+// 2007 sep 08 : 1.71
 // gbdb::__construct() accepte les type Oracle, Pdo_Oracle et Pdo_Mysql, mappés sur MYSQL ou OCI
 
-// 2008 aug 28 : 1.70
+// 2007 aug 28 : 1.70
 // error_reporting(E_ALL | E_STRICT) et ini_set('display_errors')
 // nouvelle fonction retrieve_one
 // nouvelle fonction retrieve_all
@@ -50,25 +50,25 @@
 // nouvelle fonction prepare
 // log_file() ne loggue que les 100 premiers caractères des paramètres de fonction.
 
-// 2008 aug 22 : 1.61
+// 2007 aug 22 : 1.61
 // send_headers(): http header et meta: 8859-15
 
-// 2008 aug 22 : 1.60
+// 2007 aug 22 : 1.60
 // log_file(): leger bug $pr était envoyé avant d'être défini !
 
-// 2008 jul 27 : 1.59
+// 2007 jul 27 : 1.59
 // log_file() loggue la ligne et le fichier appelant, ainsi que les arguments de la fonction
 
-// 2008 jul 20 : 1.58
+// 2007 jul 20 : 1.58
 // gbdb->fetch_array(): grave bug corrigé, affectait retrieve_array (modifié aussi)
 
-// 2008 jul 18 : 1.57
+// 2007 jul 18 : 1.57
 // check_result regarde "ERROR" au lieu de "ERROR:"
 
-// 2008 jul 17 : 1.56
+// 2007 jul 17 : 1.56
 // gb_date_mysql et gb_date_fr accepte 0 argument : renvoit la date courante
 
-// 2008 jul 05 : 1.55
+// 2007 jul 05 : 1.55
 // gbdb->fetch_row() et gbdb->fetch_array() renvoient true ou false
 // gbdb->fetch_array() renvoit maintenant MYSQL_ASSOC ou PG_ASSOC, au lieu de BOTH (oublié dans la v1.50)
 // gbdb->retrieve_array($sql)               : renvoit $array[0..n]=array();
@@ -77,12 +77,12 @@
 
 
 
-// 2008 jun 12 : 1.51
+// 2007 jun 12 : 1.51
 // nouvelles fonctions:
 // gpcstripslashes($str) : enlève les slashes si magic_quotes_gpc est actif
 // gpc_strip_all() : idem mais sur toutes les données $_GET $_POST, $_COOKIE 
 
-// 2008 fev 22 : 1.50
+// 2007 fev 22 : 1.50
 // changements : globals.p devient gbphpdb.php, il n'y a plus de db.p, ni gbclass.p
 // sql_fetch_array renvoit maintenant MYSQL_ASSOC ou PG_ASSOC, au lieu de BOTH
 
@@ -96,7 +96,7 @@
 // 2007 jan 29 : 1.45
 // footer n'affiche le DDK dom parser que si debug
 
-// 2006 jan 09 : 1.44
+// 2007 jan 09 : 1.44
 // log_file loggue les adresses ip plus longues
 
 // 2006 dec 14 : 1.43

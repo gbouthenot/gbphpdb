@@ -1,0 +1,30 @@
+<?php
+require_once 'Test/Gb_StringTest.php';
+require_once 'Test/Gb_UtilTest.php';
+/**
+ * Static test suite.
+ */
+class gbphpdbSuite extends PHPUnit_Framework_TestSuite
+{
+
+
+    /**
+     * Constructs the test suite handler.
+     */
+    public function __construct()
+    {
+        $this->setName('gbphpdbSuite');
+        $this->addTestSuite('Gb_StringTest');
+        $this->addTestSuite('Gb_UtilTest');
+    }
+
+
+    /**
+     * Creates the suite.
+     */
+    public static function suite()
+    {
+        return new self();
+    }
+}
+
