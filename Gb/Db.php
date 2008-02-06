@@ -148,6 +148,9 @@ Class Gb_Db extends Zend_Db
 	
     public function getTableDesc($table)
     {
+        $sqlTime=self::$sqlTime;
+        $time=microtime(true);
+        
         // détermine towner et tname
         $pos=strpos($table, ".");
         if ($pos!==false) {
@@ -225,6 +228,7 @@ Class Gb_Db extends Zend_Db
         // cache le résultat
         $this->tablesDesc[$towner.".".$tname]=$desc;
         
+        self::$sqlTime=$sqlTime+microtime(true)-$time;
         return $desc;
     }
 
@@ -501,6 +505,7 @@ Class Gb_Db extends Zend_Db
      */
     public function replace($table, array $data, array $where=array())
     {
+        $sqlTime=self::$sqlTime;
         $time=microtime(true);
         try {
             // compte le nombre de lignes correspondantes
@@ -531,14 +536,14 @@ Class Gb_Db extends Zend_Db
                 $ret=$this->conn->update($table, $data, $where);
             } else {
                 // Plus d'une ligne correspond: erreur de clé ?
-                self::$sqlTime+=microtime(true)-$time;
+                self::$sqlTime=$sqlTime+microtime(true)-$time;
                 throw new Gb_Exception("replace impossible: plus d'une ligne correspond !");
             }
         } catch (Exception $e) {
-            self::$sqlTime+=microtime(true)-$time;
+            self::$sqlTime=$sqlTime+microtime(true)-$time;
             throw new Gb_Exception($e->getMessage());
         }
-        self::$sqlTime+=microtime(true)-$time;
+        self::$sqlTime=$sqlTime+microtime(true)-$time;
         return $ret;
     }
 
@@ -563,9 +568,21 @@ Class Gb_Db extends Zend_Db
      */
     public function insertOrUpdate($table, array $data)
     {
-        throw new Exception("Non encore implémenté !");
-        
+        $sqlTime=self::$sqlTime;
         $time=microtime(true);
+        
+        $tableDesc=$this->getTableDesc($table);
+        $aPk=$tableDesc["pk"][0];
+        print_r($data);
+        print_r($aPk);
+
+        
+
+        
+        
+        
+        
+throw new Exception("non implémenté");
         try {
             // compte le nombre de lignes correspondantes
             $select=$this->conn->select();
@@ -595,14 +612,14 @@ Class Gb_Db extends Zend_Db
                 $ret=$this->conn->update($table, $data, $where);
             } else {
                 // Plus d'une ligne correspond: erreur de clé ?
-                self::$sqlTime+=microtime(true)-$time;
+                self::$sqlTime=$sqlTime+microtime(true)-$time;
                 throw new Gb_Exception("replace impossible: plus d'une ligne correspond !");
             }
         } catch (Exception $e) {
-            self::$sqlTime+=microtime(true)-$time;
-            throw new Gb_Exception($e->getMessage());
+                self::$sqlTime=$sqlTime+microtime(true)-$time;
+                throw new Gb_Exception($e->getMessage());
         }
-        self::$sqlTime+=microtime(true)-$time;
+        self::$sqlTime=$sqlTime+microtime(true)-$time;
         return $ret;
     }
     
@@ -706,11 +723,14 @@ Class Gb_Db extends Zend_Db
     public function sequenceNext($tableName, $colName="id")
     {
         $time=microtime(true);
+        $sqlTime=self::$sqlTime;
+        
         $nb=$this->update($tableName, array( $colName=>new Zend_Db_Expr("LAST_INSERT_ID(".$this->conn->quoteIdentifier($colName)."+1)") ));
         if ($nb!=1) {
+            self::$sqlTime=$sqlTime+microtime(true)-$time;
             throw new Gb_Exception("erreur sequenceNext($tableName.$colName)");
         }
-        self::$sqlTime+=microtime(true)-$time;
+        self::$sqlTime=$sqlTime+microtime(true)-$time;
         return $this->conn->lastInsertId();
     }
 
@@ -723,15 +743,17 @@ Class Gb_Db extends Zend_Db
      */
     public function sequenceCurrent($tableName, $colName="id")
     {
+        $sqlTime=self::$sqlTime;
         $time=microtime(true);
         $sql="SELECT ".$this->conn->quoteIdentifier($colName)." FROM ".$this->conn->quoteIdentifier($tableName);
         $stmt=$this->conn->query($sql);
         $res=$stmt->fetch(Zend_Db::FETCH_NUM);
         if ($stmt->fetch(Zend_Db::FETCH_NUM)) {
+            self::$sqlTime=$sqlTime+microtime(true)-$time;
             throw new Gb_Exception("erreur sequenceCurrent($tableName.$colName)");
         }
         $res=$res[0];
-        self::$sqlTime+=microtime(true)-$time;
+        self::$sqlTime=$sqlTime+microtime(true)-$time;
         return $res;
     }
 

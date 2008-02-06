@@ -235,7 +235,7 @@ mysql> select * from test_gb_db_2;
         $db=$this->db;
 
         // vérifie que la bdd est bien dans la bon état
-        $expected=array("key1"=>array("val"=>"abc", "usr"=>"1"), "key2"=>array("val"=>"abc", "usr"=>"2"), "key9"=>array("val"=>"def", "usr"=>"1"));
+        $expected=array("key1"=>array("val"=>"abc", "usr"=>"1"), "key2"=>array("val"=>"abc", "usr"=>"2"));
         $this->assertSame($expected, $db->retrieve_all("SELECT * FROM test_gb_db_1", array(), "pkey"));
 
         // essaie de modifier avec une clé étrangere qui n'existe pas
@@ -280,7 +280,7 @@ mysql> select * from test_gb_db_2;
         $db=$this->db;
 
         // vérifie que la bdd est bien dans la bon état
-        $expected=array("key1"=>array("val"=>"abc", "usr"=>"1"), "key2"=>array("val"=>"abc", "usr"=>"2"), "key9"=>array("val"=>"def", "usr"=>"1"));
+        $expected=array("key1"=>array("val"=>"abc", "usr"=>"1"), "key2"=>array("val"=>"abc", "usr"=>"2"));
         $this->assertSame($expected, $db->retrieve_all("SELECT * FROM test_gb_db_1", array(), "pkey"));
 
         // essaie de modifier avec une clé étrangere qui n'existe pas
