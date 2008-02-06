@@ -16,6 +16,7 @@ class gbphpdbSuite extends PHPUnit_Framework_TestSuite
     public function __construct()
     {
         $this->setName('gbphpdbSuite');
+        $this->addTestSuite('Gb_DbTest');
         $this->addTestSuite('Gb_StringTest');
         $this->addTestSuite('Gb_TimerTest');
         $this->addTestSuite('Gb_UtilTest');

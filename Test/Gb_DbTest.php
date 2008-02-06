@@ -71,6 +71,10 @@ mysql> select * from test_gb_db_2;
         // s'assure que la table test_gb_db_1 et 2 sont présentes
         $this->assertTrue(in_array("test.test_gb_db_1", $getTables), "table test_gb_db_1 non trouvée");
         $this->assertTrue(in_array("test.test_gb_db_2", $getTables), "table test_gb_db_2 non trouvée");
+
+        // le deuxième appel doit donner le même résultat
+        $this->assertSame($getTables, $this->db->getTables());
+        
     }
 
     public function testgetTableDesc()
@@ -78,8 +82,6 @@ mysql> select * from test_gb_db_2;
         $db=$this->db;
         $td1=$db->getTableDesc("test.test_gb_db_1");
         $td2=$db->getTableDesc("test.test_gb_db_2");
-        print_r($td1);
-        print_r($td2);
         $expected1=array(
             "columns"=>array(
                 array("COLUMN_NAME" => "pkey", "TYPE" => "varchar(5)",          "NULLABLE" => "NO",  "COMMENT" => ""),
@@ -95,6 +97,10 @@ mysql> select * from test_gb_db_2;
             ,"pk"=>array(array("COLUMN_NAME" => "usa_id"))
             ,"fks"=>array()
         );
+        $this->assertSame($expected1, $td1);
+        $this->assertSame($expected2, $td2);
+
+        // le deuxième appel doit donner le même résultat
         $this->assertSame($expected1, $td1);
         $this->assertSame($expected2, $td2);
     }
@@ -221,6 +227,96 @@ mysql> select * from test_gb_db_2;
         // replace 1 changement
         $this->assertEquals(1, $db->replace("test_gb_db_1", array("usr"=>"2"),  array($db->quoteInto("usr=?", "1"))));
         $expected=array("key1"=>array("val"=>"abc", "usr"=>"2"), "key2"=>array("val"=>"abc", "usr"=>"2"));
+        $this->assertSame($expected, $db->retrieve_all("SELECT * FROM test_gb_db_1", array(), "pkey"));
+    }
+
+    public function testInsertOrUpdate()
+    {
+        $db=$this->db;
+
+        // vérifie que la bdd est bien dans la bon état
+        $expected=array("key1"=>array("val"=>"abc", "usr"=>"1"), "key2"=>array("val"=>"abc", "usr"=>"2"), "key9"=>array("val"=>"def", "usr"=>"1"));
+        $this->assertSame($expected, $db->retrieve_all("SELECT * FROM test_gb_db_1", array(), "pkey"));
+
+        // essaie de modifier avec une clé étrangere qui n'existe pas
+        $ok=false;
+        try {
+            $db->insertOrUpdate("test_gb_db_1", array("pkey"=>"key1", "val"=>"def", "usr"=>"99"));
+        } catch (Gb_Exception $e) {
+            $e;$ok=true;
+        }
+        if (!$ok) {
+            $this->fail("unknown foreign key not catched");
+        }
+        // vérifie que la bdd n'a pas été modifiée
+        $this->assertSame($expected, $db->retrieve_all("SELECT * FROM test_gb_db_1", array(), "pkey"));
+        
+        // essaie d'insérer avec une clé étrangere qui n'existe pas
+        $ok=false;
+        try {
+            $db->insertOrUpdate("test_gb_db_1", array("pkey"=>"key9", "val"=>"def", "usr"=>"99"));
+        } catch (Gb_Exception $e) {
+            $e;$ok=true;
+        }
+        if (!$ok) {
+            $this->fail("unknown foreign key not catched");
+        }
+        // vérifie que la bdd n'a pas été modifiée
+        $this->assertSame($expected, $db->retrieve_all("SELECT * FROM test_gb_db_1", array(), "pkey"));
+        
+        // insertion
+        $this->assertEquals(1, $db->insertOrUpdate("test_gb_db_1", array("pkey"=>"key9", "val"=>"def", "usr"=>"1")));
+        $expected=array("key1"=>array("val"=>"abc", "usr"=>"1"), "key2"=>array("val"=>"abc", "usr"=>"2"), "key9"=>array("val"=>"def", "usr"=>"1"));
+        $this->assertSame($expected, $db->retrieve_all("SELECT * FROM test_gb_db_1", array(), "pkey"));
+
+        // modification
+        $this->assertEquals(1, $db->insertOrUpdate("test_gb_db_1", array("pkey"=>"key9", "val"=>"def", "usr"=>"2")));
+        $expected=array("key1"=>array("val"=>"abc", "usr"=>"1"), "key2"=>array("val"=>"abc", "usr"=>"2"), "key9"=>array("val"=>"def", "usr"=>"2"));
+        $this->assertSame($expected, $db->retrieve_all("SELECT * FROM test_gb_db_1", array(), "pkey"));
+    }
+
+    public function testInsertOrDeleteInsert()
+    {
+        $db=$this->db;
+
+        // vérifie que la bdd est bien dans la bon état
+        $expected=array("key1"=>array("val"=>"abc", "usr"=>"1"), "key2"=>array("val"=>"abc", "usr"=>"2"), "key9"=>array("val"=>"def", "usr"=>"1"));
+        $this->assertSame($expected, $db->retrieve_all("SELECT * FROM test_gb_db_1", array(), "pkey"));
+
+        // essaie de modifier avec une clé étrangere qui n'existe pas
+        $ok=false;
+        try {
+            $db->insertOrDeleteInsert("test_gb_db_1", array("pkey"=>"key1", "val"=>"def", "usr"=>"99"));
+        } catch (Gb_Exception $e) {
+            $e;$ok=true;
+        }
+        if (!$ok) {
+            $this->fail("unknown foreign key not catched");
+        }
+        // vérifie que la bdd n'a pas été modifiée
+        $this->assertSame($expected, $db->retrieve_all("SELECT * FROM test_gb_db_1", array(), "pkey"));
+        
+        // essaie d'insérer avec une clé étrangere qui n'existe pas
+        $ok=false;
+        try {
+            $db->insertOrDeleteInsert("test_gb_db_1", array("pkey"=>"key9", "val"=>"def", "usr"=>"99"));
+        } catch (Gb_Exception $e) {
+            $e;$ok=true;
+        }
+        if (!$ok) {
+            $this->fail("unknown foreign key not catched");
+        }
+        // vérifie que la bdd n'a pas été modifiée
+        $this->assertSame($expected, $db->retrieve_all("SELECT * FROM test_gb_db_1", array(), "pkey"));
+        
+        // insertion
+        $this->assertEquals(1, $db->insertOrDeleteInsert("test_gb_db_1", array("pkey"=>"key9", "val"=>"def", "usr"=>"1")));
+        $expected=array("key1"=>array("val"=>"abc", "usr"=>"1"), "key2"=>array("val"=>"abc", "usr"=>"2"), "key9"=>array("val"=>"def", "usr"=>"1"));
+        $this->assertSame($expected, $db->retrieve_all("SELECT * FROM test_gb_db_1", array(), "pkey"));
+
+        // modification
+        $this->assertEquals(1, $db->insertOrDeleteInsert("test_gb_db_1", array("pkey"=>"key9", "val"=>"def", "usr"=>"2")));
+        $expected=array("key1"=>array("val"=>"abc", "usr"=>"1"), "key2"=>array("val"=>"abc", "usr"=>"2"), "key9"=>array("val"=>"def", "usr"=>"2"));
         $this->assertSame($expected, $db->retrieve_all("SELECT * FROM test_gb_db_1", array(), "pkey"));
     }
     

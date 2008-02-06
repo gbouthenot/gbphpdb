@@ -20,8 +20,9 @@ Class Gb_Db extends Zend_Db
     protected $conn;
     protected $driver;      							     // Pdo_Mysql ou Pdo_Oci
     protected $dbname;
-    protected $tables;
-    protected $tablesDesc;
+
+    protected $tables;                                      // cache de la liste des tables
+    protected $tablesDesc;                                  // cache descriptif table
 	
     protected static $sqlTime=0;
     protected static $nbInstance_total=0;                    // Nombre de classes gbdb ouvertes au total
@@ -147,6 +148,23 @@ Class Gb_Db extends Zend_Db
 	
     public function getTableDesc($table)
     {
+        // détermine towner et tname
+        $pos=strpos($table, ".");
+        if ($pos!==false) {
+            // la table est au format owner.tablename
+            $towner=substr($table, 0, $pos);
+            $tname=substr($table, $pos+1);
+        } else {
+            // la table est au format tablename: ajouter dbname
+            $towner=$this->dbname;
+            $tname=$table;
+        }
+
+        // renvoie le array caché si dispo
+        if (isset($this->tablesDesc[$towner.".".$tname])) {
+            return $this->tablesDesc[$towner.".".$tname];
+        }
+
         switch($this->driver) {
             case "Pdo_Oci":
                 $sql_getColumns="
@@ -196,9 +214,6 @@ Class Gb_Db extends Zend_Db
             break;
         }
 
-        $pos=strpos($table, ".");
-        $towner=substr($table, 0, $pos);
-        $tname=substr($table, $pos+1);
 /*        $desc["columns"]=$this->retrieve_all($sql_getColumns, array($towner, $tname), "COLUMN_NAME", ""           );
         $desc["pk"]=     $this->retrieve_all($sql_getPK,      array($towner, $tname), "",            "COLUMN_NAME");
         $desc["fks"]=    $this->retrieve_all($sql_getFKs,     array($towner, $tname), "COLUMN_NAME", "FULL_NAME"  );
@@ -207,6 +222,8 @@ Class Gb_Db extends Zend_Db
         $desc["pk"]=     $this->retrieve_all($sql_getPK,      array($towner, $tname));
         $desc["fks"]=    $this->retrieve_all($sql_getFKs,     array($towner, $tname));
         
+        // cache le résultat
+        $this->tablesDesc[$towner.".".$tname]=$desc;
         
         return $desc;
     }
@@ -525,6 +542,84 @@ Class Gb_Db extends Zend_Db
         return $ret;
     }
 
+    
+    
+    
+    
+    
+
+    public function insertOrDeleteInsert($table, array $data)
+    {
+        throw new Exception("Non encore implémenté !");
+    }
+    
+    
+   /**
+     * @todo: commentaire
+     *
+     * @param string $table Table à mettre à jour
+     * @param array $data array("col"=>"val", "col2"=>new Zend_Db_Expr("NOW()"), ...)
+     * @throws Gb_Exception
+     */
+    public function insertOrUpdate($table, array $data)
+    {
+        throw new Exception("Non encore implémenté !");
+        
+        $time=microtime(true);
+        try {
+            // compte le nombre de lignes correspondantes
+            $select=$this->conn->select();
+            $select->from($table, array("A"=>"COUNT(*)"));
+            foreach ($where as $w) {
+                $select->where($w);
+            }
+            $stmt=$this->conn->query($select);
+            $nb=$stmt->fetchAll();
+            $nb=$nb[0]["A"];
+            if ($nb==0) {
+                // Aucune ligne existe: insertion nouvelle ligne: ajoute le where array("col=val"...)
+                foreach ($where as $w) {
+                    $pos=strpos($w, '=');
+                    if ($pos===false) { throw new Gb_Exception("= introuvable dans clause where !"); }
+                    $col=substr($w, 0, $pos);
+                    $val=substr($w, $pos+1);
+                    //enlève les quote autour de $val
+                    if     (substr($val,0,1)=="'" && substr($val,-1)=="'") { $val=substr($val, 1, -1); }
+                    elseif (substr($val,0,1)=='"' && substr($val,-1)=='"') { $val=substr($val, 1, -1); }
+                    else { throw new Gb_Exception("Pas de guillements trouvés dans la clause where !");  }
+                    $data[$col]=$val;
+                }
+                $ret=$this->conn->insert($table, $data);
+            } elseif ($nb==1) {
+                // Une ligne existe déjà: mettre à jour
+                $ret=$this->conn->update($table, $data, $where);
+            } else {
+                // Plus d'une ligne correspond: erreur de clé ?
+                self::$sqlTime+=microtime(true)-$time;
+                throw new Gb_Exception("replace impossible: plus d'une ligne correspond !");
+            }
+        } catch (Exception $e) {
+            self::$sqlTime+=microtime(true)-$time;
+            throw new Gb_Exception($e->getMessage());
+        }
+        self::$sqlTime+=microtime(true)-$time;
+        return $ret;
+    }
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
     /**
      * Quote une chaîne
      *
