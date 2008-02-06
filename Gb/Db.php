@@ -18,6 +18,7 @@ Class Gb_Db extends Zend_Db
      * @var Zend_Db_Adapter_Abstract
      */
     protected $conn;
+    protected $connArray;                                    // array utilisé par Zend_Db::factory()
     protected $driver;      							     // Pdo_Mysql ou Pdo_Oci
     protected $dbname;
 
@@ -93,6 +94,7 @@ Class Gb_Db extends Zend_Db
 
         $this->driver=$driver;
         $this->dbname=$name;
+        $this->connArray=$array;
     }
 
 	function __destruct()
@@ -446,7 +448,7 @@ Class Gb_Db extends Zend_Db
             $ret=$this->conn->update($table, $data, $where);
         } catch (Exception $e) {
             self::$sqlTime+=microtime(true)-$time;
-            throw new Gb_Exception($e);
+            throw new Gb_Exception($e->getMessage());
         }
         self::$sqlTime+=microtime(true)-$time;
         return $ret;
@@ -467,7 +469,7 @@ Class Gb_Db extends Zend_Db
             $ret=$this->conn->delete($table, $where);
         } catch (Exception $e) {
             self::$sqlTime+=microtime(true)-$time;
-            throw new Gb_Exception($e);
+            throw new Gb_Exception($e->getMessage());
         }
         self::$sqlTime+=microtime(true)-$time;
         return $ret;
@@ -488,7 +490,7 @@ Class Gb_Db extends Zend_Db
             $ret=$this->conn->insert($table, $data);
         } catch (Exception $e) {
             self::$sqlTime+=microtime(true)-$time;
-            throw new Gb_Exception($e);
+            throw new Gb_Exception($e->getMessage());
         }
         self::$sqlTime+=microtime(true)-$time;
         return $ret;
@@ -536,9 +538,11 @@ Class Gb_Db extends Zend_Db
                 $ret=$this->conn->update($table, $data, $where);
             } else {
                 // Plus d'une ligne correspond: erreur de clé ?
-                self::$sqlTime=$sqlTime+microtime(true)-$time;
                 throw new Gb_Exception("replace impossible: plus d'une ligne correspond !");
             }
+        } catch (Gb_Exception $e) {
+            self::$sqlTime=$sqlTime+microtime(true)-$time;
+            throw $e;
         } catch (Exception $e) {
             self::$sqlTime=$sqlTime+microtime(true)-$time;
             throw new Gb_Exception($e->getMessage());
@@ -553,11 +557,94 @@ Class Gb_Db extends Zend_Db
     
     
 
+   /**
+     * Insertion. Si l'insertion est impossible, supprime la ligne et la réinsere.
+     *
+     * @param string $table Table à mettre à jour
+     * @param array $data array("col"=>"val", "col2"=>new Zend_Db_Expr("NOW()"), ...)
+     * @param array[optional] $where array("col='val'", $db->quoteInto("usr_id=?", $usr_id), ...)
+     * @throws Gb_Exception
+     */
     public function insertOrDeleteInsert($table, array $data)
     {
-        throw new Exception("Non encore implémenté !");
+        $sqlTime=self::$sqlTime;
+        $time=microtime(true);
+        
+        $where=array();
+        $newdata=array();
+        $this->developpeData($table, $data, $newdata, $where);
+//        print_r($where);
+//        print_r($newdata);
+        
+        // @todo NON NON et NON !!! Essayer d'insérer la ligne plutôt !!!
+        try {
+            // compte le nombre de lignes correspondantes
+            $select=$this->conn->select();
+            $select->from($table, array("A"=>"COUNT(*)"));
+            foreach ($where as $w) {
+                $select->where($w);
+            }
+            $stmt=$this->conn->query($select);
+            $nb=$stmt->fetchAll();
+            $nb=$nb[0]["A"];
+            if ($nb==0) {
+                // Aucune ligne existe: insertion nouvelle ligne
+                $ret=$this->insert($table, $data);
+            } elseif ($nb==1) {
+                // Une ligne existe déjà: delete puis insert
+                // @todo: transaction !
+                $newdb=new Gb_Db(array_merge( array("driver"=>$this->driver), $this->connArray));
+                try {
+                    $newdb->beginTransaction();
+                    $newdb->delete($table, $where);
+                    $ret=$newdb->insert($table, $data);
+                    $newdb->commit();
+                } catch (Gb_Exception  $e) {
+                    $newdb->rollBack();
+                    throw $e;
+                } catch (Exception  $e) {
+                    $newdb->rollBack();
+                    throw new Gb_Exception($e->getMessage());
+                }
+            } else {
+                // Plus d'une ligne correspond: erreur de clé ?
+                throw new Gb_Exception("replace impossible: plus d'une ligne correspond !");
+            }
+        } catch (Gb_Exception $e) {
+            self::$sqlTime=$sqlTime+microtime(true)-$time;
+            throw $e;
+        } catch (Exception $e) {
+            self::$sqlTime=$sqlTime+microtime(true)-$time;
+            throw new Gb_Exception($e->getMessage());
+        }
+        self::$sqlTime=$sqlTime+microtime(true)-$time;
+        return $ret;
     }
     
+    
+    protected function developpeData($table, $data, &$newdata, &$where)
+    {
+        $sqlTime=self::$sqlTime;
+        $time=microtime(true);
+
+        $tableDesc=$this->getTableDesc($table);
+        $aPk=array();
+        $aPk1=$tableDesc["pk"];   // récupère array(0=>array("COLUMN_NAME"=>xxx), ...)
+        foreach ($aPk1 as $aPk2) {
+            $aPk[]=$aPk2["COLUMN_NAME"];    // transforme en array(xxx, ...)
+        }
+        
+        $newdata=$data;
+        // extrait les données de clé primaires contenues dans $data, et les déplace dans $where
+        $where=array();
+        foreach ($aPk as $key) {
+            $val=$data[$key];
+            $where[]=$key."=".$this->quote($val);
+            unset($newdata[$key]);
+        }
+
+        self::$sqlTime=$sqlTime+microtime(true)-$time;
+    }
     
    /**
      * @todo: commentaire
@@ -571,18 +658,11 @@ Class Gb_Db extends Zend_Db
         $sqlTime=self::$sqlTime;
         $time=microtime(true);
         
-        $tableDesc=$this->getTableDesc($table);
-        $aPk=$tableDesc["pk"][0];
-        print_r($data);
-        print_r($aPk);
+        $where=array();
+        $newdata=array();
+        $this->developpeData($table, $data, $newdata, $where);
 
-        
-
-        
-        
-        
-        
-throw new Exception("non implémenté");
+        // @todo NON NON et NON !!! Essayer d'insérer la ligne plutôt !!!
         try {
             // compte le nombre de lignes correspondantes
             $select=$this->conn->select();
@@ -594,30 +674,21 @@ throw new Exception("non implémenté");
             $nb=$stmt->fetchAll();
             $nb=$nb[0]["A"];
             if ($nb==0) {
-                // Aucune ligne existe: insertion nouvelle ligne: ajoute le where array("col=val"...)
-                foreach ($where as $w) {
-                    $pos=strpos($w, '=');
-                    if ($pos===false) { throw new Gb_Exception("= introuvable dans clause where !"); }
-                    $col=substr($w, 0, $pos);
-                    $val=substr($w, $pos+1);
-                    //enlève les quote autour de $val
-                    if     (substr($val,0,1)=="'" && substr($val,-1)=="'") { $val=substr($val, 1, -1); }
-                    elseif (substr($val,0,1)=='"' && substr($val,-1)=='"') { $val=substr($val, 1, -1); }
-                    else { throw new Gb_Exception("Pas de guillements trouvés dans la clause where !");  }
-                    $data[$col]=$val;
-                }
-                $ret=$this->conn->insert($table, $data);
+                // Aucune ligne existe: insertion nouvelle ligne
+                $ret=$this->insert($table, $data);
             } elseif ($nb==1) {
-                // Une ligne existe déjà: mettre à jour
-                $ret=$this->conn->update($table, $data, $where);
+                // Une ligne existe déjà: update
+                $ret=$this->update($table, $newdata, $where);
             } else {
                 // Plus d'une ligne correspond: erreur de clé ?
-                self::$sqlTime=$sqlTime+microtime(true)-$time;
                 throw new Gb_Exception("replace impossible: plus d'une ligne correspond !");
             }
+        } catch (Gb_Exception $e) {
+            self::$sqlTime=$sqlTime+microtime(true)-$time;
+            throw $e;
         } catch (Exception $e) {
-                self::$sqlTime=$sqlTime+microtime(true)-$time;
-                throw new Gb_Exception($e->getMessage());
+            self::$sqlTime=$sqlTime+microtime(true)-$time;
+            throw new Gb_Exception($e->getMessage());
         }
         self::$sqlTime=$sqlTime+microtime(true)-$time;
         return $ret;
@@ -646,7 +717,11 @@ throw new Exception("non implémenté");
     public function quote($var)
     {
         $time=microtime(true);
-        $ret=$this->conn->quote($var);
+        if (is_object($var)) {
+            $ret=$var;
+        } else {
+            $ret=$this->conn->quote($var);
+        }
         self::$sqlTime+=microtime(true)-$time;
         return $ret;
     }
@@ -667,7 +742,7 @@ throw new Exception("non implémenté");
                 if ($pos=== false) {
                     break;
                 } else {
-                    $text=substr($text, 0, $pos).$val.substr($text, $pos+1);
+                    $text=substr($text, 0, $pos).$this->quote($val).substr($text, $pos+1);
                 }
             }
         } else {
