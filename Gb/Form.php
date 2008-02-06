@@ -189,7 +189,7 @@ Class Gb_Form
 	{
 		if (!isset($this->formElements[$nom]))
 			throw new Gb_Exception("Set elementParam: nom=$nom non défini");
-		$aElement=$this->formElements[$nom][$paramName]=$value;
+		$this->formElements[$nom][$paramName]=$value;
 	}
 
 
@@ -559,7 +559,6 @@ Class Gb_Form
 	/**
 	 * Remplit les valeurs depuis la base de données
 	 *
-	 * @param Gb_Db $db
 	 * @return boolean true si données trouvées
 	 */
 	public function getFromDb()
@@ -634,14 +633,18 @@ Class Gb_Form
 			return false;
 		}
 
-		$db=$this->db;
-		$nb=$db->replace($this->tableName, $aCols, $this->where);
-		if ($nb) {
-			Gb_Log::Log(Gb_Log::LOG_INFO, "GBFORM->putInDb OK table:{$this->tableName} where:".Gb_Log::Dump($this->where)."" );
-			return true;
-		}
-		else {
-			Gb_Log::Log(Gb_Log::LOG_ERROR, "GBFORM->putInDb Erreur: replace impossible ! table:{$this->tableName} where:".Gb_Log::Dump($this->where)." data:".Gb_Log::Dump($aCols) );
+        $db=$this->db;
+        try {
+            $nb=$db->replace($this->tableName, $aCols, $this->where);
+        } catch (Exception $e) {
+            $nb=0;
+        }
+
+        if ($nb) {
+            Gb_Log::Log(Gb_Log::LOG_INFO, "GBFORM->putInDb OK table:{$this->tableName} where:".Gb_Log::Dump($this->where)."" );
+            return true;
+        } else {
+            Gb_Log::Log(Gb_Log::LOG_ERROR, "GBFORM->putInDb Erreur: replace impossible ! table:{$this->tableName} where:".Gb_Log::Dump($this->where)." data:".Gb_Log::Dump($aCols) );
 			return false;
 		}
 	}

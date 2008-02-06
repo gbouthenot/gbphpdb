@@ -61,7 +61,7 @@ class Gb_UtilTest extends PHPUnit_Framework_TestCase
     public function testInclude_file()
     {
         try {
-            Gb_Util::include_file(/* parameters */);
+            Gb_Util::include_file("doesnotexist");
         } catch (Gb_Exception $e) {
             return;  
         }

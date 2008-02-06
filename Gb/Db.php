@@ -416,11 +416,17 @@ Class Gb_Db extends Zend_Db
      * @param array $data array("col"=>"val", "col2"=>new Zend_Db_Expr("NOW()"), ...)
      * @param array[optional] $where array("col='val'", $db->quoteInto("usr_id=?", $usr_id), ...)
      * @return int nombre de lignes modifiées
+     * @throws Gb_Exception
      */
     public function update($table, array $data, array $where=array())
     {
         $time=microtime(true);
-        $ret=$this->conn->update($table, $data, $where);
+        try {
+            $ret=$this->conn->update($table, $data, $where);
+        } catch (Exception $e) {
+            self::$sqlTime+=microtime(true)-$time;
+            throw new Gb_Exception($e);
+        }
         self::$sqlTime+=microtime(true)-$time;
         return $ret;
     }
@@ -429,13 +435,19 @@ Class Gb_Db extends Zend_Db
      * SQL delete
      *
      * @param string $table
-     * @param array[optional] $where array("col='val'", ...)
+     * @param array[optional] $where array($db->quoteInto("col=?", "val"), ...)
      * @return int nombre de lignes modifiées
+     * @throws Gb_Exception
      */
-    public function delete($table, array $where)
+    public function delete($table, array $where=array())
     {
         $time=microtime(true);
-        $ret=$this->conn->delete($table, $where);
+        try {
+            $ret=$this->conn->delete($table, $where);
+        } catch (Exception $e) {
+            self::$sqlTime+=microtime(true)-$time;
+            throw new Gb_Exception($e);
+        }
         self::$sqlTime+=microtime(true)-$time;
         return $ret;
     }
@@ -446,25 +458,31 @@ Class Gb_Db extends Zend_Db
      * @param string $table
      * @param array $data array("col"=>"val", "col2"=>new Zend_Db_Expr("NOW()"), ...)
      * @return int nombre de lignes modifiées
+     * @throws Gb_Exception
      */
     public function insert($table, array $data)
     {
         $time=microtime(true);
-        $ret=$this->conn->insert($table, $data);
+        try {
+            $ret=$this->conn->insert($table, $data);
+        } catch (Exception $e) {
+            self::$sqlTime+=microtime(true)-$time;
+            throw new Gb_Exception($e);
+        }
         self::$sqlTime+=microtime(true)-$time;
         return $ret;
     }
 
    /**
      * Regarde Combien de lignes correspondant à $where existe dans la table $data
-     * 0?: insére nouvelle ligne. 1?: met à jour la ligne. 2+: Throws exception
+     * 0?: INSERT. 1?: UPDATE. 2+: Throws exception
      *
      * @param string $table Table à mettre à jour
      * @param array $data array("col"=>"val", "col2"=>new Zend_Db_Expr("NOW()"), ...)
      * @param array[optional] $where array("col='val'", $db->quoteInto("usr_id=?", $usr_id), ...)
      * @throws Gb_Exception
      */
-    public function replace($table, array $data, array $where)
+    public function replace($table, array $data, array $where=array())
     {
         $time=microtime(true);
         try {
@@ -478,7 +496,7 @@ Class Gb_Db extends Zend_Db
             $nb=$stmt->fetchAll();
             $nb=$nb[0]["A"];
             if ($nb==0) {
-                // Insertion nouvelle ligne: ajoute le where array("col=val"...)
+                // Aucune ligne existe: insertion nouvelle ligne: ajoute le where array("col=val"...)
                 foreach ($where as $w) {
                     $pos=strpos($w, '=');
                     if ($pos===false) { throw new Gb_Exception("= introuvable dans clause where !"); }
@@ -491,13 +509,11 @@ Class Gb_Db extends Zend_Db
                     $data[$col]=$val;
                 }
                 $ret=$this->conn->insert($table, $data);
-                self::$sqlTime+=microtime(true)-$time;
-                return $ret;
             } elseif ($nb==1) {
+                // Une ligne existe déjà: mettre à jour
                 $ret=$this->conn->update($table, $data, $where);
-                self::$sqlTime+=microtime(true)-$time;
-                return $ret;
             } else {
+                // Plus d'une ligne correspond: erreur de clé ?
                 self::$sqlTime+=microtime(true)-$time;
                 throw new Gb_Exception("replace impossible: plus d'une ligne correspond !");
             }
@@ -505,6 +521,8 @@ Class Gb_Db extends Zend_Db
             self::$sqlTime+=microtime(true)-$time;
             throw new Gb_Exception($e->getMessage());
         }
+        self::$sqlTime+=microtime(true)-$time;
+        return $ret;
     }
 
     /**
