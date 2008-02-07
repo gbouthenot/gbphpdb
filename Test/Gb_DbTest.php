@@ -109,7 +109,9 @@ mysql> select * from test_gb_db_2;
     {
         $db=$this->db;
 
-        $this->assertEquals(1, $db->insert("test_gb_db_1", array("pkey"=>"keytest", "val"=>"test", "usr"=>1)));
+        $this->assertEquals(1, $db->insert("test_gb_db_1", array("pkey"=>"keyte", "val"=>"test", "usr"=>1)));
+        $expected=array("key1"=>array("val"=>"abc", "usr"=>"1"), "key2"=>array("val"=>"abc", "usr"=>"2"), "keyte"=>array("val"=>"test", "usr"=>"1"));
+        $this->assertSame($expected, $db->retrieve_all("SELECT * FROM test_gb_db_1", array(), "pkey"));
         
         // insère une ligne avec une clé primaire déjà existante
         $ok=false;
@@ -132,10 +134,26 @@ mysql> select * from test_gb_db_2;
         if (!$ok) {
             $this->fail("unknown foreign pkey not catched");
         }
-        
-    
     }
 
+    public function testLastInsertId()
+    {
+        $db=$this->db;
+        
+        // insertion en précisant la valeur autoincrémentée
+        $this->assertEquals(1, $db->insert("test_gb_db_2", array("usa_id"=>"3", "usa_nom"=>"Trois")));
+        $this->assertEquals(3, $db->lastInsertId());
+        $expected=array("1"=>"Premier usager", "2"=>"Deuxième usager", "3"=>"Trois");
+        $this->assertSame($expected, $db->retrieve_all("SELECT * FROM test_gb_db_2", array(), "usa_id", "usa_nom"));
+    
+        // insertion sans préciser la valeur autoincrémentée
+        $this->assertEquals(1, $db->insert("test_gb_db_2", array("usa_nom"=>"Autre")));
+        $id=$db->lastInsertId();
+        $expected=array("1"=>"Premier usager", "2"=>"Deuxième usager", "3"=>"Trois", $id=>"Autre");
+        $this->assertSame($expected, $db->retrieve_all("SELECT * FROM test_gb_db_2", array(), "usa_id", "usa_nom"));
+        
+    }
+    
     public function testDelete()
     {
         $db=$this->db;
@@ -191,6 +209,21 @@ mysql> select * from test_gb_db_2;
         $this->assertEquals(2, $db->update("test_gb_db_1", array("usr"=>"2"),  array($db->quoteInto("usr=?", "1"))));
         $expected=array("key1"=>array("val"=>"abc", "usr"=>"2"), "key2"=>array("val"=>"abc", "usr"=>"2"));
         $this->assertSame($expected, $db->retrieve_all("SELECT * FROM test_gb_db_1", array(), "pkey"));
+
+        // insertion en précisant la valeur autoincrémentée
+        $this->assertEquals(1, $db->insert("test_gb_db_2", array("usa_id"=>"3", "usa_nom"=>"Trois")));
+        $expected=array("1"=>"Premier usager", "2"=>"Deuxième usager", "3"=>"Trois");
+        $this->assertSame($expected, $db->retrieve_all("SELECT * FROM test_gb_db_2", array(), "usa_id", "usa_nom"));
+
+        // modifie la valeur:
+        $this->assertEquals(1, $db->update("test_gb_db_2", array("usa_nom"=>"Troi"), array($db->quoteInto("usa_id=?", "3"))));
+        $expected=array("1"=>"Premier usager", "2"=>"Deuxième usager", "3"=>"Troi");
+        $this->assertSame($expected, $db->retrieve_all("SELECT * FROM test_gb_db_2", array(), "usa_id", "usa_nom"));
+
+        // modifie la clé:
+        $this->assertEquals(1, $db->update("test_gb_db_2", array("usa_id"=>"4"), array($db->quoteInto("usa_id=?", "3"))));
+        $expected=array("1"=>"Premier usager", "2"=>"Deuxième usager", "4"=>"Troi");
+        $this->assertSame($expected, $db->retrieve_all("SELECT * FROM test_gb_db_2", array(), "usa_id", "usa_nom"));
     }
 
     public function testReplace()
@@ -201,6 +234,17 @@ mysql> select * from test_gb_db_2;
         $ok=false;
         try {
             $db->replace("test_gb_db_1", array("usr"=>"99"),  array($db->quoteInto("pkey=?", "key1")));
+        } catch (Gb_Exception $e) {
+            $e;$ok=true;
+        }
+        if (!$ok) {
+            $this->fail("unknown foreign key not catched");
+        }
+
+        // essaie d'attribuer une clé étrangere qui n'existe pas sur une clé primaire qui n'existe pas non plus
+        $ok=false;
+        try {
+            $db->replace("test_gb_db_1", array("usr"=>"99"),  array($db->quoteInto("pkey=?", "keyx")));
         } catch (Gb_Exception $e) {
             $e;$ok=true;
         }
@@ -228,6 +272,23 @@ mysql> select * from test_gb_db_2;
         $this->assertEquals(1, $db->replace("test_gb_db_1", array("usr"=>"2"),  array($db->quoteInto("usr=?", "1"))));
         $expected=array("key1"=>array("val"=>"abc", "usr"=>"2"), "key2"=>array("val"=>"abc", "usr"=>"2"));
         $this->assertSame($expected, $db->retrieve_all("SELECT * FROM test_gb_db_1", array(), "pkey"));
+
+
+        // insertion en précisant la valeur autoincrémentée
+        $this->assertEquals(1, $db->insert("test_gb_db_2", array("usa_id"=>"3", "usa_nom"=>"Trois")));
+        $expected=array("1"=>"Premier usager", "2"=>"Deuxième usager", "3"=>"Trois");
+        $this->assertSame($expected, $db->retrieve_all("SELECT * FROM test_gb_db_2", array(), "usa_id", "usa_nom"));
+
+        // modifie la valeur:
+        $this->assertEquals(1, $db->replace("test_gb_db_2", array("usa_nom"=>"Troi"), array($db->quoteInto("usa_id=?", "3"))));
+        $expected=array("1"=>"Premier usager", "2"=>"Deuxième usager", "3"=>"Troi");
+        $this->assertSame($expected, $db->retrieve_all("SELECT * FROM test_gb_db_2", array(), "usa_id", "usa_nom"));
+
+        // modifie la clé:
+        $this->assertEquals(1, $db->replace("test_gb_db_2", array("usa_id"=>"4"), array($db->quoteInto("usa_id=?", "3"))));
+        $expected=array("1"=>"Premier usager", "2"=>"Deuxième usager", "4"=>"Troi");
+        $this->assertSame($expected, $db->retrieve_all("SELECT * FROM test_gb_db_2", array(), "usa_id", "usa_nom"));
+        
     }
 
     public function testInsertOrUpdate()
@@ -273,6 +334,22 @@ mysql> select * from test_gb_db_2;
         $this->assertEquals(1, $db->insertOrUpdate("test_gb_db_1", array("pkey"=>"key9", "val"=>"def", "usr"=>"2")));
         $expected=array("key1"=>array("val"=>"abc", "usr"=>"1"), "key2"=>array("val"=>"abc", "usr"=>"2"), "key9"=>array("val"=>"def", "usr"=>"2"));
         $this->assertSame($expected, $db->retrieve_all("SELECT * FROM test_gb_db_1", array(), "pkey"));
+
+        // aucune modification: doit renvoyer 0 lignes modifiées
+        $this->assertEquals(0, $db->insertOrUpdate("test_gb_db_1", array("pkey"=>"key9", "val"=>"def", "usr"=>"2")));
+        $expected=array("key1"=>array("val"=>"abc", "usr"=>"1"), "key2"=>array("val"=>"abc", "usr"=>"2"), "key9"=>array("val"=>"def", "usr"=>"2"));
+        $this->assertSame($expected, $db->retrieve_all("SELECT * FROM test_gb_db_1", array(), "pkey"));
+
+
+        // insertion en précisant la valeur autoincrémentée
+        $this->assertEquals(1, $db->insert("test_gb_db_2", array("usa_id"=>"3", "usa_nom"=>"Trois")));
+        $expected=array("1"=>"Premier usager", "2"=>"Deuxième usager", "3"=>"Trois");
+        $this->assertSame($expected, $db->retrieve_all("SELECT * FROM test_gb_db_2", array(), "usa_id", "usa_nom"));
+
+        // modifie la valeur:
+        $this->assertEquals(1, $db->insertOrUpdate("test_gb_db_2", array("usa_id"=>"3", "usa_nom"=>"Troi")));
+        $expected=array("1"=>"Premier usager", "2"=>"Deuxième usager", "3"=>"Troi");
+        $this->assertSame($expected, $db->retrieve_all("SELECT * FROM test_gb_db_2", array(), "usa_id", "usa_nom"));
     }
 
     public function testInsertOrDeleteInsert()
@@ -318,6 +395,22 @@ mysql> select * from test_gb_db_2;
         $this->assertEquals(1, $db->insertOrDeleteInsert("test_gb_db_1", array("pkey"=>"key9", "val"=>"def", "usr"=>"2")));
         $expected=array("key1"=>array("val"=>"abc", "usr"=>"1"), "key2"=>array("val"=>"abc", "usr"=>"2"), "key9"=>array("val"=>"def", "usr"=>"2"));
         $this->assertSame($expected, $db->retrieve_all("SELECT * FROM test_gb_db_1", array(), "pkey"));
+
+        // aucune modification: doit renvoyer 1 quand même. (car suppression puis modification)
+        $this->assertEquals(1, $db->insertOrDeleteInsert("test_gb_db_1", array("pkey"=>"key9", "val"=>"def", "usr"=>"2")));
+        $expected=array("key1"=>array("val"=>"abc", "usr"=>"1"), "key2"=>array("val"=>"abc", "usr"=>"2"), "key9"=>array("val"=>"def", "usr"=>"2"));
+        $this->assertSame($expected, $db->retrieve_all("SELECT * FROM test_gb_db_1", array(), "pkey"));
+
+
+        // insertion en précisant la valeur autoincrémentée
+        $this->assertEquals(1, $db->insert("test_gb_db_2", array("usa_id"=>"3", "usa_nom"=>"Trois")));
+        $expected=array("1"=>"Premier usager", "2"=>"Deuxième usager", "3"=>"Trois");
+        $this->assertSame($expected, $db->retrieve_all("SELECT * FROM test_gb_db_2", array(), "usa_id", "usa_nom"));
+
+        // modifie la valeur:
+        $this->assertEquals(1, $db->insertOrDeleteInsert("test_gb_db_2", array("usa_id"=>"3", "usa_nom"=>"Troi")));
+        $expected=array("1"=>"Premier usager", "2"=>"Deuxième usager", "3"=>"Troi");
+        $this->assertSame($expected, $db->retrieve_all("SELECT * FROM test_gb_db_2", array(), "usa_id", "usa_nom"));
     }
     
 }
