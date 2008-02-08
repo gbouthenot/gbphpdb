@@ -10,16 +10,20 @@ require_once(_GB_PATH."Db.php");
 require_once(_GB_PATH."Exception.php");
 require_once(_GB_PATH."Log.php");
 require_once(_GB_PATH."String.php");
+require_once(_GB_PATH."Util.php");
 
 Class Gb_Form
 {
 	protected $formElements=array();
 
-	protected $db=false;
+	protected $db=null;
 	protected $where;
 	protected $tableName;
 
 	protected static $fPostIndicator=false;
+
+	protected $fValid=null;
+	protected $aErrors=null;
 
 	protected $_commonRegex = array(
 		'HexColor'        => '/^(#?([\dA-F]{3}){1,2})$/i',
@@ -50,7 +54,7 @@ Class Gb_Form
 		$this->db=$db;
 		$this->tableName=$tableName;
 
-		// transforme la condition avec quoteInto, si nécéssaire
+/*		// transforme la condition avec quoteInto, si nécéssaire
 		$where2=array();
 		foreach ($where as $cond) {
 			if (is_array($cond)) {
@@ -60,6 +64,8 @@ Class Gb_Form
 			$where2[]=$cond;
 		}
 		$this->where=$where2;
+*/
+		$this->where=$where;
 	}
 
 	/**
@@ -72,18 +78,28 @@ Class Gb_Form
 	public function addElement($nom, array $aParams)
 	{
 		// $aParams["type"]="SELECT" "SELECTMULTIPLE" "TEXT" "PASSWORD" "RADIO" "CHECKBOX" "TEXTAREA"
-		// $aParams["args"]        : array["default"]=array(value=>libelle) (value est recodé dans le html mais renvoie la bonne valeur)
-		// $aParams["dbCol"]       : optionnel: nom de la colonne
+        // $aParams["args"]:
+	    //            SELECT: liste des valeurs disponibles sous la forme
+	    //                    array(array(value=>libelle), "default"=>array(value=>libelle), ...)
+	    //                    (value est recodé dans le html mais renvoie la bonne valeur)
+	    //    SELECTMULTIPLE: idem SELECT mais sans la possibilité d'avoir un default 
+        //              TEXT: array("regexp"=>"/.*/" ou "Year" pour prédéfini) 
+        //          TEXTAREA: idem TEXT
+        //            HIDDEN:
+	    //          CHECKBOX:
+        //             RADIO:
+  	    // $aParams["dbCol"]       : nom de la colonne bdd
 		// $aParams["fMandatory"]  : doit être rempli ? défaut: false
-		// $aParams["classOK"]     : nom de la classe pour élément valide défaut: GBFORM_OK
+        // $aParams["invalidMsg"]  : texte qui s'affiche en cas de saisie invalide
+	    // $aParams["classOK"]     : nom de la classe pour élément valide défaut: GBFORM_OK
 		// $aParams["classNOK"]    : nom de la classe pour élément non valide défaut: GBFORM_NOK
 		// $aParams["classERROR"]  : nom de la classe pour erreur: GBFORM_ERROR
 		// $aParams["preInput"]    :
 		// $aParams["inInput"]     :
 		// $aParams["postInput"]   :
-		// renseignés automatiquement:
+		// renseignés automatiquement (accessible uniquement en lecture):
 		// $aParams["class"]       : nom de la classe en cours
-		// $aParams["errorMsg"]    : message d'erreur
+		// $aParams["message"]    : message d'erreur éventuel
 
 		if (!preg_match("/^[a-zA-Z][a-zA-Z0-9]*/", $nom))
 			throw new Gb_Exception("Nom de variable de formulaire invalide");
@@ -110,7 +126,7 @@ Class Gb_Form
 			$aParams["classERROR"]="GBFORM_ERROR";
 		if (!isset($aParams["class"]))
 			$aParams["class"]=$aParams["classOK"];
-		$aParams["errorMsg"]="";
+		$aParams["message"]="";
 
 		$type=$aParams["type"];
 		switch($type)
@@ -162,7 +178,7 @@ Class Gb_Form
 				$this->formElements[$nom]=$aParams;
 				break;
 
-			case "RADIO":
+			case "RADIO": case "HIDDEN":
 				if (!isset($aParams["value"]))
 					$aParams["value"]="";		// par défaut, chaine vide
 				$this->formElements[$nom]=$aParams;
@@ -303,7 +319,14 @@ Class Gb_Form
 				$ret.="<input type='".strtolower($type)."' class='text' id='GBFORM_$nom' name='GBFORM_$nom' $html value='$sValue' onchange='javascript:validate_GBFORM_$nom();' onkeyup='javascript:validate_GBFORM_$nom();' />\n";
 				break;
 
-			case "TEXTAREA":
+            case "HIDDEN":
+                $ret.=$aElement["preInput"];
+                $html=$aElement["inInput"];
+                $sValue=htmlspecialchars($value, ENT_QUOTES);
+                $ret.="<input type='".strtolower($type)."' id='GBFORM_$nom' name='GBFORM_$nom' $html value='$sValue' />\n";
+                break;
+
+            case "TEXTAREA":
 				$ret.="<div id='GBFORM_${nom}_div' class='$class'>\n";
 				$ret.=$aElement["preInput"];
 				$html=$aElement["inInput"];
@@ -334,13 +357,15 @@ Class Gb_Form
 			default:
 				throw new Gb_Exception("Type inconnu");
 		}
-		$errorMsg=$aElement["errorMsg"];
+        $ret.=$aElement["postInput"];
+		$errorMsg=$aElement["message"];
 		if (strlen($errorMsg)) {
 			$class=$aElement["classERROR"];
 			$ret.="<div class='$class'>$errorMsg</div>";
 		}
-		$ret.=$aElement["postInput"];
-		$ret.="</div>\n";
+		if ($type!="HIDDEN") {
+		  $ret.="</div>\n";
+		}
 
 		return $ret;
 	}
@@ -379,7 +404,7 @@ Class Gb_Form
 	{
 		if (!isset($this->formElements[$nom]))
 			throw new Gb_Exception("Element de fomulaire non défini");
-		$this->formElements[$nom]["errorMsg"]=$errorMsg;
+		$this->formElements[$nom]["message"]=$errorMsg;
 	}
 
 
@@ -408,7 +433,7 @@ Class Gb_Form
 
 		$type=$aElement["type"];
 		switch ($type) {
-			case "SELECTMULTIPLE":
+			case "SELECTMULTIPLE": case "HIDDEN":
 				break;
 
 			case "SELECT":
@@ -429,6 +454,7 @@ Class Gb_Form
 				}
 				if (isset($aElement["NOTVALUE"])){
 					$aNotValues=$aElement["NOTVALUE"];
+					if (!is_array($aNotValues)) $aNotValues=array($aNotValues);
 					foreach ($aNotValues as $notValue) {
 						$ret.=" var bornevalue=value;\n";
 						if (strpos($notValue, "GBFORM_")===0) {
@@ -463,8 +489,9 @@ Class Gb_Form
 					$ret.="	\$('GBFORM_{$nom}_div').className='{$aElement["classNOK"]}';\n";
 					$ret.="}\n";
 				}
-				if (isset($aElement["MINVALUE"])){
-					$aMinValues=$aElement["MINVALUE"];
+				if (isset($aElement["args"]["minvalue"])){
+					$aMinValues=$aElement["args"]["minvalue"];
+                    if (!is_array($aMinValues)) $aMinValues=array($aMinValues);
 					foreach ($aMinValues as $borne) {
 						if (is_array($borne) && isset($aElement["args"]["regexp"])) {
 							// si array, alors extrait la valeur du regexp avant de comparer
@@ -484,8 +511,9 @@ Class Gb_Form
 						$ret.="}\n";
 					}
 				}
-				if (isset($aElement["MAXVALUE"])){
-					$aMaxValues=$aElement["MAXVALUE"];
+				if (isset($aElement["args"]["maxvalue"])){
+					$aMaxValues=$aElement["args"]["maxvalue"];
+                    if (!is_array($aMaxValues)) $aMaxValues=array($aMaxValues);
 					foreach ($aMaxValues as $borne) {
 						if (is_array($borne) && isset($aElement["args"]["regexp"])) {
 							// si array, alors extrait la valeur du regexp avant de comparer
@@ -505,8 +533,9 @@ Class Gb_Form
 						$ret.="}\n";
 					}
 				}
-				if (isset($aElement["NOTVALUE"])){
-					$aNotValues=$aElement["NOTVALUE"];
+				if (isset($aElement["args"]["notvalue"])){
+					$aNotValues=$aElement["args"]["notvalue"];
+                    if (!is_array($aNotValues)) $aNotValues=array($aNotValues);
 					foreach ($aNotValues as $notValue) {
 						if (is_array($notValue) && isset($aElement["args"]["regexp"])) {
 							// si array, alors extrait la valeur du regexp avant de comparer
@@ -611,12 +640,12 @@ Class Gb_Form
 	 * Insère/update les valeurs dans la bdd
 	 *
 	 * @param array $moreData
-	 * @return boolean true si données ecrites
+	 * @return boolean true si tout s'est bien passé
 	 */
 	public function putInDb(array $moreData=array())
 	{
 		if ($this->db===null)
-			return false;
+			return true;
 
 			//todo: checkbox, radio, selectmultiple
 		// obient le nom des colonnes
@@ -637,6 +666,7 @@ Class Gb_Form
         try {
             $nb=$db->replace($this->tableName, $aCols, $this->where);
         } catch (Exception $e) {
+            $e;
             $nb=0;
         }
 
@@ -687,6 +717,7 @@ Class Gb_Form
 	{
 		$aErrs=array();
 		foreach ($this->formElements as $nom=>$aElement) {
+		    //pour tous les éléments:
 			$type=$aElement["type"];
 
 			switch ($type) {
@@ -701,7 +732,8 @@ Class Gb_Form
 					}
 					if (strlen($value) && isset($aElement["NOTVALUE"])) {
 						$aBornes=$aElement["NOTVALUE"];
-						foreach ($aBornes as $borne) {
+                        if (!is_array($aBornes)) $aBornes=array($aBornes);
+   						foreach ($aBornes as $borne) {
 							$bornevalue=$value;
 							$sBorne=$borne;
 							if (strpos($borne, "GBFORM_")===0) {
@@ -718,7 +750,7 @@ Class Gb_Form
 					}
 					break;
 
-				case "SELECTMULTIPLE":
+				case "SELECTMULTIPLE": case "HIDDEN":
 				break;
 
 				case "RADIO": case "CHECKBOX":
@@ -734,8 +766,9 @@ Class Gb_Form
 							continue;
 						}
 					}
-					if (strlen($value) && isset($aElement["MINVALUE"])) {
-						$aBornes=$aElement["MINVALUE"];
+					if (strlen($value) && isset($aElement["args"]["minvalue"])) {
+						$aBornes=$aElement["args"]["minvalue"];
+                        if (!is_array($aBornes)) $aBornes=array($aBornes);
 						foreach ($aBornes as $borne) {
 							$bornevalue=$value;
 							if (is_array($borne) && isset($aElement["args"]["regexp"])) {
@@ -756,8 +789,9 @@ Class Gb_Form
 							}
 						}
 					}
-					if (strlen($value) && isset($aElement["MAXVALUE"])) {
-						$aBornes=$aElement["MAXVALUE"];
+					if (strlen($value) && isset($aElement["args"]["maxvalue"])) {
+						$aBornes=$aElement["args"]["maxvalue"];
+						if (!is_array($aBornes)) $aBornes=array($aBornes);
 						foreach ($aBornes as $borne) {
 							$bornevalue=$value;
 							if (is_array($borne) && isset($aElement["args"]["regexp"])) {
@@ -778,8 +812,9 @@ Class Gb_Form
 							}
 						}
 					}
-					if (strlen($value) && isset($aElement["NOTVALUE"])) {
-						$aBornes=$aElement["NOTVALUE"];
+					if (strlen($value) && isset($aElement["args"]["notvalue"])) {
+						$aBornes=$aElement["args"]["notvalue"];
+                        if (!is_array($aBornes)) $aBornes=array($aBornes);
 						foreach ($aBornes as $borne) {
 							$bornevalue=$value;
 							if (is_array($borne) && isset($aElement["args"]["regexp"])) {
@@ -807,29 +842,76 @@ Class Gb_Form
 			if ($aElement["fMandatory"]) {
 				// Vérifie que le champ et bien rempli
 				if ( ($type=="SELECT" && $value===false) || (($type!="SELECT" && $type!="SELECTMULTIPLE") && strlen($value)==0) ) {
-					if ($type=="SELECT")	$aErrs[$nom]="Aucun choix sélectionné";
-					elseif ($type=="TEXT")	$aErrs[$nom]="Valeur non renseignée";
-					elseif ($type=="TEXTAREA")	$aErrs[$nom]="Texte non renseigné";
-					elseif ($type=="CHECKBOX")	$aErrs[$nom]="Case non cochée";
-					elseif ($type=="RADIO")	$aErrs[$nom]="?";
-					elseif ($type=="PASSWORD")	$aErrs[$nom]="Mot de passe vide";
-					else	$aErrs[$nom]="Champ non renseigné";
+					if ($type=="SELECT")        $aErrs[$nom]="Aucun choix sélectionné";
+					elseif ($type=="TEXT")      $aErrs[$nom]="Valeur non renseignée";
+					elseif ($type=="TEXTAREA")  $aErrs[$nom]="Texte non renseigné";
+					elseif ($type=="CHECKBOX")  $aErrs[$nom]="Case non cochée";
+					elseif ($type=="RADIO")     $aErrs[$nom]="?";
+					elseif ($type=="PASSWORD")  $aErrs[$nom]="Mot de passe vide";
+					else                        $aErrs[$nom]="Champ non renseigné";
 					continue;
 				}
 			}
-		}//foreach
+		}//foreach ($this->formElements as $nom=>$aElement) {
 
 		foreach($aErrs as $nom=>$reason)
 		{
 			$this->setClass($nom, false);
+			if (!empty($this->formElements[$nom]["invalidMsg"]))
+			 $reason=$this->formElements[$nom]["invalidMsg"];
 			$this->setErrorMsg($nom, $reason);
 		}
 
-		if (count($aErrs)==0)
-			return true;
-		else
-			return $aErrs;
+		$this->aErrors=$aErrs;
+		if (count($aErrs)==0) {
+		    $this->fValid=true;
+		} else {
+            $this->fValid=false;
+	   }
+       return $this->fValid;
+	   
 	}
 
+	
+    public function isValid()
+    {
+        if ($this->fValid===null) {
+            $this->validate();
+        }
+        return $this->fValid;
+    }
+    
+    public function getErrors()
+    {
+        if ($this->fValid===null) {
+            $this->validate();
+        }
+        return $this->aErrors;
+    }
 
+    /**
+     * @todo Enter description here...
+     *
+     * @return boolean true si formulaire valide et données écrite dans bdd
+     */
+    public function process()
+    {
+        if ($this->getFromDb() || $this->getFromPost()) {
+            $isValid=$this->validate();
+            if ($isValid) {
+                $this->fValid=$this->putInDb();
+                return;
+            }
+        }
+        $this->fValid=false;
+    }
+
+
+
+
+
+
+
+
+	
 }
