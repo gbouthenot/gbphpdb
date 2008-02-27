@@ -124,7 +124,6 @@ Class Gb_Db extends Zend_Db
 	public function getTables()
 	{
         if ($this->tables==null) {
-            $sql="";
             switch($this->driver) {
                 case "Pdo_Oci":
                     $sql_getTablesName="
@@ -253,7 +252,7 @@ Class Gb_Db extends Zend_Db
     function query($sql, $bindarguments=array())
     {
         $time=microtime(true);
-        $ret=$this->conn->query($sql, $bindargument);
+        $ret=$this->conn->query($sql, $bindarguments);
         self::$sqlTime+=microtime(true)-$time;
         return $ret;
     }
@@ -327,13 +326,13 @@ Class Gb_Db extends Zend_Db
             $ret=array();
             if ($fCol && !$fIdx) {
                 // on veut array[numero]=valeur de la colonne
-                while ($res= $stmt->fetch(Zend_Db::FETCH_ASSOC) ) {
+                while ( ($res=$stmt->fetch(Zend_Db::FETCH_ASSOC)) ) {
                     $ret[]=$res[$col];
                 }
             }
             elseif ($fCol && $fIdx) {
                 // on veut array[index]=valeur de la colonne
-                while ($res= $stmt->fetch(Zend_Db::FETCH_ASSOC) ) {
+                while ( ($res=$stmt->fetch(Zend_Db::FETCH_ASSOC)) ) {
                     $key=$res[$index];
                     unset($res[$index]);
                     $ret[$key]=$res[$col];
@@ -341,24 +340,24 @@ Class Gb_Db extends Zend_Db
             }
             elseif (!$fCol && !$fIdx) {
                 //on veut juste un array[numero]=array(colonnes=>valeur)
-                while ($res= $stmt->fetch(Zend_Db::FETCH_ASSOC) ) {
+                while ( ($res=$stmt->fetch(Zend_Db::FETCH_ASSOC)) ) {
                     $ret[]=$res;
                 }
             }
             elseif (!$fCol && $fIdx) {
                 //on veut un array[index]=array(colonnes=>valeur)
-                while ($res= $stmt->fetch(Zend_Db::FETCH_ASSOC) ) {
+                while ( ($res=$stmt->fetch(Zend_Db::FETCH_ASSOC)) ) {
                     $key=$res[$index];
                     unset($res[$index]);
                     $ret[$key]=$res;
                 }
             }
             self::$sqlTime+=microtime(true)-$time;
-            return $ret;
         } catch (Exception $e) {
             self::$sqlTime+=microtime(true)-$time;
             throw new Gb_Exception($e->getMessage());
         }
+        return $ret;
     }
 
     /**
@@ -401,11 +400,11 @@ Class Gb_Db extends Zend_Db
                 $ret=$res;
             }
             self::$sqlTime+=microtime(true)-$time;
-            return $ret;
         } catch (Exception $e){
             self::$sqlTime+=microtime(true)-$time;
             throw new Gb_Exception($e->getMessage());
         }
+        return $ret;
     }
 
     public function beginTransaction()
@@ -590,6 +589,7 @@ Class Gb_Db extends Zend_Db
             if ($nb==0) {
                 // Aucune ligne existe: insertion nouvelle ligne
                 $ret=$this->insert($table, $data);
+                $ret;
             } elseif ($nb==1) {
                 // Une ligne existe déjà: delete puis insert
                 // @todo: transaction !

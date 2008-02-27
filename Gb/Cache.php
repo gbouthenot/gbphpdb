@@ -11,10 +11,11 @@ require_once(_GB_PATH."Util.php");
 
 Class Gb_Cache
 {
-	public static $cacheDir=""; // Répertoire du cache par défaut session_path/PROJECTNAME/cache
-
+	public static $cacheDir=""; // Répertoire du cache par défaut session_path/PROJECTNAME/cache    protected static $nbTotal=0;                    // Nombre d'objet au total
+    protected static $nbCacheHits=0;                // Nombre de cache hit
+    
     /**
-     * Renvoit le nom du repertoire de cache
+     * Renvoie le nom du repertoire de cache
      * crée le répertoire si besoin
      *
      * @return string cacheDir
@@ -37,5 +38,161 @@ Class Gb_Cache
         }
         return self::$cacheDir;
     }
-	
+
+    public static function get_nbTotal()
+    {
+        return self::$nbTotal;
+    }
+
+    public static function get_nbCacheHits()
+    {
+        return self::$nbCacheHits;
+    }
+    
+
+    
+    protected $cacheEngine;
+    protected $cacheID;
+    protected $fUpdated;
+    protected $fExpired;
+    protected $cacheHit;
+
+    protected $values;
+
+    /**
+     * Crée un cacheableObject
+     *
+     * @param string $cacheID
+     * @param integer|string[optional] $ttl durée de vie en secondes, ou fichier de référence. Par défaut 10 secondes.
+     */
+    public function __construct($cacheID, $ttl=10)
+    {
+        require_once("Zend/Cache.php");
+
+        $frontendOptions=array(
+                'caching'=>true,                      // true         Active/désactive le cache (utile pour debug)
+                'logging'=>false,                     // false        Utilise Zend_Log
+                'write_control'=>false,               // true         Vérifier l'écriture
+                'automatic_serialization'=>true,      // false        Permet de sauvegarder pas uniquement des strings
+                'automatic_cleaning_factor'=>10,      // 10           Probabilité de 1/x de nettoyer le cache
+        );
+
+        if (is_string($ttl)) {
+            $frontend='File';
+            $lifetime=null;
+            $frontendOptions['master_file']=$ttl;     // string       Nom du fichier dont la date de modification servira de référence
+        } else {
+            $frontend='Core';
+            $lifetime=$ttl;
+        }
+        $frontendOptions['lifetime']=$lifetime;       // 3600         Durée de vie en secondes, null:validité permanente
+        
+        $this->cacheEngine=Zend_Cache::factory(
+            $frontend,                                // frontend: Core: par défaut, File: pour le mtime d'un fichier
+            'File',                                   // backend: où le cache est stocké: File
+            $frontendOptions,
+            array(
+                'cache_dir'=>self::getCacheDir(),     // '/tmp/'      Répertoire où stocker les fichiers
+                'file_locking'=>true,                 // true         Utiliser file_locking
+                'read_control'=>true,                 // true         Utilisation d'un checksum pour contrôler la validité des données
+                'read_control_type'=>'crc32',         // 'crc32'      Type du checksum: crc32, md5 ou strlen
+                'hashed_directory_level'=>0,          // 0            Profondeur de répertoire à utiliser
+                'hashed_directory_umask'=>0700,       // 0700         umask à utiliser pour la structure de répertoires
+                'file_name_prefix'=>'gb_cache',       // 'zend_cache' Préfixe ajouté aux fichiers. Attention, si vous enregistrer dans un répertoire générique comme /tmp/, à ce que ce préfix soit spécifique à chaque application !
+                )
+        );
+        
+        $this->cacheID=$cacheID;
+        $this->values=$this->cacheEngine->load($cacheID);
+        if ( $this->values===false ) {
+            // cache invalide ou expiré
+            $this->values=array();
+            $this->cacheHit=true;
+            self::$nbCacheHits++;
+        } else {
+            $this->cacheHit=false;
+        }
+        
+        self::$nbTotal++;
+    }
+
+    /**
+     * Sauve l'objet s'il a été modifié et qu'il n'est pas marqué comme expiré
+     */
+    public function __destruct()
+    {
+        if ($this->fUpdated && !$this->fExpired) {
+            $this->cacheEngine->save($this->values, $this->cacheID);
+        }
+    }
+
+    /**
+     * Marque l'objet comme expiré, c'est à dire qu'au prochain appel, le cache ne sera pas utilisé
+     */
+    public function expire()
+    {
+        $this->cacheEngine->remove($this->cacheID);
+        $this->fExpired=true;
+    }
+
+
+    public function cacheHit()
+    {
+        return $this->cacheHit;
+    }
+    
+    public function cacheMiss()
+    {
+        return !$this->cacheHit;
+    }
+    
+/**
+     * Renvoie un attribut
+     *
+     * @param string $index
+     * @return mixed
+     */
+    public function __get($index)
+    {
+        if (isset($this->values[$index])) {
+            return $this->values[$index];
+        } else {
+            return null;
+        }
+    }
+
+    /**
+     * Positionne un attribut
+     *
+     * @param string $index
+     * @param mixed $newValue
+     * @return mixed
+     */
+    public function __set($index, $newValue)
+    {
+        $this->values[$index]=$newValue;
+        $this->fUpdated=true;
+    }
+
+    /**
+     * Enlève un attribut
+     *
+     * @param string $index
+     */
+    public function __unset($index)
+    {
+        unset($this->values[$index]);
+    }
+
+    /**
+     * fonction isset/empty
+     *
+     * @param string $index
+     * @return boolean
+     */
+    public function __isset($index)
+    {
+        return isset($this->values[$index]);
+    }
+
 }

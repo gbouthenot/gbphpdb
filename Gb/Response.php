@@ -157,7 +157,15 @@ class Gb_Response
 				self::$footer.="Gb_Timer:{total:$timetotal peak:$timepeak} ";
 			}
 		}
-			
+
+        if ( class_exists("Gb_Cache") ) {
+            $nbtotal=Gb_Cache::get_nbTotal();
+            $nbcachehits=Gb_Cache::get_nbCacheHits();
+            if ($nbtotal) {
+                self::$footer.="Gb_Cache:{total:$nbtotal hits:$nbcachehits} ";
+            }
+        }
+		
 		self::$footer.="\n";
 
 		if (!self::$noFooterEscape)

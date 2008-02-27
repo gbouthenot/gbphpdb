@@ -243,7 +243,8 @@ class Gb_Log
 				$sLog.=" in $fxname($fxparam) --> $fxreturn";
 			$sLog.=" )\n";
 
-			if ( $fd = @fopen($logFilename, "a") ) {
+			$fd = @fopen($logFilename, "a");
+			if ($fd) {
 				fwrite($fd, $sLog);
 				fclose ($fd);
 			}
