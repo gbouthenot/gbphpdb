@@ -107,10 +107,10 @@ Class Gb_Cache
         if ( $this->values===false ) {
             // cache invalide ou expiré
             $this->values=array();
-            $this->cacheHit=true;
-            self::$nbCacheHits++;
-        } else {
             $this->cacheHit=false;
+        } else {
+            self::$nbCacheHits++;
+            $this->cacheHit=true;
         }
         
         self::$nbTotal++;
