@@ -5,7 +5,6 @@ require_once 'Test/Gb_StringTest.php';
 require_once 'Test/Gb_TimerTest.php';
 require_once 'Test/Gb_UtilTest.php';
 
-Gb_Cache::$cacheDir=".";
 /**
  * Static test suite.
  */

@@ -1,5 +1,8 @@
 <?php
 require_once 'Gb/Cache.php';
+
+Gb_Cache::$cacheDir=".";
+
 /**
  * CacheableObject test case.
  */
@@ -139,5 +142,47 @@ class Gb_CacheTest extends PHPUnit_Framework_TestCase
         unset($this->CacheableObject->testProperty);
         $this->assertNull(     $this->CacheableObject->testProperty);
     }
+    
+    public function test_class()
+    {
+        $tc=new tstclass();
+        $this->assertEquals("private public privatestatic publicstatic", $tc->getall());
+        
+        $tccache=new Gb_Cache('testtstclass', 30);
+        if (empty($tccache->value)) {
+            $tccache->value=$tc;
+        }
+
+        $this->assertEquals("private public privatestatic publicstatic", $tccache->value->getall());
+        unset($tccache);
+        unset($tc);
+        
+        $tccache2=new Gb_Cache('testtstclass', 30);
+        $this->assertEquals("private public privatestatic publicstatic", $tccache2->value->getall());
+        
+    }
 }
+
+
+class tstclass
+{
+    private $prv;
+    public  $pub;
+    private static $prvstat;
+    public  static $pubstat;
+    
+    function __construct()
+    {
+        $this->prv="private";
+        $this->pub="public";
+        self::$prvstat="privatestatic";
+        self::$pubstat="publicstatic";
+    }
+    
+    function getall()
+    {
+        return $this->prv." ".$this->pub." ".self::$prvstat." ".self::$pubstat;
+    }
+}
+
 
