@@ -1,7 +1,7 @@
 <?php
 
 if (!defined("_GB_PATH")) {
-	define("_GB_PATH", dirname(__FILE__).DIRECTORY_SEPARATOR);
+  define("_GB_PATH", dirname(__FILE__).DIRECTORY_SEPARATOR);
 }
 
 require_once(_GB_PATH."Exception.php");
@@ -19,12 +19,12 @@ Class Gb_Db extends Zend_Db
      */
     protected $conn;
     protected $connArray;                                    // array utilisé par Zend_Db::factory()
-    protected $driver;      							     // Pdo_Mysql ou Pdo_Oci
+    protected $driver;                         // Pdo_Mysql ou Pdo_Oci
     protected $dbname;
 
     protected $tables;                                      // cache de la liste des tables
     protected $tablesDesc;                                  // cache descriptif table
-	
+  
     protected static $sqlTime=0;
     protected static $nbInstance_total=0;                    // Nombre de classes gbdb ouvertes au total
     protected static $nbInstance_peak=0;                     // maximum ouvertes simultanément
@@ -97,32 +97,32 @@ Class Gb_Db extends Zend_Db
         $this->connArray=$array;
     }
 
-	function __destruct()
-	{
-		$time=microtime(true);
-		self::$nbInstance_current--;
-		$this->conn->closeConnection();
-		self::$sqlTime+=microtime(true)-$time;
-	}
+  function __destruct()
+  {
+    $time=microtime(true);
+    self::$nbInstance_current--;
+    $this->conn->closeConnection();
+    self::$sqlTime+=microtime(true)-$time;
+  }
 
 
-	public static function get_nbInstance_peak()
-	{
-		return self::$nbInstance_peak;
-	}
+  public static function get_nbInstance_peak()
+  {
+    return self::$nbInstance_peak;
+  }
 
-	public static function get_nbInstance_total()
-	{
-		return self::$nbInstance_total;
-	}
+  public static function get_nbInstance_total()
+  {
+    return self::$nbInstance_total;
+  }
 
-	public static function get_sqlTime()
-	{
-		return self::$sqlTime;
-	}
+  public static function get_sqlTime()
+  {
+    return self::$sqlTime;
+  }
 
-	public function getTables()
-	{
+  public function getTables()
+  {
         if ($this->tables==null) {
             switch($this->driver) {
                 case "Pdo_Oci":
@@ -145,8 +145,8 @@ Class Gb_Db extends Zend_Db
             $this->tables=$this->retrieve_all($sql_getTablesName, array(), "", "FULL_NAME");
         }
         return $this->tables;
-	}
-	
+  }
+  
     public function getTableDesc($table)
     {
         $sqlTime=self::$sqlTime;
@@ -826,10 +826,10 @@ Class Gb_Db extends Zend_Db
     /**
      * Renvoie la valeur suivante d'une séquence
      *
-     * 	la table doit etre de la forme::
-     * 	create table seq_sise_numero (id int not null) ENGINE = 'MyIsam";
-     * 	insert into seq_sise_numero values (0);
-     * 	update seq_sise_numero set id=LAST_INSERT_ID(id+1);
+     *  la table doit etre de la forme::
+     *  create table seq_sise_numero (id int not null) ENGINE = 'MyIsam";
+     *  insert into seq_sise_numero values (0);
+     *  update seq_sise_numero set id=LAST_INSERT_ID(id+1);
      *
      * @param string $tableName
      * @param string[optionel] $colName

@@ -3,7 +3,7 @@
  */
 
 if (!defined("_GB_PATH")) {
-	define("_GB_PATH", dirname(__FILE__).DIRECTORY_SEPARATOR);
+  define("_GB_PATH", dirname(__FILE__).DIRECTORY_SEPARATOR);
 }
 
 require_once(_GB_PATH."Exception.php");
@@ -11,7 +11,8 @@ require_once(_GB_PATH."Util.php");
 
 Class Gb_Cache
 {
-	public static $cacheDir=""; // Répertoire du cache par défaut session_path/PROJECTNAME/cache    protected static $nbTotal=0;                    // Nombre d'objet au total
+  public static $cacheDir=""; // Répertoire du cache par défaut session_path/PROJECTNAME/cache
+    protected static $nbTotal=0;                    // Nombre d'objet au total
     protected static $nbCacheHits=0;                // Nombre de cache hit
     
     /**
@@ -19,7 +20,7 @@ Class Gb_Cache
      * crée le répertoire si besoin
      *
      * @return string cacheDir
-	 * @throws Gb_Exception
+   * @throws Gb_Exception
      */
     public static function getCacheDir()
     {
