@@ -90,6 +90,7 @@ class Gb_StringTest extends PHPUnit_Framework_TestCase
         try {
             Gb_String::str_to_time("1977-02-15");
         } catch (Gb_Exception $e) {
+            $e;
             return;
         }
         $this->fail();

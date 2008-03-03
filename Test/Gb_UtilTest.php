@@ -63,6 +63,7 @@ class Gb_UtilTest extends PHPUnit_Framework_TestCase
         try {
             Gb_Util::include_file("doesnotexist");
         } catch (Gb_Exception $e) {
+            $e;
             return;  
         }
         $this->fail("Exception non attrapée");

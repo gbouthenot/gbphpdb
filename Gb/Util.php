@@ -40,7 +40,7 @@ Class Gb_Util
   public static $debug=0;                 // par défaut, pas de mode débug
   public static $forbidDebug=0;           // ne pas interdire de passer en débug par $_GET["debug"]
   public static $starttime=0;
-  
+  protected static $_oldSessionDir;
 
 
   /**
@@ -220,6 +220,17 @@ Class Gb_Util
 
 
 
+
+    public static function getOldSessionDir()
+    {
+        if ( self::$_oldSessionDir===null ) {
+            self::$_oldSessionDir=session_save_path();
+            if (self::$_oldSessionDir=="") {
+                self::$_oldSessionDir=".";
+            }
+        }
+        return self::$_oldSessionDir;
+    }
 
 }
 

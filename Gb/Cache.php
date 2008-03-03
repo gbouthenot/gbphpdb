@@ -24,16 +24,15 @@ Class Gb_Cache
      */
     public static function getCacheDir()
     {
-        $cacheDir=self::$cacheDir;
-        if ( $cacheDir=="" ) {
-            $updir=session_save_path();
+        if ( self::$cacheDir=="" ) {
+            $updir=Gb_Util::getOldSessionDir();
             $updir2=$updir.DIRECTORY_SEPARATOR.Gb_Util::getProjectName();
-            if ( (!is_dir($updir2)||!is_writable($updir2))&&is_dir($updir)&&is_writable($updir) )
+            if ( (!is_dir($updir2) || !is_writable($updir2)) && is_dir($updir) && is_writable($updir) )
                 @mkdir($updir2, 0700);
             $updir3=$updir2.DIRECTORY_SEPARATOR."cache";
-            if ( (!is_dir($updir3)||!is_writable($updir3))&&is_dir($updir2)&&is_writable($updir2) )
+            if ( (!is_dir($updir3) || !is_writable($updir3)) && is_dir($updir2) && is_writable($updir2) )
                 @mkdir($updir3, 0700);
-            if ( !is_dir($updir3)||!is_writable($updir3) )
+            if ( !is_dir($updir3) || !is_writable($updir3) )
                 throw new Gb_Exception("Impossible de créer le répertoire $updir3 pour stocker le cache !");
             self::$cacheDir=$updir3;
         }

@@ -56,21 +56,21 @@ class Gb_Log
      */
     public static function getLogFilename()
     {
-        $logFilename=self::$logFilename;
-        if ( $logFilename=="" ) { // met le logFilename sur error_log/{PROJECTNAME}.LOG
+        if ( self::$logFilename=="" ) { // met le logFilename sur error_log/{PROJECTNAME}.LOG
             $logFilename=ini_get("error_log");
-            $d=DIRECTORY_SEPARATOR;
+            $d=addslashes(DIRECTORY_SEPARATOR);;
             // 1: /var/log/php5 2:php_error.log
             unset($matches);
             preg_match("@^(.+$d)(.+)\$@", $logFilename, $matches);
             if (isset($matches[1])) { 
-                $logFilename=$matches[1].Gb_Util::getProjectName().".log";
+                self::$logFilename=$matches[1].Gb_Util::getProjectName().".log";
             } else {
-                $logFilename=Gb_Util::getProjectName().".log";
+                // pas de répertoire: utilise session_save_path
+                $updir=Gb_Util::getOldSessionDir();
+                self::$logFilename=$updir.DIRECTORY_SEPARATOR.Gb_Util::getProjectName().".log";
             }
-            self::$logFilename=$logFilename;
         }
-        return $logFilename;
+        return self::$logFilename;
     }
   
   /**

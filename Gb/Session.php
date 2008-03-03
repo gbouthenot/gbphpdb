@@ -21,24 +21,23 @@ Class Gb_Session
    * @return string sessionDir
    * @throws Gb_Exception
    */
-  public static function getSessionDir()
-  {
-    $sessionDir=self::$sessionDir;
-
-    if ($sessionDir=="") {
-      $updir=session_save_path();
-      $updir2=$updir.DIRECTORY_SEPARATOR.Gb_Util::getProjectName();
-      if ((!is_dir($updir2) || !is_writable($updir2)) && is_dir($updir) && is_writable($updir))
-        @mkdir($updir2, 0700);
-      $updir3=$updir2.DIRECTORY_SEPARATOR."sessions";
-      if ((!is_dir($updir3) || !is_writable($updir3)) && is_dir($updir2) && is_writable($updir2))
-        @mkdir($updir3, 0700);
-      if (is_dir($updir3) && is_writable($updir3))
-        session_save_path($updir3);
-      else throw new Gb_Exception("Impossible de créer le répertoire $updir3 pour stocker les sessions ! session_save_path()=$updir");
+    public static function getSessionDir()
+    {
+        if ( self::$sessionDir=="" ) {
+            $updir=Gb_Util::getOldSessionDir();
+            $updir2=$updir.DIRECTORY_SEPARATOR.Gb_Util::getProjectName();
+            if ( (!is_dir($updir2) || !is_writable($updir2)) && is_dir($updir) && is_writable($updir) )
+                @mkdir($updir2, 0700);
+            $updir3=$updir2.DIRECTORY_SEPARATOR."sessions";
+            if ( (!is_dir($updir3) || !is_writable($updir3)) && is_dir($updir2) && is_writable($updir2) )
+                @mkdir($updir3, 0700);
+            if ( !is_dir($updir3) || !is_writable($updir3) )
+                throw new Gb_Exception("Impossible de créer le répertoire $updir3 pour stocker les sessions ! session_save_path()=$updir");
+            session_save_path($updir3);
+            self::$sessionDir=$updir3;
+        }
+        return self::$sessionDir;
     }
-    return $sessionDir;
-  }
 
   /**
    * Démarre une session sécurisée (id changeant, watch ip et l'user agent)
@@ -64,8 +63,6 @@ Class Gb_Session
 
     $sWarning="";
 
-    $uniqId="";
-    if (isset($_SESSION[$sVarNameUniqId]))  $uniqId=$_SESSION[$sVarNameUniqId];
     $uniqId=Gb_Request::getForm("uniqId");
     if ( isset($_SESSION[$sVarName]) && $_SESSION[$sVarName]!=$client )
     { // session hijacking ? Teste l'IP et l'user agent du client
