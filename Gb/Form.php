@@ -80,7 +80,7 @@ Class Gb_Form
     // $aParams["type"]="SELECT" "SELECTMULTIPLE" "TEXT" "PASSWORD" "RADIO" "CHECKBOX" "TEXTAREA"
         // $aParams["args"]:
       //            SELECT: liste des valeurs disponibles sous la forme
-      //                    array(array(value=>libelle), "default"=>array(value=>libelle), ...)
+      //                    array(array(value[,libelle]), "default"=>array(value[,libelle]), ...)
       //                    (value est recodé dans le html mais renvoie la bonne valeur)
       //    SELECTMULTIPLE: idem SELECT mais sans la possibilité d'avoir un default 
         //              TEXT: array("regexp"=>"/.*/" ou "Year" pour prédéfini) 
@@ -284,7 +284,7 @@ Class Gb_Form
         $num=0;
         foreach ($aValues as $ordre=>$aOption){
           $sVal=htmlspecialchars($aOption[0], ENT_QUOTES);
-          $sLib=htmlspecialchars($aOption[1], ENT_QUOTES);
+          $sLib=htmlspecialchars(!empty($aOption[1])?$aOption[1]:$aOption[0], ENT_QUOTES);
           $sSelected="";
           if ($ordre==$value)
             $sSelected="selected='selected'";

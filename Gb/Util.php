@@ -92,7 +92,7 @@ Class Gb_Util
 
   /**
    * Combine deux arrays
-   * Idem que array_merge, mais sans renuméroter les clés si clé numérique
+   * Idem que array_merge, mais sans renuméroter les clés si clé numérique (évite de concaténer)
    *
    * @param array $arr1
    * @param array $arr2

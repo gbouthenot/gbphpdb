@@ -128,6 +128,17 @@ class Gb_Log
   }
 
 
+  
+  public static function logEmerg($text="") { self::log(self::LOG_EMERG, $text); }
+  public static function logAlert($text="") { self::log(self::LOG_ALERT, $text); }
+  public static function logCrit($text="") { self::log(self::LOG_CRIT, $text); }
+  public static function logError($text="") { self::log(self::LOG_ERROR, $text); }
+  public static function logWarning($text="") { self::log(self::LOG_WARNING, $text); }
+  public static function logNotice($text="") { self::log(self::LOG_NOTICE, $text); }
+  public static function logInfo($text="") { self::log(self::LOG_INFO, $text); }
+  public static function logDebug($text="") { self::log(self::LOG_DEBUG, $text); }
+        
+  
     /**
      * Loggue un message
      *

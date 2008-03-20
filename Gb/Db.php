@@ -21,7 +21,8 @@ Class Gb_Db extends Zend_Db
     protected $connArray;                                    // array utilisé par Zend_Db::factory()
     protected $driver;                         // Pdo_Mysql ou Pdo_Oci
     protected $dbname;
-
+    protected $fTransaction=false;
+    
     protected $tables;                                      // cache de la liste des tables
     protected $tablesDesc;                                  // cache descriptif table
   
@@ -29,6 +30,7 @@ Class Gb_Db extends Zend_Db
     protected static $nbInstance_total=0;                    // Nombre de classes gbdb ouvertes au total
     protected static $nbInstance_peak=0;                     // maximum ouvertes simultanément
     protected static $nbInstance_current=0;                  // nom d'instances ouvertes en ce moment
+    protected static $nbRequest=0;                           // Nombre de requetes effectuées
 
     public function getAdapter()
     {
@@ -116,6 +118,11 @@ Class Gb_Db extends Zend_Db
     return self::$nbInstance_total;
   }
 
+  public static function get_nbRequests()
+  {
+    return self::$nbRequest;
+  }
+  
   public static function get_sqlTime()
   {
     return self::$sqlTime;
@@ -263,6 +270,7 @@ Class Gb_Db extends Zend_Db
      */
     function exec($sql)
     {
+        self::$nbRequest++;
         $time=microtime(true);
         $ret=$this->conn->getConnection()->exec($sql);
         self::$sqlTime+=microtime(true)-$time;
@@ -308,6 +316,7 @@ Class Gb_Db extends Zend_Db
     public function retrieve_all($sql, $bindargurment=array(), $index="", $col="")
     {
         $time=microtime(true);
+        self::$nbRequest++;
 
         if ($bindargurment===False) {
             $bindargurment=array();
@@ -373,6 +382,7 @@ Class Gb_Db extends Zend_Db
     public function retrieve_one($sql, $bindargurment=array(), $col="")
     {
         $time=microtime(true);
+        self::$nbRequest++;
 
         if ($bindargurment===False)
             $bindargurment=array();
@@ -410,6 +420,10 @@ Class Gb_Db extends Zend_Db
     public function beginTransaction()
     {
         $time=microtime(true);
+        if ($this->fTransaction==true) {
+            throw new Gb_Exception("Transaction déjà en cours, impossible d'en démarrer une nouvelle !");
+        }
+        $this->fTransaction=true;
         $ret=$this->conn->beginTransaction();
         self::$sqlTime+=microtime(true)-$time;
         return $ret;
@@ -419,6 +433,7 @@ Class Gb_Db extends Zend_Db
     {
         $time=microtime(true);
         $ret=$this->conn->rollBack();
+        $this->fTransaction=false;
         self::$sqlTime+=microtime(true)-$time;
         return $ret;
     }
@@ -427,6 +442,8 @@ Class Gb_Db extends Zend_Db
     {
         $time=microtime(true);
         $ret=$this->conn->commit();
+        $this->fTransaction=false;
+        
         self::$sqlTime+=microtime(true)-$time;
         return $ret;
     }
@@ -443,6 +460,7 @@ Class Gb_Db extends Zend_Db
     public function update($table, array $data, array $where=array())
     {
         $time=microtime(true);
+        self::$nbRequest++;
         try {
             $ret=$this->conn->update($table, $data, $where);
         } catch (Exception $e) {
@@ -464,6 +482,7 @@ Class Gb_Db extends Zend_Db
     public function delete($table, array $where=array())
     {
         $time=microtime(true);
+        self::$nbRequest++;
         try {
             $ret=$this->conn->delete($table, $where);
         } catch (Exception $e) {
@@ -485,6 +504,7 @@ Class Gb_Db extends Zend_Db
     public function insert($table, array $data)
     {
         $time=microtime(true);
+        self::$nbRequest++;
         try {
             $ret=$this->conn->insert($table, $data);
         } catch (Exception $e) {
@@ -508,6 +528,7 @@ Class Gb_Db extends Zend_Db
     {
         $sqlTime=self::$sqlTime;
         $time=microtime(true);
+        self::$nbRequest++;
         try {
             // compte le nombre de lignes correspondantes
             $select=$this->conn->select();
@@ -568,6 +589,7 @@ Class Gb_Db extends Zend_Db
     {
         $sqlTime=self::$sqlTime;
         $time=microtime(true);
+        self::$nbRequest++;
         
         $where=array();
         $newdata=array();
@@ -657,6 +679,7 @@ Class Gb_Db extends Zend_Db
     {
         $sqlTime=self::$sqlTime;
         $time=microtime(true);
+        self::$nbRequest++;
         
         $where=array();
         $newdata=array();
@@ -698,6 +721,7 @@ Class Gb_Db extends Zend_Db
     {
         $sqlTime=self::$sqlTime;
         $time=microtime(true);
+        self::$nbRequest++;
         
         $where=array();
         $newdata=array();
@@ -860,6 +884,7 @@ Class Gb_Db extends Zend_Db
     {
         $sqlTime=self::$sqlTime;
         $time=microtime(true);
+        self::$nbRequest++;
         $sql="SELECT ".$this->conn->quoteIdentifier($colName)." FROM ".$this->conn->quoteIdentifier($tableName);
         $stmt=$this->conn->query($sql);
         $res=$stmt->fetch(Zend_Db::FETCH_NUM);

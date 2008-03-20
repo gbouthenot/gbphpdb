@@ -140,12 +140,13 @@ class Gb_Response
       $sqltime=Gb_Db::get_sqlTime();
       $dbpeak=Gb_Db::get_nbInstance_peak();
       $dbtotal=Gb_Db::get_nbInstance_total();
+      $nbrequest=Gb_Db::get_nbRequests();
       if ($sqltime>0) {
         $sqlpercent=$sqltime*100/$totaltime;
         self::$footer.=sprintf("(%.2f%% sql) ", $sqlpercent);
       }
       if ($dbtotal>0) {
-        self::$footer.="Gb_Db:{total:$dbtotal peak:$dbpeak} ";
+        self::$footer.="Gb_Db:{total:$dbtotal peak:$dbpeak nbrequests:$nbrequest} ";
       }
       
     }
