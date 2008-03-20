@@ -204,8 +204,10 @@ Class Gb_Util
     if ($sProjectName=="")
     { // Met le nom du projet sur le nom du répertoire contenant le script
       // "/gbo/gestion_e_mvc/bootstrap.php" --> "__gbo__gestion_e_mvc__bootstrap.php"
-      $d=DIRECTORY_SEPARATOR;
+      $d="/";
       $php_self=$_SERVER["PHP_SELF"];
+      $php_self=str_replace("\\", "/", $php_self);
+      
       // 1: [////]   2: le répertoire    3: /    4:nomfich.php[/]
       unset($matches);
       preg_match("@^($d*)(.*)($d+)(.+$d*)$@", $php_self, $matches);
