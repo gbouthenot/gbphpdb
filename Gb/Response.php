@@ -162,8 +162,9 @@ class Gb_Response
         if ( class_exists("Gb_Cache") ) {
             $nbtotal=Gb_Cache::get_nbTotal();
             $nbcachehits=Gb_Cache::get_nbCacheHits();
+            $nbcachemiss=Gb_Cache::get_nbCacheMiss();
             if ($nbtotal) {
-                self::$footer.="Gb_Cache:{total:$nbtotal hits:$nbcachehits} ";
+                self::$footer.="Gb_Cache:{total:$nbtotal hits:$nbcachehits miss:$nbcachemiss} ";
             }
         }
     

@@ -11,9 +11,10 @@ require_once(_GB_PATH."Util.php");
 
 Class Gb_Cache
 {
-  public static $cacheDir=""; // Répertoire du cache par défaut session_path/PROJECTNAME/cache
+    public static $cacheDir=""; // Répertoire du cache par défaut session_path/PROJECTNAME/cache
     protected static $nbTotal=0;                    // Nombre d'objet au total
     protected static $nbCacheHits=0;                // Nombre de cache hit
+    protected static $nbCacheMiss=0;                // Nombre de cache miss
     
     /**
      * Renvoie le nom du repertoire de cache
@@ -49,7 +50,11 @@ Class Gb_Cache
         return self::$nbCacheHits;
     }
     
-
+    public static function get_nbCacheMiss()
+    {
+        return self::$nbCacheMiss;
+    }
+    
     
     protected $cacheEngine;
     protected $cacheID;
@@ -109,7 +114,6 @@ Class Gb_Cache
             $this->values=array();
             $this->cacheHit=false;
         } else {
-            self::$nbCacheHits++;
             $this->cacheHit=true;
         }
         
@@ -136,17 +140,18 @@ Class Gb_Cache
     }
 
 
-    public function cacheHit()
+    public static function cacheHit()
     {
-        return $this->cacheHit;
+        return self::$cacheHit;
     }
     
-    public function cacheMiss()
+    public static function cacheMiss()
     {
-        return !$this->cacheHit;
+        return self::$nbCacheMiss;
     }
     
-/**
+
+    /**
      * Renvoie un attribut
      *
      * @param string $index
@@ -192,7 +197,10 @@ Class Gb_Cache
      */
     public function __isset($index)
     {
-        return isset($this->values[$index]);
+        $res=isset($this->values[$index]);
+        if ($res) { self::$nbCacheHits++; }
+        else      { self::$nbCacheMiss++; }
+        return $res;
     }
 
 }
