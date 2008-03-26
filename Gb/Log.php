@@ -24,7 +24,7 @@ class Gb_Log
     const LOG_NONE=9;
     const LOG_ALL=0;
 
-  public static $logFilename="";                  // Fichier de log, par défaut error_log/PROJECTNAME.log
+    public static $logFilename="";                  // Fichier de log, par défaut error_log/PROJECTNAME.log
     public static $loglevel_footer=self::LOG_DEBUG;
     public static $loglevel_file=self::LOG_WARNING;
     public static $loglevel_showuser=self::LOG_CRIT;
@@ -129,14 +129,14 @@ class Gb_Log
 
 
   
-  public static function logEmerg($text="") { self::log(self::LOG_EMERG, $text); }
-  public static function logAlert($text="") { self::log(self::LOG_ALERT, $text); }
-  public static function logCrit($text="") { self::log(self::LOG_CRIT, $text); }
-  public static function logError($text="") { self::log(self::LOG_ERROR, $text); }
-  public static function logWarning($text="") { self::log(self::LOG_WARNING, $text); }
-  public static function logNotice($text="") { self::log(self::LOG_NOTICE, $text); }
-  public static function logInfo($text="") { self::log(self::LOG_INFO, $text); }
-  public static function logDebug($text="") { self::log(self::LOG_DEBUG, $text); }
+  public static function logEmerg($text="") { self::log(self::LOG_EMERG, $text, 1); }
+  public static function logAlert($text="") { self::log(self::LOG_ALERT, $text, 1); }
+  public static function logCrit($text="") { self::log(self::LOG_CRIT, $text, 1); }
+  public static function logError($text="") { self::log(self::LOG_ERROR, $text, 1); }
+  public static function logWarning($text="") { self::log(self::LOG_WARNING, $text, 1); }
+  public static function logNotice($text="") { self::log(self::LOG_NOTICE, $text, 1); }
+  public static function logInfo($text="") { self::log(self::LOG_INFO, $text, 1); }
+  public static function logDebug($text="") { self::log(self::LOG_DEBUG, $text, 1); }
         
   
     /**
@@ -144,18 +144,21 @@ class Gb_Log
      *
      * @param integer $level Gb_Log::LOG_DEBUG,INFO,NOTICE,WARNING,ERROR,CRIT,ALERT,EMERG
      * @param string $text message
+     * @param integer[optional] offset backtrace (0 par défaut: met la ligne de l'appel de la fonction)
      */
-  public static function log($level=self::LOG_DEBUG, $text="")
+  public static function log($level=self::LOG_DEBUG, $text="", $red=0)
   {
         $vd=debug_backtrace();
-        $vd0=$vd1=$vd[0];
-        if (isset($vd[1])) {
-            $vd1=$vd[1];
+        $vd0=$vd1=$vd[$red];
+        if (isset($vd[$red+1])) {
+            $vd1=$vd[$red+1];
         }
         self::writelog($level, $text, $vd0["file"], $vd0["line"], $vd1["function"], "...", null);
   }
-
-
+    
+    
+    
+    
     /**
      * Loggue une fonction
      *
@@ -245,9 +248,10 @@ class Gb_Log
 
       $sLog.=$sLevel." ";
 
-      if (isset($_SESSION[__CLASS__."_uniqId"]))
-        $sLog.="uid=".$_SESSION[__CLASS__."_uniqId"]." ";
-
+      $uniqId=Gb_Session::getUniqId();
+      $uniqId=str_pad($uniqId, 6);
+      $sLog.=$uniqId;
+      
       if (strlen($REMOTE_USER))
         $sLog.="user=".$REMOTE_USER." ";
 

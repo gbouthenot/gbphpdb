@@ -14,6 +14,8 @@ Class Gb_Session
 {
     public static $sessionDir="";           // Répertoire des sessions par défaut session_path/PROJECTNAME/sessions
 
+    protected static $grandTimeOutMinutes=60;
+    
     /**
    * Renvoit le nom du repertoire de la session
    * crée le répertoire si besoin
@@ -38,76 +40,106 @@ Class Gb_Session
         }
         return self::$sessionDir;
     }
-
-  /**
-   * Démarre une session sécurisée (id changeant, watch ip et l'user agent)
-   * Mettre echo Gb_Util::session_start() au début du script.
-   *
-   * @param int[optional] $relTimeOutMinutes Timeout depuis la dernière page (1h défaut)
-   * @param int[optional] $grandTimeOutMinutes Timeout depuis création de la session (6h défaut)
-   * @throws Gb_Exception si impossible de créer répertoire pour le sessions
-   * @return string texte de warning ou ""
-   */
-  public static function session_start($relTimeOutMinutes=60, $grandTimeOutMinutes=360)
-  {
-    session_name(Gb_Util::getProjectName()."_PHPID");
-    self::getSessionDir();
-    session_start();
-
-    $client=md5("U:".$_SERVER["HTTP_USER_AGENT"]." IP:". $_SERVER["REMOTE_ADDR"]);
-
-    $sVarName=__CLASS__."_client";
-    $sVarNameUniqId=__CLASS__."_uniqId";
-    $sVarNameGrandTimeout=__CLASS__."_grandTimeout";
-    $sVarNameRelTimeout=__CLASS__."_relTimeout";
-
-    $sWarning="";
-
-    $uniqId=Gb_Request::getForm("uniqId");
-    if ( isset($_SESSION[$sVarName]) && $_SESSION[$sVarName]!=$client )
-    { // session hijacking ? Teste l'IP et l'user agent du client
-      $_SESSION=array();
-      session_regenerate_id(true);
-      $sWarning.="<b>Votre adresse IP ou votre navigateur a changé depuis la dernière page demandée.";
-      $sWarning.=" Pour protéger votre confidentialité, veuillez vous réidentifier.</b><br />\n";
-    }
-    elseif( strlen($uniqId) && isset($_SESSION[$sVarNameUniqId]) && $uniqId != $_SESSION[$sVarNameUniqId] )
-    { // session hijacking ? Teste l'uniqId du formulaire (ou get)
-      $_SESSION=array();
-      session_regenerate_id(true);
-      $sWarning.="<b>Votre session n'est pas authentifiée";
-      $sWarning.=" Pour protéger votre confidentialité, veuillez vous réidentifier.</b><br />\n";
-    }
-    elseif( (isset($_SESSION[$sVarNameGrandTimeout]) && time()>$_SESSION[$sVarNameGrandTimeout])
-         || (isset($_SESSION[$sVarNameRelTimeout])   && time()>$_SESSION[$sVarNameRelTimeout])     )
+    
+    
+    
+    
+    public static function getUniqId()
     {
-      $_SESSION=array();
-      session_regenerate_id(true);
-      $sWarning.="<b>Votre session a expiré";
-      $sWarning.=" Pour protéger votre confidentialité, veuillez vous réidentifier.</b><br />\n";
+        if (isset($_SESSION["Gb_Session"]))
+            return $_SESSION["Gb_Session"]["uniqId"];
+        else
+            return "";
     }
-
-    if (empty($_SESSION[$sVarName]))
-    { // premier appel de la session: initialisation  du client
-      if (strlen($uniqId)==0)
-      { // génére un uniqId ni n'existe pas déjà, sinon reprend l'ancien
+    
+    
+    
+    
+   /**
+    * Démarre une session sécurisée (id changeant, watch ip et l'user agent)
+    * Mettre echo Gb_Util::session_start() au début du script.
+    *
+    * @param int[optional] $relTimeOutMinutes Timeout depuis la dernière page (1h défaut)
+    * @param int[optional] $grandTimeOutMinutes Timeout depuis création de la session (6h défaut)
+    * @throws Gb_Exception si impossible de créer répertoire pour le sessions
+    * @return string texte de warning ou ""
+    */
+    public static function session_start($relTimeOutMinutes=60, $grandTimeOutMinutes=360)
+    {
+        self::$grandTimeOutMinutes=$grandTimeOutMinutes;
+        session_name(Gb_Util::getProjectName()."_PHPID");
+        self::getSessionDir();
+        session_start();
+    
+        $client=md5("U:".$_SERVER["HTTP_USER_AGENT"]." IP:". $_SERVER["REMOTE_ADDR"]);
+    
+        $sWarning="";
+        
+        $curSession=array();
+        if (isset($_SESSION["Gb_Session"])) {
+            $curSession=$_SESSION["Gb_Session"];
+        }
+        if (empty($curSession["client"]))       { $curSession["client"]="";       }
+        if (empty($curSession["uniqId"]))       { $curSession["uniqId"]="";       }
+        if (empty($curSession["grandTimeout"])) { $curSession["grandTimeout"]=0;  }
+        if (empty($curSession["relTimeout"]))   { $curSession["relTimeout"]=0;    }
+            
+    
+        $uniqId=Gb_Request::getForm("uniqId");
+        if (  $curSession["client"]!=$client )
+        { // session hijacking ? Teste l'IP et l'user agent du client
+            $curSession=self::destroy();
+            $sWarning.="<b>Votre adresse IP ou votre navigateur a changé depuis la dernière page demandée.";
+            $sWarning.=" Pour protéger votre confidentialité, veuillez vous réidentifier.</b><br />\n";
+        }
+        elseif( strlen($uniqId) && $uniqId != $curSession["uniqId"] )
+        { // session hijacking ? Teste l'uniqId du formulaire (ou get)
+            $curSession=self::destroy();
+            $sWarning.="<b>Votre session n'est pas authentifiée";
+            $sWarning.=" Pour protéger votre confidentialité, veuillez vous réidentifier.</b><br />\n";
+        }
+        elseif( ($curSession["grandTimeout"] && time()>$curSession["grandTimeout"])
+             ||  ($curSession["relTimeout"]   && time()>$curSession["relTimeout"]   )     )
+        {
+            $curSession=self::destroy();
+            $sWarning.="<b>Votre session a expiré";
+            $sWarning.=" Pour protéger votre confidentialité, veuillez vous réidentifier.</b><br />\n";
+        }
+    
+        if (strlen($curSession["uniqId"])==0)
+        { // premier appel de la session: initialisation  du client
+            $curSession=self::destroy();
+        }
+        elseif (rand(1, 100)<=20)
+        { // 20% de chance de regénérer l'ID de session
+            session_regenerate_id(true);
+        }
+    
+        $curSession["relTimeout"]=time()+60*$relTimeOutMinutes;
+        
+        $_SESSION["Gb_Session"]=$curSession;
+    
+        return $sWarning;
+    }
+  
+  
+  
+  
+    public static function destroy()
+    {
+        session_regenerate_id(true);
+        $client=md5("U:".$_SERVER["HTTP_USER_AGENT"]." IP:". $_SERVER["REMOTE_ADDR"]);
         $a='abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
         $u=$a{mt_rand(0, 61)}; $u.=$a{mt_rand(0, 61)}; $u.=$a{mt_rand(0, 61)}; $u.=$a{mt_rand(0, 61)}; $u.=$a{mt_rand(0, 61)};
         $uniqId=$u;
-      }
-      $_SESSION[$sVarNameUniqId]=$uniqId;
-      $_SESSION[$sVarName]=$client;
-      $_SESSION[$sVarNameGrandTimeout]=time()+60*$grandTimeOutMinutes;
+        $curSession=array();
+        $curSession["client"]=$uniqId;
+        $curSession["uniqId"]=$uniqId;
+        $curSession["client"]=$client;
+        $curSession["grandTimeout"]=time()+60*self::$grandTimeOutMinutes;
+        
+        $_SESSION["Gb_Session"]=$curSession;
+        return $curSession;
     }
-    elseif (rand(1, 100)<=20)
-    { // 20% de chance de regénérer l'ID de session
-      session_regenerate_id(true);
-    }
-
-    $_SESSION[$sVarNameRelTimeout]=time()+60*$relTimeOutMinutes;
-
-    return $sWarning;
-  }
-  
     
 }
