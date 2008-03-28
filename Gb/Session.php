@@ -1,23 +1,25 @@
 <?php
 /**
+ * 
  */
 
 if (!defined("_GB_PATH")) {
-  define("_GB_PATH", dirname(__FILE__).DIRECTORY_SEPARATOR);
+    define("_GB_PATH", dirname(__FILE__).DIRECTORY_SEPARATOR);
 }
 
 require_once(_GB_PATH."Exception.php");
-require_once(_GB_PATH."Request.php");
-require_once(_GB_PATH."Util.php");
+require_once(_GB_PATH."Glue.php");
 
 Class Gb_Session
 {
     public static $sessionDir="";           // Répertoire des sessions par défaut session_path/PROJECTNAME/sessions
-
+    
     protected static $grandTimeOutMinutes=60;
     
-    /**
-   * Renvoit le nom du repertoire de la session
+    
+    
+   /**
+   * Renvoie le nom du repertoire de la session
    * crée le répertoire si besoin
    *
    * @return string sessionDir
@@ -26,8 +28,8 @@ Class Gb_Session
     public static function getSessionDir()
     {
         if ( self::$sessionDir=="" ) {
-            $updir=Gb_Util::getOldSessionDir();
-            $updir2=$updir.DIRECTORY_SEPARATOR.Gb_Util::getProjectName();
+            $updir=Gb_Glue::getOldSessionDir();
+            $updir2=$updir.DIRECTORY_SEPARATOR.Gb_Glue::getProjectName();
             if ( (!is_dir($updir2) || !is_writable($updir2)) && is_dir($updir) && is_writable($updir) )
                 @mkdir($updir2, 0700);
             $updir3=$updir2.DIRECTORY_SEPARATOR."sessions";
@@ -57,7 +59,7 @@ Class Gb_Session
     
    /**
     * Démarre une session sécurisée (id changeant, watch ip et l'user agent)
-    * Mettre echo Gb_Util::session_start() au début du script.
+    * Mettre echo Gb_Session::session_start() au début du script.
     *
     * @param int[optional] $relTimeOutMinutes Timeout depuis la dernière page (1h défaut)
     * @param int[optional] $grandTimeOutMinutes Timeout depuis création de la session (6h défaut)
@@ -67,7 +69,7 @@ Class Gb_Session
     public static function session_start($relTimeOutMinutes=60, $grandTimeOutMinutes=360)
     {
         self::$grandTimeOutMinutes=$grandTimeOutMinutes;
-        session_name(Gb_Util::getProjectName()."_PHPID");
+        session_name(Gb_Glue::getProjectName()."_PHPID");
         self::getSessionDir();
         session_start();
     
@@ -85,17 +87,19 @@ Class Gb_Session
         if (empty($curSession["relTimeout"]))   { $curSession["relTimeout"]=0;    }
             
     
-        $uniqId=Gb_Request::getForm("uniqId");
+// j'enlève parce que ca engendre une dépendance sur Gb_Request
+//        $uniqId=Gb_Request::getForm("uniqId");
+//        if( strlen($uniqId) && $uniqId != $curSession["uniqId"] )
+//        { // session hijacking ? Teste l'uniqId du formulaire (ou get)
+//            $curSession=self::destroy();
+//            $sWarning.="<b>Votre session n'est pas authentifiée";
+//            $sWarning.=" Pour protéger votre confidentialité, veuillez vous réidentifier.</b><br />\n";
+//        }
+//        elseif (  $curSession["client"]!=$client )
         if (  $curSession["client"]!=$client )
         { // session hijacking ? Teste l'IP et l'user agent du client
             $curSession=self::destroy();
             $sWarning.="<b>Votre adresse IP ou votre navigateur a changé depuis la dernière page demandée.";
-            $sWarning.=" Pour protéger votre confidentialité, veuillez vous réidentifier.</b><br />\n";
-        }
-        elseif( strlen($uniqId) && $uniqId != $curSession["uniqId"] )
-        { // session hijacking ? Teste l'uniqId du formulaire (ou get)
-            $curSession=self::destroy();
-            $sWarning.="<b>Votre session n'est pas authentifiée";
             $sWarning.=" Pour protéger votre confidentialité, veuillez vous réidentifier.</b><br />\n";
         }
         elseif( ($curSession["grandTimeout"] && time()>$curSession["grandTimeout"])
@@ -116,6 +120,10 @@ Class Gb_Session
         }
     
         $curSession["relTimeout"]=time()+60*$relTimeOutMinutes;
+        
+        Gb_Glue::registerPlugin("Gb_Log", array(__CLASS__, "GbLogPlugin"));
+        
+        
         
         $_SESSION["Gb_Session"]=$curSession;
     
@@ -138,8 +146,20 @@ Class Gb_Session
         $curSession["client"]=$client;
         $curSession["grandTimeout"]=time()+60*self::$grandTimeOutMinutes;
         
+        $_SESSION=array();
         $_SESSION["Gb_Session"]=$curSession;
         return $curSession;
+    }
+    
+    
+    
+    
+    public static function GbLogPlugin()
+    {
+        $uniqId=self::getUniqId();
+        $uniqId=str_pad($uniqId, 6);
+        return $uniqId;
+        
     }
     
 }

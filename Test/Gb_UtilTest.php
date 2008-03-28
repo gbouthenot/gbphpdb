@@ -12,7 +12,7 @@ class Gb_UtilTest extends PHPUnit_Framework_TestCase
     protected function setUp()
     {
         parent::setUp();
-        Gb_Util::$projectName="testProject";
+        Gb_Glue::$projectName="testProject";
     }
 
 
@@ -51,7 +51,7 @@ class Gb_UtilTest extends PHPUnit_Framework_TestCase
      */
     public function testGetProjectName()
     {
-        $this->assertEquals("testProject", Gb_Util::getProjectName() );
+        $this->assertEquals("testProject", Gb_Glue::getProjectName() );
     }
 
 

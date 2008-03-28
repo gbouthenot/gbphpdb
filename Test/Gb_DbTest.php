@@ -16,7 +16,7 @@ class Gb_DbTest extends PHPUnit_Framework_TestCase
     protected function setUp()
     {
         parent::setUp();
-        Gb_Util::$projectName="testProject";
+        Gb_Glue::$projectName="testProject";
         $db=$this->db;
         $db->delete("test_gb_db_1", array());
         $db->delete("test_gb_db_2", array());

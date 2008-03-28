@@ -1,20 +1,23 @@
 <?php
 /**
+ * 
  */
 
 if (!defined("_GB_PATH")) {
-  define("_GB_PATH", dirname(__FILE__).DIRECTORY_SEPARATOR);
+    define("_GB_PATH", dirname(__FILE__).DIRECTORY_SEPARATOR);
 }
 
 require_once(_GB_PATH."Exception.php");
-require_once(_GB_PATH."Util.php");
+require_once(_GB_PATH."Glue.php");
 
 Class Gb_Cache
 {
-    public static $cacheDir=""; // Répertoire du cache par défaut session_path/PROJECTNAME/cache
-    protected static $nbTotal=0;                    // Nombre d'objet au total
-    protected static $nbCacheHits=0;                // Nombre de cache hit
-    protected static $nbCacheMiss=0;                // Nombre de cache miss
+    public static       $cacheDir=""; // Répertoire du cache par défaut session_path/PROJECTNAME/cache
+    protected static    $nbTotal=0;                    // Nombre d'objet au total
+    protected static    $nbCacheHits=0;                // Nombre de cache hit
+    protected static    $nbCacheMiss=0;                // Nombre de cache miss
+
+    protected static    $fPluginRegistred=false;
     
     /**
      * Renvoie le nom du repertoire de cache
@@ -26,8 +29,8 @@ Class Gb_Cache
     public static function getCacheDir()
     {
         if ( self::$cacheDir=="" ) {
-            $updir=Gb_Util::getOldSessionDir();
-            $updir2=$updir.DIRECTORY_SEPARATOR.Gb_Util::getProjectName();
+            $updir=Gb_Glue::getOldSessionDir();
+            $updir2=$updir.DIRECTORY_SEPARATOR.Gb_Glue::getProjectName();
             if ( (!is_dir($updir2) || !is_writable($updir2)) && is_dir($updir) && is_writable($updir) )
                 @mkdir($updir2, 0700);
             $updir3=$updir2.DIRECTORY_SEPARATOR."cache";
@@ -118,6 +121,13 @@ Class Gb_Cache
         }
         
         self::$nbTotal++;
+        
+        if (!self::$fPluginRegistred)
+        {
+            Gb_Glue::registerPlugin("Gb_Response_Footer", array(__CLASS__, "GbResponsePlugin"));
+            self::$fPluginRegistred=true;
+        }
+        
     }
 
     /**
@@ -202,5 +212,19 @@ Class Gb_Cache
         else      { self::$nbCacheMiss++; }
         return $res;
     }
-
+    
+    
+    
+    
+    public static function GbResponsePlugin()
+    {
+        $ret="";
+      
+        $nbtotal=self::$nbTotal;
+        $nbcachehits=self::$nbCacheHits;
+        $nbcachemiss=self::$nbCacheMiss;
+        $ret.="Gb_Cache:{ total:$nbtotal hits:$nbcachehits miss:$nbcachemiss }";
+        return $ret;
+      }
+    
 }

@@ -4,21 +4,21 @@
  */
 
 if (!defined("_GB_PATH")) {
-  define("_GB_PATH", dirname(__FILE__).DIRECTORY_SEPARATOR);
+    define("_GB_PATH", dirname(__FILE__).DIRECTORY_SEPARATOR);
 }
 
 require_once(_GB_PATH."Exception.php");
 require_once(_GB_PATH."Request.php");
 require_once(_GB_PATH."Response.php");
 
-require_once(_GB_PATH."Cache.php");
-require_once(_GB_PATH."Db.php");
-require_once(_GB_PATH."Form.php");
-require_once(_GB_PATH."Log.php");
-require_once(_GB_PATH."Session.php");
-require_once(_GB_PATH."Response.php");
-require_once(_GB_PATH."String.php");
-require_once(_GB_PATH."Timer.php");
+//require_once(_GB_PATH."Cache.php");
+//require_once(_GB_PATH."Db.php");
+//require_once(_GB_PATH."Form.php");
+//require_once(_GB_PATH."Log.php");
+//require_once(_GB_PATH."Session.php");
+//require_once(_GB_PATH."Response.php");
+//require_once(_GB_PATH."String.php");
+//require_once(_GB_PATH."Timer.php");
 
 /**
  * class Gb_Util
@@ -30,17 +30,12 @@ require_once(_GB_PATH."Timer.php");
  */
 Class Gb_Util
 {
-  const Gb_UtilVERSION="2alpha";
-
   // ***********************
   // variables statiques accessibles depuis l'extérieur avec Gb_Util::$head et depuis la classe avec self::$head
   // ************************
 
-  public static $projectName="";      // Nom du projet
   public static $debug=0;                 // par défaut, pas de mode débug
   public static $forbidDebug=0;           // ne pas interdire de passer en débug par $_GET["debug"]
-  public static $starttime=0;
-  protected static $_oldSessionDir;
 
 
   /**
@@ -62,7 +57,7 @@ Class Gb_Util
    */
   public static function startup($function="main", $param=array())
   {
-    self::$starttime=microtime(true);
+    Gb_Glue::setStartTime();
 
     if (Gb_Response::$preventGzip==0)
       ob_start("ob_gzhandler");
@@ -76,8 +71,10 @@ Class Gb_Util
     else
       Gb_Util::$debug=0;
 
+    Gb_Glue::registerPlugin("Gb_Response_Footer", array(__CLASS__, "GbResponsePlugin"));
+
     if (is_array($function) || function_exists($function))
-      Gb_Log::log_function(Gb_Log::LOG_DEBUG, "", $function, $param);
+      call_user_func_array($function, $param);
     else
       throw new Gb_Exception("function main() does not exist !");
 
@@ -191,48 +188,22 @@ Class Gb_Util
 
 
 
-
-
-  /**
-   * Renvoit le nom du projet, par défaut le répertoire du script php
-   *
-   * @return string projectName
-   */
-  public static function getProjectName()
-  {
-    $sProjectName=self::$projectName;
-    if ($sProjectName=="")
-    { // Met le nom du projet sur le nom du répertoire contenant le script
-      // "/gbo/gestion_e_mvc/bootstrap.php" --> "__gbo__gestion_e_mvc__bootstrap.php"
-      $d="/";
-      $php_self=$_SERVER["PHP_SELF"];
-      $php_self=str_replace("\\", "/", $php_self);
-      
-      // 1: [////]   2: le répertoire    3: /    4:nomfich.php[/]
-      unset($matches);
-      preg_match("@^($d*)(.*)($d+)(.+$d*)$@", $php_self, $matches);
-      if (isset($matches[2]) && strlen($matches[2]))
-        $sProjectName=str_replace($d, "__", $matches[2]);
-      else
-          $sProjectName=basename($php_self);
-      self::$projectName=$sProjectName;
-    }
-    return $sProjectName;
-  }
-
-
-
-
-    public static function getOldSessionDir()
+    public static function GbResponsePlugin()
     {
-        if ( self::$_oldSessionDir===null ) {
-            self::$_oldSessionDir=session_save_path();
-            if (self::$_oldSessionDir=="") {
-                self::$_oldSessionDir=".";
-            }
-        }
-        return self::$_oldSessionDir;
-    }
+        $ret="";
+
+        $totaltime=microtime(true)-Gb_Glue::getStartTime();
+        $totaltime=Gb_Util::roundCeil($totaltime);
+        $ret.="Total time: {$totaltime}s";
+        
+        return $ret;
+      }
+  
+
+
+
+
+
 
 }
 

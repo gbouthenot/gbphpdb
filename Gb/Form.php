@@ -1,9 +1,10 @@
 <?php
 /**
+ * 
  */
 
 if (!defined("_GB_PATH")) {
-        define("_GB_PATH", dirname(__FILE__).DIRECTORY_SEPARATOR);
+    define("_GB_PATH", dirname(__FILE__).DIRECTORY_SEPARATOR);
 }
 
 require_once(_GB_PATH."Db.php");

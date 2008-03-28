@@ -1,13 +1,13 @@
 <?php
 /**
+ * 
  */
+
 if (!defined("_GB_PATH")) {
-  define("_GB_PATH", dirname(__FILE__).DIRECTORY_SEPARATOR);
+    define("_GB_PATH", dirname(__FILE__).DIRECTORY_SEPARATOR);
 }
 
 require_once(_GB_PATH."Exception.php");
-require_once(_GB_PATH."Log.php");
-require_once(_GB_PATH."Request.php");
 require_once(_GB_PATH."Util.php");
 
 
@@ -25,7 +25,7 @@ class Gb_Response
     ,"author"             =>array("name", "")
     ,"copyright"          =>array("name", "")
     ,"x-URL"              =>array("name", "")
-    ,"x-scriptVersion"    =>array("name", Gb_Util::Gb_UtilVERSION)
+    ,"x-scriptVersion"    =>array("name", Gb_Glue::VERSION)
     ,"Expires"            =>array("http-equiv", "")                                  // mettre à vide pour une date du passé
     ,"Content-Type"       =>array("http-equiv", "text/html;  charset=ISO-8859-15")
     ,"Content-Script-Type"=>array("http-equiv", "text/javascript")
@@ -131,42 +131,17 @@ class Gb_Response
    */
   public static function send_footer()
   {
-    $totaltime=microtime(true)-Gb_Util::$starttime;
 
     self::$footer=htmlspecialchars(self::$footer, ENT_QUOTES);
-    self::$footer.=sprintf("Total time: %s s ", Gb_Util::roundCeil($totaltime));
 
-    if (class_exists("Gb_Db")) {
-      $sqltime=Gb_Db::get_sqlTime();
-      $dbpeak=Gb_Db::get_nbInstance_peak();
-      $dbtotal=Gb_Db::get_nbInstance_total();
-      $nbrequest=Gb_Db::get_nbRequests();
-      if ($sqltime>0) {
-        $sqlpercent=$sqltime*100/$totaltime;
-        self::$footer.=sprintf("(%.2f%% sql) ", $sqlpercent);
-      }
-      if ($dbtotal>0) {
-        self::$footer.="Gb_Db:{total:$dbtotal peak:$dbpeak nbrequests:$nbrequest} ";
-      }
-      
-    }
-
-    if ( class_exists("Gb_Timer") ) {
-      $timetotal=Gb_Timer::get_nbInstance_total();
-      if ($timetotal) {
-        $timepeak=Gb_Timer::get_nbInstance_peak();
-        self::$footer.="Gb_Timer:{total:$timetotal peak:$timepeak} ";
-      }
-    }
-
-        if ( class_exists("Gb_Cache") ) {
-            $nbtotal=Gb_Cache::get_nbTotal();
-            $nbcachehits=Gb_Cache::get_nbCacheHits();
-            $nbcachemiss=Gb_Cache::get_nbCacheMiss();
-            if ($nbtotal) {
-                self::$footer.="Gb_Cache:{total:$nbtotal hits:$nbcachehits miss:$nbcachemiss} ";
-            }
+    $plugins=Gb_Glue::getPlugins("Gb_Response_Footer");
+    foreach ($plugins as $plugin) {
+        if (is_callable($plugin[0])) {
+            self::$footer.=call_user_func_array($plugin[0], $plugin[1])." ";
         }
+    }
+
+
     
     self::$footer.="\n";
 
@@ -182,9 +157,9 @@ class Gb_Response
     {
       $hp=self::$html_parse;
     if ($hp>=self::P_HTML && !self::$nologo)
-      printf("<!-- built with Gb_Util v%s -->\n", Gb_Util::Gb_UtilVERSION);
+      printf("<!-- built with Gb Framework v%s -->\n", Gb_Glue::getVersion());
     elseif (!self::$nologo)
-      printf("built with Gb_Util v%s\n", Gb_Util::Gb_UtilVERSION);
+      printf("built with Gb Framework v%s\n", Gb_Glue::getVersion());
 
     if ($hp>=self::P_BODY && $hp<self::P_XBODY)
       print "</body>\n";

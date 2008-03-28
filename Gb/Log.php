@@ -1,12 +1,14 @@
 <?php
 /**
+ * 
  */
 
 if (!defined("_GB_PATH")) {
-  define("_GB_PATH", dirname(__FILE__).DIRECTORY_SEPARATOR);
+    define("_GB_PATH", dirname(__FILE__).DIRECTORY_SEPARATOR);
 }
 
 require_once(_GB_PATH."Exception.php");
+require_once(_GB_PATH."Glue.php");
 require_once(_GB_PATH."Util.php");
 
 
@@ -28,7 +30,7 @@ class Gb_Log
     public static $loglevel_footer=self::LOG_DEBUG;
     public static $loglevel_file=self::LOG_WARNING;
     public static $loglevel_showuser=self::LOG_CRIT;
-
+    
     protected static $aLevels=array(
         1=>"db--       ",
         2=>"nfo--      ",
@@ -41,14 +43,16 @@ class Gb_Log
     );
 
 
-  /**
-   * Cette classe ne doit pas être instancée !
-   */
-  private function __construct()
-  {
-  }
-
-
+   /**
+    * Cette classe ne doit pas être instancée !
+    */
+    private function __construct()
+    {
+    }
+    
+    
+    
+    
     /**
      * Renvoit le nom du fichier de log
      *
@@ -63,11 +67,11 @@ class Gb_Log
             unset($matches);
             preg_match("@^(.+$d)(.+)\$@", $logFilename, $matches);
             if (isset($matches[1])) { 
-                self::$logFilename=$matches[1].Gb_Util::getProjectName().".log";
+                self::$logFilename=$matches[1].Gb_Glue::getProjectName().".log";
             } else {
                 // pas de répertoire: utilise session_save_path
-                $updir=Gb_Util::getOldSessionDir();
-                self::$logFilename=$updir.DIRECTORY_SEPARATOR.Gb_Util::getProjectName().".log";
+                $updir=Gb_Glue::getOldSessionDir();
+                self::$logFilename=$updir.DIRECTORY_SEPARATOR.Gb_Glue::getProjectName().".log";
             }
         }
         return self::$logFilename;
@@ -222,7 +226,7 @@ class Gb_Log
     }
 
     $sLevel=self::$aLevels[$level];
-    $timecode=microtime(true)-Gb_Util::$starttime;
+    $timecode=microtime(true)-Gb_Glue::getStartTime();
     $timecode=sprintf("%.03f", $timecode);
     $REMOTE_USER="";          if (isset($_SERVER["REMOTE_USER"]))          $REMOTE_USER=         $_SERVER["REMOTE_USER"];
     $REMOTE_ADDR="";          if (isset($_SERVER["REMOTE_ADDR"]))          $REMOTE_ADDR=         $_SERVER["REMOTE_ADDR"];
@@ -248,9 +252,13 @@ class Gb_Log
 
       $sLog.=$sLevel." ";
 
-      $uniqId=Gb_Session::getUniqId();
-      $uniqId=str_pad($uniqId, 6);
-      $sLog.=$uniqId;
+        $plugins=Gb_Glue::getPlugins("Gb_Log");
+        foreach ($plugins as $plugin) {
+            if (is_callable($plugin[0])) {
+                $sLog.=call_user_func_array($plugin[0], $plugin[1]);
+                $sLog.=" ";
+            }
+        }
       
       if (strlen($REMOTE_USER))
         $sLog.="user=".$REMOTE_USER." ";

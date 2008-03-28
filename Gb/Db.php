@@ -1,11 +1,17 @@
 <?php
+/**
+ * 
+ */
 
 if (!defined("_GB_PATH")) {
-  define("_GB_PATH", dirname(__FILE__).DIRECTORY_SEPARATOR);
+    define("_GB_PATH", dirname(__FILE__).DIRECTORY_SEPARATOR);
 }
 
 require_once(_GB_PATH."Exception.php");
+require_once(_GB_PATH."Glue.php");
+require_once(_GB_PATH."Util.php");
 require_once("Zend/Db.php");
+
 
 /**
  * Class Gb_Db
@@ -32,6 +38,8 @@ Class Gb_Db extends Zend_Db
     protected static $nbInstance_current=0;                  // nom d'instances ouvertes en ce moment
     protected static $nbRequest=0;                           // Nombre de requetes effectuées
 
+    protected static $fPluginRegistred=false;
+    
     public function getAdapter()
     {
         return $this->conn;
@@ -94,6 +102,12 @@ Class Gb_Db extends Zend_Db
         self::$nbInstance_peak=max(self::$nbInstance_peak, self::$nbInstance_current);
         self::$sqlTime+=microtime(true)-$time;
 
+        if (!self::$fPluginRegistred)
+        {
+            Gb_Glue::registerPlugin("Gb_Response_Footer", array(__CLASS__, "GbResponsePlugin"));
+            self::$fPluginRegistred=true;
+        }
+        
         $this->driver=$driver;
         $this->dbname=$name;
         $this->connArray=$array;
@@ -107,26 +121,22 @@ Class Gb_Db extends Zend_Db
     self::$sqlTime+=microtime(true)-$time;
   }
 
+    public static function GbResponsePlugin()
+    {
+        $ret="";
+      
+        $sqltime=self::$sqlTime;
+        $dbtotal=self::$nbInstance_total;
+        $dbpeak=self::$nbInstance_peak;
+        $nbrequest=self::$nbRequest;
+        $sqltime=Gb_Util::roundCeil($sqltime);
+        $ret.="Gb_Db:{ ";
+        $ret.="totalInstances:$dbtotal peakInstances:$dbpeak nbrequests:$nbrequest time:{$sqltime}s";
+        $ret.=" }";
 
-  public static function get_nbInstance_peak()
-  {
-    return self::$nbInstance_peak;
-  }
+        return $ret;
+    }
 
-  public static function get_nbInstance_total()
-  {
-    return self::$nbInstance_total;
-  }
-
-  public static function get_nbRequests()
-  {
-    return self::$nbRequest;
-  }
-  
-  public static function get_sqlTime()
-  {
-    return self::$sqlTime;
-  }
 
   public function getTables()
   {

@@ -6,11 +6,15 @@
  * @version 1.00
  *
  */
+/**
+ * 
+ */
 
 if (!defined("_GB_PATH")) {
-        define("_GB_PATH", dirname(__FILE__).DIRECTORY_SEPARATOR);
+    define("_GB_PATH", dirname(__FILE__).DIRECTORY_SEPARATOR);
 }
 
+require_once(_GB_PATH."Glue.php");
 require_once(_GB_PATH."Log.php");
 
 Class Gb_Timer
@@ -23,6 +27,9 @@ Class Gb_Timer
   protected static $nbInstance_peak=0;            // maximum ouvertes simultanément                 
   protected static $nbInstance_current=0;         // nom d'instances ouvertes en ce moment          
 
+  protected static $fPluginRegistred=false;
+  
+  
   /**
    * Initialise le timer.
    *
@@ -36,21 +43,18 @@ Class Gb_Timer
     self::$nbInstance_total++;
     self::$nbInstance_current++;
     self::$nbInstance_peak=max(self::$nbInstance_peak, self::$nbInstance_current);
+    
+    if (!self::$fPluginRegistred)
+    {
+        Gb_Glue::registerPlugin("Gb_Response_Footer", array(__CLASS__, "GbResponsePlugin"));
+        self::$fPluginRegistred=true;
+    }
+    
   }
 
   public function __destruct()
   {
     self::$nbInstance_current--;
-  }
-
-  public static function get_nbInstance_peak()
-  {
-    return self::$nbInstance_peak;
-  }
-
-  public static function get_nbInstance_total()
-  {
-    return self::$nbInstance_total;
   }
 
   /**
@@ -125,4 +129,19 @@ Class Gb_Timer
       $this->startime=microtime(true)-$this->pause;
     $this->pause=0;
   }
+
+
+
+
+    public static function GbResponsePlugin()
+    {
+      $ret="";
+      
+      $timetotal=self::$nbInstance_total;
+      $timepeak=self::$nbInstance_peak;
+      $ret.="Gb_Timer:{ total:$timetotal peak:$timepeak }";
+      
+      return $ret;
+    }
+  
 }
