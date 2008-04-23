@@ -87,37 +87,46 @@ class Gb_String
   /**
    * converti, si nécessaire une date au format YYYY-MM-DD en DD/MM/YYYY
    *
-   * @param string|"" $d date à convertir ou "" si date courante
+   * @param string|integer[optional] $d date à convertir ou "" si date courante
    * @return string
    */
-  public static function date_fr($d="")
-  {
-    if (strlen($d)==0)
-      return date("d/m/Y H:i:s");
-    if (substr($d,4,1)=='-')
-    { // date au format YYYY-MM-DD
-      list($y,$m,$d)=split("-",$d);
-      $d=substr($d,0,2).'/'.$m.'/'.$y.substr($d,2);
+    public static function date_fr($d="")
+    {
+        if (strlen($d)==0) {
+            $d=date("d/m/Y H:i:s");
+        }
+        elseif (is_int($d)) {
+            $d=date("d/m/Y H:i:s", $d);
+        }
+        elseif (substr($d,4,1)=='-') {
+            // date au format YYYY-MM-DD
+            list($y,$m,$d)=split("-",$d);
+            $d=substr($d,0,2).'/'.$m.'/'.$y.substr($d,2);
+        }
+
+        return $d;
     }
-    return $d;
-  }
 
   /**
    * converti, si nécessaire une date au format DD/MM/YYYY en YYYY-MM-DD
    *
-   * @param string|"" $d date à convertir ou "" si date courante
+   * @param string|int[optional] $d date à convertir ou "" si date courante
    * @return string
    */
-  public static function date_iso($d="")
-  {
-    if (strlen($d)==0)
-      return date("Y-m-d H:i:s");
-    if (substr($d,5,1)=='/')
-    { // date au format DD/MM/YYYY
-      list($d,$m,$y)=split('/',$d);
-      $d=substr($y,0,4).'-'.$m.'-'.$d.substr($y,4);
+    public static function date_iso($d="")
+    {
+        if (strlen($d)==0) {
+            $d=date("Y-m-d H:i:s");
+        }
+        elseif (is_int($d)) {
+            $d=date("Y-m-d H:i:s", $d);
+        }
+        elseif (substr($d,5,1)=='/') {
+            // date au format DD/MM/YYYY
+            list($d,$m,$y)=split('/',$d);
+            $d=substr($y,0,4).'-'.$m.'-'.$d.substr($y,4);
+        }
+        return $d;
     }
-    return $d;
-  }
     
 }
