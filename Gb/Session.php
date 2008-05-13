@@ -123,7 +123,7 @@ Class Gb_Session
         }
         elseif (rand(1, 100)<=20)
         { // 20% de chance de regénérer l'ID de session
-            Gb_Log::logInfo("session_regenerate_id() uniqId={$curSession['uniqId']}");
+            Gb_Log::logDebug("session_regenerate_id() uniqId={$curSession['uniqId']}");
             session_regenerate_id(true);
         }
     
@@ -135,7 +135,7 @@ Class Gb_Session
     
         $gto=Gb_String::date_fr($curSession['grandTimeout']);
         $rto=Gb_String::date_fr($curSession['relTimeout']);
-        Gb_Log::logInfo("Session is uniqId={$curSession['uniqId']} client={$curSession['client']} grandTimeout=$gto relTimeout=$rto}");
+        Gb_Log::logDebug("Session is uniqId={$curSession['uniqId']} client={$curSession['client']} grandTimeout=$gto relTimeout=$rto}");
 
         return $sWarning;
     }
