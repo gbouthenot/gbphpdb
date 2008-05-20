@@ -20,15 +20,17 @@ Class Gb_Form
   /**
    * @var Gb_Db
    */
-  protected $db=null;
+  protected $db;
   protected $where;
   protected $tableName;
 
   protected static $fPostIndicator=false;
 
-  protected $fValid=null;
-  protected $fPost=null;
-  protected $aErrors=null;
+  protected $fValid;
+  protected $fLoaded;
+  protected $fHasData;
+  protected $fPost;
+  protected $aErrors;
 
   protected $_commonRegex = array(
     'HexColor'        => '/^(#?([\dA-F]{3}){1,2})$/i',
@@ -82,32 +84,33 @@ Class Gb_Form
    */
   public function addElement($nom, array $aParams)
   {
-    // $aParams["type"]="SELECT" "SELECTMULTIPLE" "TEXT" "PASSWORD" "RADIO" "CHECKBOX" "TEXTAREA"
+        // $aParams["type"]="SELECT" "SELECTMULTIPLE" "TEXT" "PASSWORD" "RADIO" "CHECKBOX" "TEXTAREA"
         // $aParams["args"]:
-      //            SELECT: liste des valeurs disponibles sous la forme
-      //                    array(array(value[,libelle]), "default"=>array(value[,libelle]), ...)
-      //                    (value est recodé dans le html mais renvoie la bonne valeur)
-      //                    (si value==='false', la valeur est interdite par fMandatory)
-      //    SELECTMULTIPLE: idem SELECT mais sans la possibilité d'avoir un default 
+        //            SELECT: liste des valeurs disponibles sous la forme
+        //                    array(array(value[,libelle]), "default"=>array(value[,libelle]), ...)
+        //                    (value est recodé dans le html mais renvoie la bonne valeur)
+        //                    (si value==='false', la valeur est interdite par fMandatory)
+        //                    (si value==='optgroup', la valeur définit un optgroup
+        //    SELECTMULTIPLE: idem SELECT mais sans la possibilité d'avoir un default 
         //              TEXT: array("regexp"=>"/.*/" ou "Year" pour prédéfini) 
         //          TEXTAREA: idem TEXT
         //            HIDDEN:
-      //          CHECKBOX:
+        //          CHECKBOX:
         //             RADIO:
         // $aParams["dbCol"]       : nom de la colonne bdd
-    // $aParams["fMandatory"]  : doit être rempli ? défaut: false
+        // $aParams["fMandatory"]  : doit être rempli ? défaut: false
+        // $aParams["toDbFunc"]    : array( "fonction" ou array("classe", "methode") , array("%s", ENT_QUOTES)[optional] ) 
+        // $aParams["fromDbFunc"]  : array( "fonction" ou array("classe", "methode") , array("%s", ENT_QUOTES)[optional] ) 
         // $aParams["invalidMsg"]  : texte qui s'affiche en cas de saisie invalide
-      // $aParams["classOK"]     : nom de la classe pour élément valide défaut: GBFORM_OK
-    // $aParams["classNOK"]    : nom de la classe pour élément non valide défaut: GBFORM_NOK
-    // $aParams["classERROR"]  : nom de la classe pour erreur: GBFORM_ERROR
-    // $aParams["preInput"]    :
-    // $aParams["inInput"]     : pour TEXT: size et maxlength
-    // $aParams["postInput"]   :
-    // renseignés automatiquement (accessible uniquement en lecture):
-    // $aParams["class"]       : nom de la classe en cours
-    // $aParams["message"]    : message d'erreur éventuel
-    // $aParams["toDbFunc"]    : array( "fonction" ou array("classe", "methode") , array("%s", ENT_QUOTES)[optional] ) 
-    // $aParams["fromDbFunc"]  : array( "fonction" ou array("classe", "methode") , array("%s", ENT_QUOTES)[optional] ) 
+        // $aParams["classOK"]     : nom de la classe pour élément valide défaut: GBFORM_OK
+        // $aParams["classNOK"]    : nom de la classe pour élément non valide défaut: GBFORM_NOK
+        // $aParams["classERROR"]  : nom de la classe pour erreur: GBFORM_ERROR
+        // $aParams["preInput"]    :
+        // $aParams["inInput"]     : pour TEXT: size et maxlength
+        // $aParams["postInput"]   :
+        // renseignés automatiquement (accessible uniquement en lecture):
+        // $aParams["class"]       : nom de la classe en cours
+        // $aParams["message"]    : message d'erreur éventuel
       
     if (!preg_match("/^[a-zA-Z][a-zA-Z0-9]*/", $nom))
       throw new Gb_Exception("Nom de variable de formulaire invalide");
@@ -150,16 +153,18 @@ Class Gb_Form
           throw new Gb_Exception("Paramètres de $nom incorrects");
         //remplit value avec le numéro sélectionné.
         $num=0;
+        $args=array();
         foreach($aParams["args"] as $ordre=>$val) {
           if ($ordre==="default") {
-            unset($aParams["args"]["default"]);
-            $aParams["args"][$num]=$val;
             $aParams["value"]=$num;
           }
+          $args[]=$val;
           $num++;
         }
-        if (!isset($aParams["value"]))
-          $aParams["value"]="0";    // par défaut, 1er élément de la liste
+        $aParams["args"]=$args;
+        if (!isset($aParams["value"])) {
+            $aParams["value"]="0";    // par défaut, 1er élément de la liste
+        }
         $this->formElements[$nom]=$aParams;
         break;
 
@@ -299,14 +304,26 @@ Class Gb_Form
         $html=$aElement["inInput"];
         $ret.="<select id='GBFORM_$nom' name='GBFORM_$nom' $html onchange='javascript:validate_GBFORM_$nom();' onkeyup='javascript:validate_GBFORM_$nom();'>\n";
         $num=0;
+        $fOptgroup=false;
         foreach ($aValues as $ordre=>$aOption){
           $sVal=htmlspecialchars($aOption[0], ENT_QUOTES);
           $sLib=htmlspecialchars(!empty($aOption[1])?$aOption[1]:$aOption[0], ENT_QUOTES);
-          $sSelected="";
-          if ($ordre==$value)
-            $sSelected="selected='selected'";
-          $ret.="<option value='$num' $sSelected>$sLib</option>\n";
+          if ($sVal=="optgroup") {
+              if ($fOptgroup) {
+                  $ret.="</optgroup>\n";
+              }
+              $ret.="<optgroup label='$sLib'>\n";
+              $fOptgroup=true;
+          } else {
+              $sSelected="";
+              if ($ordre==$value)
+                $sSelected="selected='selected'";
+              $ret.="<option value='$num' $sSelected>$sLib</option>\n";
+          }
           $num++;
+        }
+        if ($fOptgroup) {
+            $ret.="</optgroup>\n";
         }
         $ret.="</select>\n";
         break;
@@ -950,7 +967,11 @@ Class Gb_Form
     
     public function isValid()
     {
-        if ($this->fValid===null) {
+        if (isset($this->fValid)) {
+            return $this->fValid;
+        }
+        $this->fValid=false;
+        if ($this->hasData()) {
             $this->validate();
         }
         return $this->fValid;
@@ -989,11 +1010,10 @@ Class Gb_Form
     public function process()
     {
         if ($this->load()) {
-            $isValid=$this->validate();
-            if ($isValid) {
-                $this->putInDb();
+            if ($this->validate()===true && $this->putInDb()===true) {
+                return true;
             }
-            return $isValid;
+            return false;
         }
         return null;
     }
@@ -1009,16 +1029,31 @@ Class Gb_Form
      */
     public function load()
     {
-        $getFromDb=$this->getFromDb();
-        $getFromPost=$this->getFromPost();
-        if ($getFromDb || $getFromPost ) {
-            return true;
-        } else {
-            return false;
+        if (!$this->fLoaded) {
+            $getFromDb=$this->getFromDb();
+            $getFromPost=$this->getFromPost();
+            if ($getFromDb || $getFromPost ) {
+                $this->fHasData=true;
+            } else {
+                $this->fHasData=false;
+            }
+            $this->fLoaded=true;
         }
+        return $this->fHasData;
     }
 
-
+    
+    
+    
+    public function isLoaded()
+    {
+        return $this->fLoaded;
+    }
+    public function hasData()
+    {
+        return $this->fHasData;
+    }
+    
 
 
 }

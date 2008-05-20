@@ -39,17 +39,27 @@ $myForm->addElement(
     )
 );
 
+$myForm->addElement(
+    "PAYS",
+    array(
+        "type"=>"SELECT",
+        "fMandatory"=>false,
+        "args"=>array(
+            array("optgroup", "Amérique"), array("USA"), array("Canada"), array("optgroup", "Europe"), "default"=>array('France'), array("Belgique"),
+        ),
+    )
+);
+
 $result="";
-$myForm->process();
-if ($myForm->isvalid()) {
+if ($myForm->process()===true) {
     $result="Formulaire valide";
 }
 ?>
 
 <html>
 <head>
-    <script src='/gbo/neon/gestion_e_mvc/js/prototype.js' type='text/javascript'></script>
-    <script src='/gbo/neon/gestion_e_mvc/js/gb.js'        type='text/javascript'></script>
+    <script src='http://pollux3.fcomte.iufm.fr/gbo/neon/gestion_e_mvc/js/prototype.js' type='text/javascript'></script>
+    <script src='http://pollux3.fcomte.iufm.fr/gbo/neon/gestion_e_mvc/js/gb.js'        type='text/javascript'></script>
     <style type='text/css'>
         .GBFORM_OK          {}
         .GBFORM_NOK         {border:1px solid #f00;}
