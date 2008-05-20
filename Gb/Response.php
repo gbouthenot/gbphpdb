@@ -48,6 +48,7 @@ class Gb_Response
     const P_BODY=5;                   // dans la balise <BODY>
     const P_XBODY=6;                  // après la balise </BODY>
     const P_XHTML=7;                  // après la balise </HTML>
+    const P_PREVENTUSE=99;
     public static $html_parse=self::P_HTTP;
 
     public static function send_headers($fPrint=1)
@@ -127,47 +128,62 @@ class Gb_Response
   
 
   /**
-   * Envoie le footer
+   * Envoie le footer si html_parse<=P_XBODY
    */
-  public static function send_footer()
-  {
-
-    self::$footer=htmlspecialchars(self::$footer, ENT_QUOTES);
-
-    $plugins=Gb_Glue::getPlugins("Gb_Response_Footer");
-    foreach ($plugins as $plugin) {
-        if (is_callable($plugin[0])) {
-            self::$footer.=call_user_func_array($plugin[0], $plugin[1])." ";
+    public static function send_footer()
+    {
+        if (self::$html_parse<=self::P_XBODY) {
+            $footer=self::get_footer();
+            if (!self::$noFooterEscape) {
+                echo "</span></span></span></div></div></div></div></div></p>";
+            }
+            printf("\n<div class='Gb_footer'>\n%s</div>\n", htmlspecialchars($footer, ENT_QUOTES));
         }
     }
-
-
+  
+  
+  
+  
+    /**
+     * Renvoie le footer, avec les plugins appelé
+     *
+     * @return string
+     */
+    public static function get_footer()
+    {
+        $footer=self::$footer;
     
-    self::$footer.="\n";
-
-    if (!self::$noFooterEscape)
-      echo "</span></span></span></div></div></div></div></div></p>";
-    printf("\n<div class='Gb_footer'>\n%s</div>\n", self::$footer);
-  }
+        $plugins=Gb_Glue::getPlugins("Gb_Response_Footer");
+        foreach ($plugins as $plugin) {
+            if (is_callable($plugin[0])) {
+                $footer.=call_user_func_array($plugin[0], $plugin[1])." ";
+            }
+        }
+        $footer.="\n";
+        
+        return $footer;
+    }
 
     /**
      * Ferme les tags body, html
      */
-  public static function close_page()
+    public static function close_page()
     {
-      $hp=self::$html_parse;
-    if ($hp>=self::P_HTML && !self::$nologo)
-      printf("<!-- built with Gb Framework v%s -->\n", Gb_Glue::getVersion());
-    elseif (!self::$nologo)
-      printf("built with Gb Framework v%s\n", Gb_Glue::getVersion());
+        $hp=self::$html_parse;
+        if ($hp>=self::P_HTML && !self::$nologo) {
+            printf("<!-- built with Gb Framework v%s -->\n", Gb_Glue::getVersion());
+        } elseif (!self::$nologo) {
+            printf("built with Gb Framework v%s\n", Gb_Glue::getVersion());
+        }
 
-    if ($hp>=self::P_BODY && $hp<self::P_XBODY)
-      print "</body>\n";
-    if ($hp>=self::P_HTML && $hp<self::P_XHTML)
-      print "</html>\n";
-
-    self::$html_parse=self::P_XHTML;
-  }
+        if ($hp>=self::P_BODY && $hp<self::P_XBODY) {
+            print "</body>\n";
+        }
+        if ($hp>=self::P_HTML && $hp<self::P_XHTML) {
+            print "</html>\n";
+        }
+        self::$html_parse=self::P_XHTML;
+    }
   
     
 }
