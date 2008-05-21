@@ -32,7 +32,9 @@ Class Gb_Form
   protected $fPost;
   protected $aErrors;
 
-  protected $_commonRegex = array(
+  protected static $_commonRegex = array(
+    'Name'            => '/^[ a-z\-\']{2,25}$/',
+    'FirstName'       => '/^[ a-z\-\']{3,25}$/',
     'HexColor'        => '/^(#?([\dA-F]{3}){1,2})$/i',
     'UsTelephone'     => '/^(\(?([2-9]\d{2})\)?[\.\s-]?([2-4|6-9]\d\d|5([0-4|6-9]\d|\d[0-4|6-9]))[\.\s-]?(\d{4}))$/',
     'Email'           => '/((^[\w\.!#$%"*+\/=?`{}|~^-]+)@(([-\w]+\.)+[A-Za-z]{2,}))$/',
@@ -179,9 +181,9 @@ Class Gb_Form
       case "TEXT": case "TEXTAREA":
         if (isset($aParams["args"]["regexp"])){
           $regexp=&$aParams["args"]["regexp"];
-          if (isset($this->_commonRegex[$regexp])) {
+          if (isset(self::$_commonRegex[$regexp])) {
             //regexp connu: remplace par le contenu
-            $regexp=$this->_commonRegex[$regexp];
+            $regexp=self::$_commonRegex[$regexp];
           }
         }
         if (!isset($aParams["value"]))
@@ -474,7 +476,7 @@ Class Gb_Form
         // par défaut, met en classOK, si erreur, repasse en classNOK
         $ret.=" \$('GBFORM_{$nom}_div').className='{$aElement["classOK"]}';\n";
         // enlève le message d'erreur
-        $ret.=" var e=\$('GBFORM_{$nom}_div').select('div[class=\"GBFORM_ERROR\"]').first(); if (e!=undefined){e.innerHTML='';}\n";
+        $ret.=" var e=\$('GBFORM_{$nom}_div').select('div[class=\"{$aElement["classERROR"]}\"]').first(); if (e!=undefined){e.innerHTML='';}\n";
 
         // attention utilise prototype String.strip()
         $ret.="var value=remove_accents(\$F('GBFORM_$nom').strip());\n";
@@ -511,8 +513,8 @@ Class Gb_Form
         // par défaut, met en classOK, si erreur, repasse en classNOK
         $ret.=" \$('GBFORM_{$nom}_div').className='{$aElement["classOK"]}';\n";
         // enlève le message d'erreur
-        $ret.=" var e=\$('GBFORM_{$nom}_div').select('div[class=\"GBFORM_ERROR\"]').first(); if (e!=undefined){e.innerHTML='';}\n";
-        
+        $ret.=" var e=\$('GBFORM_{$nom}_div').select('div[class=\"{$aElement["classERROR"]}\"]').first(); if (e!=undefined){e.innerHTML='';}\n";
+                
         // attention utilise prototype String.strip()
         $ret.="var value=remove_accents(\$F('GBFORM_$nom').strip());\n";
         if ($aElement["fMandatory"]) {
@@ -522,9 +524,9 @@ Class Gb_Form
         }
         if (isset($aElement["args"]["regexp"])){
           $regexp=$aElement["args"]["regexp"];
-          if (isset($this->_commonRegex[$regexp])) {
+          if (isset(self::$_commonRegex[$regexp])) {
             //regexp connu: remplace par le contenu
-            $regexp=$this->_commonRegex[$regexp];
+            $regexp=self::$_commonRegex[$regexp];
           }
           $ret.="var regexp=$regexp\n";
           $ret.="if (!regexp.test(value)) {\n";
@@ -603,8 +605,8 @@ Class Gb_Form
           // par défaut, met en classOK, si erreur, repasse en classNOK
           $ret.=" \$('GBFORM_{$nom}_div').className='{$aElement["classOK"]}';\n";
           // enlève le message d'erreur
-          $ret.=" var e=\$('GBFORM_{$nom}_div').select('div[class=\"GBFORM_ERROR\"]').first(); if (e!=undefined){e.innerHTML='';}\n";
-          
+          $ret.=" var e=\$('GBFORM_{$nom}_div').select('div[class=\"{$aElement["classERROR"]}\"]').first(); if (e!=undefined){e.innerHTML='';}\n";
+                    
           if ($aElement["fMandatory"]) {
               $ret.="var value=\$F('GBFORM_$nom');\n";
               $ret.="if (value!='true') {\n";
