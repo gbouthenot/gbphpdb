@@ -181,8 +181,8 @@ class Gb_Response
         }
         if ($hp>=self::P_HTML && $hp<self::P_XHTML) {
             print "</html>\n";
+            self::$html_parse=self::P_XHTML;
         }
-        self::$html_parse=self::P_XHTML;
     }
   
     
