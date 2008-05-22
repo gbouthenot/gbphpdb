@@ -31,7 +31,6 @@ $myForm->addElement(
             "maxvalue"=>"173",
             "notvalue"=>"150",
         ),
-        "classERROR"=>"GBFORM_ERRORINLINE",
         "invalidMsg"=>"Veuillez entrer un nombre entre 111 et 173, et différent de 150",
         "preInput"=>"Prix de référence: ",
         "postInput"=>"€",
@@ -61,10 +60,9 @@ if ($myForm->process()===true) {
     <script src='http://pollux3.fcomte.iufm.fr/gbo/neon/gestion_e_mvc/js/prototype.js' type='text/javascript'></script>
     <script src='http://pollux3.fcomte.iufm.fr/gbo/neon/gestion_e_mvc/js/gb.js'        type='text/javascript'></script>
     <style type='text/css'>
-        .GBFORM_OK          {}
-        .GBFORM_NOK         {border:1px solid #f00;}
-        .GBFORM_ERROR       {background:#000; color:#f00;}
-        .GBFORM_ERRORINLINE {background:#000; color:#f00; display:inline;}
+        .GBFORM .OK          {}
+        .GBFORM .NOK         {border:1px solid #f00;}
+        .GBFORM .ERROR       {background:#000; color:#f00; display:inline;}
     </style>
     <script type='text/javascript'>
         <?= $myForm->getJavascript(); ?>

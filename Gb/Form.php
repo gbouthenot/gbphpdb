@@ -104,15 +104,13 @@ Class Gb_Form
         // $aParams["toDbFunc"]    : array( "fonction" ou array("classe", "methode") , array("%s", ENT_QUOTES)[optional] ) 
         // $aParams["fromDbFunc"]  : array( "fonction" ou array("classe", "methode") , array("%s", ENT_QUOTES)[optional] ) 
         // $aParams["invalidMsg"]  : texte qui s'affiche en cas de saisie invalide
-        // $aParams["classOK"]     : nom de la classe pour élément valide défaut: GBFORM_OK
-        // $aParams["classNOK"]    : nom de la classe pour élément non valide défaut: GBFORM_NOK
-        // $aParams["classERROR"]  : nom de la classe pour erreur: GBFORM_ERROR
+        // $aParams["class"]       : nom de la classe pour l'élément
         // $aParams["preInput"]    :
         // $aParams["inInput"]     : pour TEXT: size et maxlength
         // $aParams["postInput"]   :
         // renseignés automatiquement (accessible uniquement en lecture):
-        // $aParams["class"]       : nom de la classe en cours
-        // $aParams["message"]    : message d'erreur éventuel
+        // $aParams["classSTATUT"] : nom de la classe en cours
+        // $aParams["message"]     : message d'erreur éventuel
       
     if (!preg_match("/^[a-zA-Z][a-zA-Z0-9]*/", $nom))
       throw new Gb_Exception("Nom de variable de formulaire invalide");
@@ -131,14 +129,10 @@ Class Gb_Form
       $aParams["inInput"]="";
     if (!isset($aParams["postInput"]))
       $aParams["postInput"]="";
-    if (!isset($aParams["classOK"]))
-      $aParams["classOK"]="GBFORM_OK";
-    if (!isset($aParams["classNOK"]))
-      $aParams["classNOK"]="GBFORM_NOK";
-    if (!isset($aParams["classERROR"]))
-      $aParams["classERROR"]="GBFORM_ERROR";
     if (!isset($aParams["class"]))
-      $aParams["class"]=$aParams["classOK"];
+      $aParams["class"]="GBFORM";
+    if (!isset($aParams["classSTATUT"]))
+      $aParams["classSTATUT"]="OK";
 
     if (isset($aParams["toDbFunc"]))
       $aParams["toDbFunc"]=$aParams["toDbFunc"];
@@ -264,6 +258,9 @@ Class Gb_Form
     return $value;
   }
 
+  
+  
+  
   /**
    * Renvoit le code HTML approprié (valeur par défaut, préselectionné, etc)
    *
@@ -295,13 +292,18 @@ Class Gb_Form
 
     $aElement=$this->formElements[$nom];
     $class=$aElement["class"];
+    $classSTATUT=$aElement["classSTATUT"];
 
     $type=$aElement["type"];
     $value=$aElement["value"];
     switch ($type) {
       case "SELECT":
-        $ret.="<div id='GBFORM_${nom}_div' class='$class'>\n";
-        $ret.="<label>".$aElement["preInput"];
+        $ret.="<div class='$class'>\n";
+        $ret.="<div id='GBFORM_${nom}_div' class='$classSTATUT'>\n";
+        $ret.="<label>";
+        if (strlen($aElement["preInput"])) {
+            $ret.="<span class='PRE'>".$aElement["preInput"]."</span>";
+        }
         $aValues=$aElement["args"];
         $html=$aElement["inInput"];
         $ret.="<select id='GBFORM_$nom' name='GBFORM_$nom' $html onchange='javascript:validate_GBFORM_$nom();' onkeyup='javascript:validate_GBFORM_$nom();'>\n";
@@ -331,8 +333,12 @@ Class Gb_Form
         break;
 
       case "SELECTMULTIPLE":
-        $ret.="<div id='GBFORM_${nom}_div' class='$class'>\n";
-        $ret.="<label>".$aElement["preInput"];
+        $ret.="<div class='$class'>\n";
+        $ret.="<div id='GBFORM_${nom}_div' class='$classSTATUT'>\n";
+        $ret.="<label>";
+        if (strlen($aElement["preInput"])) {
+            $ret.="<span class='PRE'>".$aElement["preInput"]."</span>";
+        }
         $aValues=$aElement["args"];
         $html=$aElement["inInput"];
         $ret.="<select multiple='multiple' id='GBFORM_$nom' name='GBFORM_{$nom}[]' $html onchange='javascript:validate_GBFORM_$nom();' onkeyup='javascript:validate_GBFORM_$nom();'>\n";
@@ -348,31 +354,42 @@ Class Gb_Form
         break;
 
       case "TEXT": case "PASSWORD":
-        $ret.="<div id='GBFORM_${nom}_div' class='$class'>\n";
-        $ret.="<label>".$aElement["preInput"];
+        $ret.="<div class='$class'>\n";
+        $ret.="<div id='GBFORM_${nom}_div' class='$classSTATUT'>\n";
+        $ret.="<label>";
+        if (strlen($aElement["preInput"])) {
+            $ret.="<span class='PRE'>".$aElement["preInput"]."</span>";
+        }
         $html=$aElement["inInput"];
         $sValue=htmlspecialchars($value, ENT_QUOTES);
         $ret.="<input type='".strtolower($type)."' class='text' id='GBFORM_$nom' name='GBFORM_$nom' $html value='$sValue' onchange='javascript:validate_GBFORM_$nom();' onkeyup='javascript:validate_GBFORM_$nom();' />\n";
         break;
 
       case "HIDDEN":
-        $ret.="<label>".$aElement["preInput"];
         $html=$aElement["inInput"];
         $sValue=htmlspecialchars($value, ENT_QUOTES);
         $ret.="<input type='".strtolower($type)."' id='GBFORM_$nom' name='GBFORM_$nom' $html value='$sValue' />\n";
         break;
 
       case "TEXTAREA":
-        $ret.="<div id='GBFORM_${nom}_div' class='$class'>\n";
-        $ret.="<label>".$aElement["preInput"];
+        $ret.="<div class='$class'>\n";
+        $ret.="<div id='GBFORM_${nom}_div' class='$classSTATUT'>\n";
+        $ret.="<label>";
+        if (strlen($aElement["preInput"])) {
+            $ret.="<span class='PRE'>".$aElement["preInput"]."</span>";
+        }
         $html=$aElement["inInput"];
         $sValue=htmlspecialchars($value, ENT_QUOTES);
         $ret.="<textarea class='textarea' id='GBFORM_$nom' name='GBFORM_$nom' $html onchange='javascript:validate_GBFORM_$nom();' onkeyup='javascript:validate_GBFORM_$nom();'>$sValue</textarea>\n";
         break;
 
       case "CHECKBOX":
-        $ret.="<div id='GBFORM_${nom}_div' class='$class'>\n";
-        $ret.="<label>".$aElement["preInput"];
+        $ret.="<div class='$class'>\n";
+        $ret.="<div id='GBFORM_${nom}_div' class='$classSTATUT'>\n";
+        $ret.="<label>";
+        if (strlen($aElement["preInput"])) {
+            $ret.="<span class='PRE'>".$aElement["preInput"]."</span>";
+        }
         $sValue="";
         if ($value==true)
           $sValue=" checked='checked'";
@@ -382,7 +399,11 @@ Class Gb_Form
 
       case "RADIO":
         $ret.="<div class='$class'>\n";
-        $ret.="<label>".$aElement["preInput"];
+        $ret.="<div id='GBFORM_${nom}_div' class='$classSTATUT'>\n";
+        $ret.="<label>";
+        if (strlen($aElement["preInput"])) {
+            $ret.="<span class='PRE'>".$aElement["preInput"]."</span>";
+        }
         $sValue="";
         if ($value==$radioValue)
           $sValue=" checked='checked'";
@@ -393,39 +414,22 @@ Class Gb_Form
       default:
         throw new Gb_Exception("Type inconnu");
     }
-        $ret.=$aElement["postInput"]."</label>";
-    $errorMsg=$aElement["message"];
-    if (strlen($errorMsg)) {
-      $class=$aElement["classERROR"];
-      $ret.="<div class='$class'>$errorMsg</div>";
-    }
+    
     if ($type!="HIDDEN") {
-      $ret.="</div>\n";
+        if (strlen($aElement["postInput"])) {
+            $ret.="<span class='POST'>".$aElement["postInput"]."</span>";
+        }
+        $ret.="</label>";
+        $errorMsg=$aElement["message"];
+        if (strlen($errorMsg)) {
+            $ret.="<div class='ERROR'>$errorMsg</div>";
+        }
+        $ret.="</div></div>\n";
     }
 
     return $ret;
   }
 
-
-  /**
-   * Change la classe d'un elément
-   *
-   * @param string $nom
-   * @param boolean|string $class : false/true: met a classNOK/classOK string: met a la classe spécifiée
-   * @throws Gb_Exception
-   */
-  public function setClass($nom, $class=false)
-  {
-    if (!isset($this->formElements[$nom]))
-      throw new Gb_Exception("Element de fomulaire non défini");
-    if ($class===false) {
-      $class=$this->formElements[$nom]["classNOK"];
-    } elseif ($class===true) {
-      $class=$this->formElements[$nom]["classOK"];
-    }
-
-    $this->formElements[$nom]["class"]=$class;
-  }
 
 
 
@@ -440,7 +444,12 @@ Class Gb_Form
   {
     if (!isset($this->formElements[$nom]))
       throw new Gb_Exception("Element de fomulaire non défini");
-    $this->formElements[$nom]["message"]=$errorMsg;
+      $class="OK";
+      if (strlen($errorMsg)) {
+          $class="NOK";
+      }
+      $this->formElements[$nom]["message"]=$errorMsg;
+      $this->formElements[$nom]["classSTATUT"]=$class;
   }
 
 
@@ -474,9 +483,9 @@ Class Gb_Form
 
       case "SELECT":
         // par défaut, met en classOK, si erreur, repasse en classNOK
-        $ret.=" \$('GBFORM_{$nom}_div').className='{$aElement["classOK"]}';\n";
+        $ret.=" \$('GBFORM_{$nom}_div').className='OK';\n";
         // enlève le message d'erreur
-        $ret.=" var e=\$('GBFORM_{$nom}_div').select('div[class=\"{$aElement["classERROR"]}\"]').first(); if (e!=undefined){e.innerHTML='';}\n";
+        $ret.=" var e=\$('GBFORM_{$nom}_div').select('div[class=\"ERROR\"]').first(); if (e!=undefined){e.innerHTML='';}\n";
 
         // attention utilise prototype String.strip()
         $ret.="var value=remove_accents(\$F('GBFORM_$nom').strip());\n";
@@ -489,7 +498,7 @@ Class Gb_Form
           }
           $ret.="var GBFORM_{$nom}_values = { ".implode(", ",$aValues)."};\n";
           $ret.="if ((GBFORM_{$nom}_values[value])=='false') {\n";
-          $ret.=" \$('GBFORM_{$nom}_div').className='{$aElement["classNOK"]}';\n";
+          $ret.=" \$('GBFORM_{$nom}_div').className='NOK';\n";
           $ret.="}\n";
         }
         if (isset($aElement["NOTVALUE"])){
@@ -503,7 +512,7 @@ Class Gb_Form
             }
             $ret.=" var notvalue=eval({$notValue});\n";
             $ret.=" if (bornevalue == notvalue) {";
-            $ret.=" \$('GBFORM_{$nom}_div').className='{$aElement["classNOK"]}';";
+            $ret.=" \$('GBFORM_{$nom}_div').className='NOK';";
             $ret.="}\n";
           }
         }
@@ -511,15 +520,15 @@ Class Gb_Form
 
       case "TEXT": case "PASSWORD": case "TEXTAREA":
         // par défaut, met en classOK, si erreur, repasse en classNOK
-        $ret.=" \$('GBFORM_{$nom}_div').className='{$aElement["classOK"]}';\n";
+        $ret.=" \$('GBFORM_{$nom}_div').className='OK';\n";
         // enlève le message d'erreur
-        $ret.=" var e=\$('GBFORM_{$nom}_div').select('div[class=\"{$aElement["classERROR"]}\"]').first(); if (e!=undefined){e.innerHTML='';}\n";
+        $ret.=" var e=\$('GBFORM_{$nom}_div').select('div[class=\"ERROR\"]').first(); if (e!=undefined){e.innerHTML='';}\n";
                 
         // attention utilise prototype String.strip()
         $ret.="var value=remove_accents(\$F('GBFORM_$nom').strip());\n";
         if ($aElement["fMandatory"]) {
           $ret.="if (value=='') {\n";
-          $ret.=" \$('GBFORM_{$nom}_div').className='{$aElement["classNOK"]}';\n";
+          $ret.=" \$('GBFORM_{$nom}_div').className='NOK';\n";
           $ret.="}\n";
         }
         if (isset($aElement["args"]["regexp"])){
@@ -530,7 +539,7 @@ Class Gb_Form
           }
           $ret.="var regexp=$regexp\n";
           $ret.="if (!regexp.test(value)) {\n";
-          $ret.=" \$('GBFORM_{$nom}_div').className='{$aElement["classNOK"]}';\n";
+          $ret.=" \$('GBFORM_{$nom}_div').className='NOK';\n";
           $ret.="}\n";
         }
         if (isset($aElement["args"]["minvalue"])){
@@ -551,7 +560,7 @@ Class Gb_Form
             }
             $ret.=" var borne=eval({$borne});\n";
             $ret.=" if (bornevalue < borne) {";
-            $ret.=" \$('GBFORM_{$nom}_div').className='{$aElement["classNOK"]}';";
+            $ret.=" \$('GBFORM_{$nom}_div').className='NOK';";
             $ret.="}\n";
           }
         }
@@ -573,7 +582,7 @@ Class Gb_Form
             }
             $ret.=" var borne=eval({$borne});\n";
             $ret.=" if (bornevalue > borne) {";
-            $ret.=" \$('GBFORM_{$nom}_div').className='{$aElement["classNOK"]}';";
+            $ret.=" \$('GBFORM_{$nom}_div').className='NOK';";
             $ret.="}\n";
           }
         }
@@ -595,7 +604,7 @@ Class Gb_Form
             }
             $ret.=" var notvalue=eval({$notValue});\n";
             $ret.=" if (bornevalue == notvalue) {";
-            $ret.=" \$('GBFORM_{$nom}_div').className='{$aElement["classNOK"]}';";
+            $ret.=" \$('GBFORM_{$nom}_div').className='NOK';";
             $ret.="}\n";
           }
         }
@@ -603,14 +612,14 @@ Class Gb_Form
 
       case "CHECKBOX":
           // par défaut, met en classOK, si erreur, repasse en classNOK
-          $ret.=" \$('GBFORM_{$nom}_div').className='{$aElement["classOK"]}';\n";
+          $ret.=" \$('GBFORM_{$nom}_div').className='OK';\n";
           // enlève le message d'erreur
-          $ret.=" var e=\$('GBFORM_{$nom}_div').select('div[class=\"{$aElement["classERROR"]}\"]').first(); if (e!=undefined){e.innerHTML='';}\n";
+          $ret.=" var e=\$('GBFORM_{$nom}_div').select('div[class=\"ERROR\"]').first(); if (e!=undefined){e.innerHTML='';}\n";
                     
           if ($aElement["fMandatory"]) {
               $ret.="var value=\$F('GBFORM_$nom');\n";
               $ret.="if (value!='true') {\n";
-              $ret.=" \$('GBFORM_{$nom}_div').className='{$aElement["classNOK"]}';\n";
+              $ret.=" \$('GBFORM_{$nom}_div').className='NOK';\n";
               $ret.="}\n";
           }
         break;
@@ -796,7 +805,7 @@ Class Gb_Form
     
   /**
    * Valide le formulaire
-   * En cas d'erreur, appelle $this->setClass() et $this->setErrorMsg pour chaque $nom incorrect
+   * En cas d'erreur, $this->setErrorMsg pour chaque $nom incorrect
    *
    * @return array("nom" => "erreur") ou true si aucune erreur (attention utiliser ===)
    */
@@ -948,7 +957,6 @@ Class Gb_Form
 
     foreach($aErrs as $nom=>$reason)
     {
-      $this->setClass($nom, false);
       if (!empty($this->formElements[$nom]["invalidMsg"]))
        $reason=$this->formElements[$nom]["invalidMsg"];
       $this->setErrorMsg($nom, $reason);
