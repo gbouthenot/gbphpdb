@@ -172,5 +172,21 @@ Class Gb_Session
         $uniqId=str_pad($uniqId, 6);
         return $uniqId;
     }
+
+    
+/**
+     * Renvoie la valeur SESSION, sans slash ou false si elle n'est pas définie
+     *
+     * @param string $index valeur à chercher
+     * @return string|false $_SESSION[$index]
+     */
+    public static function get($index)
+    {
+        if ( isset($_SESSION[$index]) ) {
+            return $_SESSION[$index];
+        } else {
+            return false;
+        }
+    }
     
 }
