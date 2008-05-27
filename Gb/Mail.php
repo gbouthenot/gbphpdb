@@ -47,7 +47,7 @@ class Gb_Mail
         }
     
         $mail->setFrom($from, substr($from, 0, strpos($from, "@")));
-        $mail->setBodyText($body."test");
+        $mail->setBodyText($body);
         $mail->setSubject($sujet);
         return $mail->send($transport);
     }

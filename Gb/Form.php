@@ -147,21 +147,26 @@ Class Gb_Form
       case "SELECT":
         if (!isset($aParams["args"]) || !is_array($aParams["args"]))
           throw new Gb_Exception("Paramètres de $nom incorrects");
-        //remplit value avec le numéro sélectionné.
-        $num=0;
-        $args=array();
-        foreach($aParams["args"] as $ordre=>$val) {
-          if ($ordre==="default") {
-            $aParams["value"]=$num;
-          }
-          $args[]=$val;
-          $num++;
+        if (isset($aParams["value"])) {
+            $this->formElements[$nom]=$aParams;
+            $this->set($nom, $aParams["value"]);
+        } else {
+            //remplit value avec le numéro sélectionné.
+            $num=0;
+            $args=array();
+            foreach($aParams["args"] as $ordre=>$val) {
+              if ($ordre==="default") {
+                $aParams["value"]=$num;
+              }
+              $args[]=$val;
+              $num++;
+            }
+            $aParams["args"]=$args;
+            if (!isset($aParams["value"])) {
+                $aParams["value"]="0";    // par défaut, 1er élément de la liste
+            }
+            $this->formElements[$nom]=$aParams;
         }
-        $aParams["args"]=$args;
-        if (!isset($aParams["value"])) {
-            $aParams["value"]="0";    // par défaut, 1er élément de la liste
-        }
-        $this->formElements[$nom]=$aParams;
         break;
 
       case "SELECTMULTIPLE":
