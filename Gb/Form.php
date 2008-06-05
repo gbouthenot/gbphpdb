@@ -301,14 +301,16 @@ Class Gb_Form
 
     $type=$aElement["type"];
     $value=$aElement["value"];
+
+    $ret.="<div class='$class'>\n";
+    $ret.="<div id='GBFORM_${nom}_div' class='$classSTATUT'>\n";
+    $ret.="<label>";
+    if (strlen($aElement["preInput"])) {
+        $ret.="<span class='PRE'>".$aElement["preInput"]."</span>";
+    }
+
     switch ($type) {
       case "SELECT":
-        $ret.="<div class='$class'>\n";
-        $ret.="<div id='GBFORM_${nom}_div' class='$classSTATUT'>\n";
-        $ret.="<label>";
-        if (strlen($aElement["preInput"])) {
-            $ret.="<span class='PRE'>".$aElement["preInput"]."</span>";
-        }
         $aValues=$aElement["args"];
         $html=$aElement["inInput"];
         $ret.="<select id='GBFORM_$nom' name='GBFORM_$nom' $html onchange='javascript:validate_GBFORM_$nom();' onkeyup='javascript:validate_GBFORM_$nom();'>\n";
@@ -338,12 +340,6 @@ Class Gb_Form
         break;
 
       case "SELECTMULTIPLE":
-        $ret.="<div class='$class'>\n";
-        $ret.="<div id='GBFORM_${nom}_div' class='$classSTATUT'>\n";
-        $ret.="<label>";
-        if (strlen($aElement["preInput"])) {
-            $ret.="<span class='PRE'>".$aElement["preInput"]."</span>";
-        }
         $aValues=$aElement["args"];
         $html=$aElement["inInput"];
         $ret.="<select multiple='multiple' id='GBFORM_$nom' name='GBFORM_{$nom}[]' $html onchange='javascript:validate_GBFORM_$nom();' onkeyup='javascript:validate_GBFORM_$nom();'>\n";
@@ -358,43 +354,19 @@ Class Gb_Form
         $ret.="</select>\n";
         break;
 
-      case "TEXT": case "PASSWORD":
-        $ret.="<div class='$class'>\n";
-        $ret.="<div id='GBFORM_${nom}_div' class='$classSTATUT'>\n";
-        $ret.="<label>";
-        if (strlen($aElement["preInput"])) {
-            $ret.="<span class='PRE'>".$aElement["preInput"]."</span>";
-        }
+      case "TEXT": case "PASSWORD": case "HIDDEN":
         $html=$aElement["inInput"];
         $sValue=htmlspecialchars($value, ENT_QUOTES);
         $ret.="<input type='".strtolower($type)."' class='text' id='GBFORM_$nom' name='GBFORM_$nom' $html value='$sValue' onchange='javascript:validate_GBFORM_$nom();' onkeyup='javascript:validate_GBFORM_$nom();' />\n";
         break;
 
-      case "HIDDEN":
-        $html=$aElement["inInput"];
-        $sValue=htmlspecialchars($value, ENT_QUOTES);
-        $ret.="<input type='".strtolower($type)."' id='GBFORM_$nom' name='GBFORM_$nom' $html value='$sValue' />\n";
-        break;
-
       case "TEXTAREA":
-        $ret.="<div class='$class'>\n";
-        $ret.="<div id='GBFORM_${nom}_div' class='$classSTATUT'>\n";
-        $ret.="<label>";
-        if (strlen($aElement["preInput"])) {
-            $ret.="<span class='PRE'>".$aElement["preInput"]."</span>";
-        }
         $html=$aElement["inInput"];
         $sValue=htmlspecialchars($value, ENT_QUOTES);
         $ret.="<textarea class='textarea' id='GBFORM_$nom' name='GBFORM_$nom' $html onchange='javascript:validate_GBFORM_$nom();' onkeyup='javascript:validate_GBFORM_$nom();'>$sValue</textarea>\n";
         break;
 
       case "CHECKBOX":
-        $ret.="<div class='$class'>\n";
-        $ret.="<div id='GBFORM_${nom}_div' class='$classSTATUT'>\n";
-        $ret.="<label>";
-        if (strlen($aElement["preInput"])) {
-            $ret.="<span class='PRE'>".$aElement["preInput"]."</span>";
-        }
         $sValue="";
         if ($value==true)
           $sValue=" checked='checked'";
@@ -403,12 +375,6 @@ Class Gb_Form
         break;
 
       case "RADIO":
-        $ret.="<div class='$class'>\n";
-        $ret.="<div id='GBFORM_${nom}_div' class='$classSTATUT'>\n";
-        $ret.="<label>";
-        if (strlen($aElement["preInput"])) {
-            $ret.="<span class='PRE'>".$aElement["preInput"]."</span>";
-        }
         $sValue="";
         if ($value==$radioValue)
           $sValue=" checked='checked'";
@@ -420,17 +386,15 @@ Class Gb_Form
         throw new Gb_Exception("Type inconnu");
     }
     
-    if ($type!="HIDDEN") {
-        if (strlen($aElement["postInput"])) {
-            $ret.="<span class='POST'>".$aElement["postInput"]."</span>";
-        }
-        $ret.="</label>";
-        $errorMsg=$aElement["message"];
-        if (strlen($errorMsg)) {
-            $ret.="<div class='ERROR'>$errorMsg</div>";
-        }
-        $ret.="</div></div>\n";
+    if (strlen($aElement["postInput"])) {
+        $ret.="<span class='POST'>".$aElement["postInput"]."</span>";
     }
+    $ret.="</label>";
+    $errorMsg=$aElement["message"];
+    if (strlen($errorMsg)) {
+        $ret.="<div class='ERROR'>$errorMsg</div>";
+    }
+    $ret.="</div></div>\n";
 
     return $ret;
   }
@@ -612,6 +576,11 @@ Class Gb_Form
             $ret.=" \$('GBFORM_{$nom}_div').className='NOK';";
             $ret.="}\n";
           }
+        }
+        if (!$aElement["fMandatory"]) {
+          $ret.="if (value=='') {\n";
+          $ret.=" \$('GBFORM_{$nom}_div').className='OK';\n";
+          $ret.="}\n";
         }
         break;
 
@@ -856,14 +825,14 @@ Class Gb_Form
           }
           break;
 
-        case "SELECTMULTIPLE": case "HIDDEN":
+        case "SELECTMULTIPLE":
         break;
 
         case "RADIO": case "CHECKBOX":
           $value=strtolower(Gb_String::mystrtoupper(trim($aElement["value"])));
           break;
 
-        case "TEXT": case "PASSWORD": case "TEXTAREA":
+        case "TEXT": case "PASSWORD": case "TEXTAREA": case "HIDDEN":
           $value=strtolower(Gb_String::mystrtoupper(trim($aElement["value"])));
           if (strlen($value) && isset($aElement["args"]["regexp"])) {
             $regexp=$aElement["args"]["regexp"];
@@ -950,6 +919,7 @@ Class Gb_Form
         if ( (($type!="SELECT" && $type!="SELECTMULTIPLE") && strlen($value)==0) ) {
           if ($type=="SELECT")        $aErrs[$nom]="Aucun choix sélectionné";
           elseif ($type=="TEXT")      $aErrs[$nom]="Valeur non renseignée";
+          elseif ($type=="HIDDEN")    $aErrs[$nom]="Valeur inexistante";
           elseif ($type=="TEXTAREA")  $aErrs[$nom]="Texte non renseigné";
           elseif ($type=="CHECKBOX")  $aErrs[$nom]="Case non cochée";
           elseif ($type=="RADIO")     $aErrs[$nom]="?";
