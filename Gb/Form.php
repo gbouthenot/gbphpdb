@@ -78,11 +78,13 @@ Class Gb_Form
   }
 
   /**
-   * Ajoute un élément
+   * Ajoute un élément (fluent interface)
    *
    * @param string $nom Nom unique, défini le NAME de l'élément doit commencer par une lettre et ne comporter que des caractères alphanumériques
    * @param array $aParams
    * @throws Gb_Exception
+   * 
+   * @return Gb_Form (fluent interface)
    */
   public function addElement($nom, array $aParams)
   {
@@ -208,6 +210,7 @@ Class Gb_Form
         throw new Gb_Exception("Type de variable de formulaire inconnu pour $nom");
     }
 
+    return $this;
   }
 
   public function getElementParam($nom, $paramName)
@@ -221,14 +224,44 @@ Class Gb_Form
       return false;
   }
 
-  public function setElementParam($nom, $paramName, $value)
-  {
-    if (!isset($this->formElements[$nom]))
-      throw new Gb_Exception("Set elementParam: nom=$nom non défini");
-    $this->formElements[$nom][$paramName]=$value;
-  }
+    /**
+     * Modifie la valeur d'un paramètre (fluent interface)
+     *
+     * @param string $nom nom de l'élément
+     * @param string $paramName nom du paramètre
+     * @param string $value valeur
+     * @param string[optional] $action APPEND (défaut)/SET/PREPEND
+     * @throws Gb_Exception
+     * 
+     * @return Gb_Form (fluent interface)
+     */
+    public function setElementParam($nom, $paramName, $value, $action="APPEND")
+    {
+        if (!isset($this->formElements[$nom])) {
+            throw new Gb_Exception("Set elementParam: nom=$nom non défini");
+        }
+        $action=strtoupper($action);
+        $oldvalue="";
+        if (isset($this->formElements[$nom][$paramName])) {
+            $oldvalue=$this->formElements[$nom][$paramName];
+        }
+        if ($action=="PREPEND") {
+            $value=$value . $oldvalue;
+        } elseif ($action=="APPEND") {
+            $value=$oldvalue . $value;
+        }
+        $this->formElements[$nom][$paramName]=$value;
+        return $this;
+    }
 
 
+    /**
+     * Positionne la valeur d'un élément (fluent interface)
+     *
+     * @param string $nom nom de l'élément
+     * @param string $value valeur
+     * @return Gb_Form (fluent interface)
+     */
     public function set($nom, $value)
     {
         if (!isset($this->formElements[$nom]))
@@ -247,6 +280,8 @@ Class Gb_Form
             $value= ($value) ? (true) : (false);
         }
         $this->formElements[$nom]["value"]=$value;
+        
+        return $this;
     }
 
 
@@ -403,11 +438,13 @@ Class Gb_Form
 
 
   /**
-   * Change le message d'erreur d'un elément
+   * Change le message d'erreur d'un elément (fluent interface)
    *
    * @param string $nom
    * @param string[optional] $errorMsg
    * @throws Gb_Exception
+   * 
+   * @return Gb_Form (fluent interface)
    */
   public function setErrorMsg($nom, $errorMsg="")
   {
@@ -419,6 +456,8 @@ Class Gb_Form
       }
       $this->formElements[$nom]["message"]=$errorMsg;
       $this->formElements[$nom]["classSTATUT"]=$class;
+      
+      return $this;
   }
 
 
@@ -616,6 +655,21 @@ Class Gb_Form
     return "";
   }
 
+    
+    /**
+     * Renvoie le nom du <input id=''>
+     *
+     * @param string $nom
+     * @return string
+     */
+    public function getFormId($nom)
+    {
+        if (!isset($this->formElements[$nom])) {
+            throw new Gb_Exception("Variable de formulaire inexistante");
+        }
+        return "GBFORM_".$nom;
+    }
+  
   /**
    * Remplit les valeurs depuis la base de données
    *
