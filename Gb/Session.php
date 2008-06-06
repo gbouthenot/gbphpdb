@@ -148,8 +148,8 @@ Class Gb_Session
         
         $_SESSION["Gb_Session"]=$curSession;
     
-        $gto=Gb_String::date_fr($curSession['grandTimeout']);
-        $rto=Gb_String::date_fr($curSession['relTimeout']);
+//        $gto=Gb_String::date_fr($curSession['grandTimeout']);
+//        $rto=Gb_String::date_fr($curSession['relTimeout']);
         //Gb_Log::logDebug("Session is uniqId={$curSession['uniqId']} client={$curSession['client']} grandTimeout=$gto relTimeout=$rto}");
 
         return $sWarning;
