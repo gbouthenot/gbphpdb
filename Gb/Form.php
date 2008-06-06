@@ -55,7 +55,7 @@ Class Gb_Form
   );
 
 
-    public function getRevision()
+    public static function getRevision()
     {
         $revision='$Revision$';
         $revision=trim(substr($revision, strrpos($revision, ":")+2, -1));
