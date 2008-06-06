@@ -7,7 +7,8 @@
  * @param string $sujet
  * @param string $body
  * @param string $from
- * @param string[optional] $bccdestinataires, séparés par virgule
+ * @param string[optional] $bcc
+destinataires, séparés par virgule
  */
 function mymail($to, $sujet, $body, $from, $bcc="")
 {
