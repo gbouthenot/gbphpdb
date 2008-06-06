@@ -1,6 +1,10 @@
 <?php
 /**
+ * Gb_Form
  * 
+ * @author Gilles Bouthenot
+ * @version $Revision$
+ * @Id $Id$
  */
 
 if (!defined("_GB_PATH")) {
@@ -15,7 +19,7 @@ require_once(_GB_PATH."Util.php");
 
 Class Gb_Form
 {
-  protected $formElements=array();
+    protected $formElements=array();
 
   /**
    * @var Gb_Db
@@ -51,6 +55,13 @@ Class Gb_Form
   );
 
 
+    public function getRevision()
+    {
+        $revision='$Revision$';
+        $revision=trim(substr($revision, strrpos($revision, ":")+2, -1));
+        return $revision;
+    }
+  
   /**
    * constructeur de Gb_Form
    *
