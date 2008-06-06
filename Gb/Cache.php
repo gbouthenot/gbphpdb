@@ -1,6 +1,10 @@
 <?php
 /**
+ * Gb_Cache
  * 
+ * @author Gilles Bouthenot
+ * @version $Revision$
+ * @Id $Id$
  */
 
 if (!defined("_GB_PATH")) {
@@ -66,7 +70,20 @@ Class Gb_Cache
     protected $cacheHit;
 
     protected $values;
-
+    
+    /**
+     * Renvoie la revision de la classe
+     *
+     * @return integer
+     */
+    public static function getRevision()
+    {
+        $revision='$Revision$';
+        $revision=trim(substr($revision, strrpos($revision, ":")+2, -1));
+        return $revision;
+    }
+    
+    
     /**
      * Crée un cacheableObject
      *

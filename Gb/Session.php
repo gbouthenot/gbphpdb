@@ -1,6 +1,10 @@
 <?php
 /**
+ * Gb_Session
  * 
+ * @author Gilles Bouthenot
+ * @version $Revision$
+ * @Id $Id$
  */
 
 if (!defined("_GB_PATH")) {
@@ -20,6 +24,17 @@ Class Gb_Session
     protected static $grandTimeOutMinutes;
     
     
+    /**
+     * Renvoie la revision de la classe
+     *
+     * @return integer
+     */
+    public static function getRevision()
+    {
+        $revision='$Revision$';
+        $revision=trim(substr($revision, strrpos($revision, ":")+2, -1));
+        return $revision;
+    }
     
    /**
    * Renvoie le nom du repertoire de la session
@@ -103,7 +118,7 @@ Class Gb_Session
         $time=time();
         if (  $curSession["client"]!=$client )
         { // session hijacking ? Teste l'IP et l'user agent du client
-            Gb_Log::logNotice("Session uniqId={$curSession['uniqId']} destroyed because client {$curSession['client']} != {$client} ");
+            //Gb_Log::logNotice("Session uniqId={$curSession['uniqId']} destroyed because client {$curSession['client']} != {$client} ");
             $curSession=self::destroy();
             $sWarning.="<b>Votre adresse IP ou votre navigateur a changé depuis la dernière page demandée.";
             $sWarning.=" Pour protéger votre confidentialité, veuillez vous réidentifier.</b><br />\n";
@@ -111,7 +126,7 @@ Class Gb_Session
         elseif( ($curSession["grandTimeout"] && $time>$curSession["grandTimeout"])
              ||  ($curSession["relTimeout"]   && $time>$curSession["relTimeout"]   )     )
         {
-            Gb_Log::logNotice("Session destroyed because $time > ({$curSession["grandTimeout"]} or {$curSession["relTimeout"]})");
+            //Gb_Log::logNotice("Session destroyed because $time > ({$curSession["grandTimeout"]} or {$curSession["relTimeout"]})");
             $curSession=self::destroy();
             $sWarning.="<b>Votre session a expiré";
             $sWarning.=" Pour protéger votre confidentialité, veuillez vous réidentifier.</b><br />\n";
@@ -123,7 +138,7 @@ Class Gb_Session
         }
         elseif (rand(1, 100)<=20)
         { // 20% de chance de regénérer l'ID de session
-            Gb_Log::logDebug("session_regenerate_id() uniqId={$curSession['uniqId']}");
+            //Gb_Log::logDebug("session_regenerate_id() uniqId={$curSession['uniqId']}");
             session_regenerate_id(true);
         }
     
@@ -135,7 +150,7 @@ Class Gb_Session
     
         $gto=Gb_String::date_fr($curSession['grandTimeout']);
         $rto=Gb_String::date_fr($curSession['relTimeout']);
-        Gb_Log::logDebug("Session is uniqId={$curSession['uniqId']} client={$curSession['client']} grandTimeout=$gto relTimeout=$rto}");
+        //Gb_Log::logDebug("Session is uniqId={$curSession['uniqId']} client={$curSession['client']} grandTimeout=$gto relTimeout=$rto}");
 
         return $sWarning;
     }
@@ -159,7 +174,7 @@ Class Gb_Session
         $_SESSION=array();
         $_SESSION["Gb_Session"]=$curSession;
         $gto=Gb_String::date_fr($curSession['grandTimeout']);
-        Gb_Log::logInfo("Session created uniqId={$uniqId} client={$client} grandTimeout=$gto");
+        //Gb_Log::logInfo("Session created uniqId={$uniqId} client={$client} grandTimeout=$gto");
         return $curSession;
     }
     

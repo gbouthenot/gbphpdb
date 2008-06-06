@@ -1,6 +1,10 @@
 <?php
 /**
+ * Gb_Util
  * 
+ * @author Gilles Bouthenot
+ * @version $Revision$
+ * @Id $Id$
  */
 
 if (!defined("_GB_PATH")) {
@@ -37,6 +41,18 @@ Class Gb_Util
   public static $debug=0;                 // par défaut, pas de mode débug
   public static $forbidDebug=0;           // ne pas interdire de passer en débug par $_GET["debug"]
 
+    /**
+     * Renvoie la revision de la classe
+     *
+     * @return integer
+     */
+    public static function getRevision()
+    {
+        $revision='$Revision$';
+        $revision=trim(substr($revision, strrpos($revision, ":")+2, -1));
+        return $revision;
+    }
+  
 
   /**
    * Cette classe ne doit pas être instancée !

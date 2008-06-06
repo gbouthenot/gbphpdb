@@ -1,6 +1,10 @@
 <?php
 /**
+ * Gb_String
  * 
+ * @author Gilles Bouthenot
+ * @version $Revision$
+ * @Id $Id$
  */
 
 if (!defined("_GB_PATH")) {
@@ -15,7 +19,19 @@ class Gb_String
   // " et $ ignorés
   const STR_SRC=  "' !#%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~€?‚ƒ„…†‡ˆ‰Š‹Œ???‘’“”•–—˜™š›œ?Ÿ ¡¢£¤¥¦§¨©ª«¬­®¯°±²³´µ¶·¸¹º»¼½¾¿ÀÁÂÃÄÅÆÇÈÉÊËÌÍÎÏĞÑÒÓÔÕÖ×ØÙÚÛÜİŞßàáâãäåæçèéêëìíîïğñòóôõö÷øùúûüış";
   const STR_UPPER="' !#%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`ABCDEFGHIJKLMNOPQRSTUVWXYZ{|}~€?,F,_†‡ˆ%S‹O?Z??''“”.--˜TS›O?ZY IC£¤¥|§¨C2<¬­R¯°±23'UQ.¸10>¼½¾?AAAAAAACEEEEIIIIDNOOOOOXOUUUUYşBAAAAAAACEEEEIIIIONOOOOO/OUUUUYş";
-    
+
+    /**
+     * Renvoie la revision de la classe
+     *
+     * @return integer
+     */
+    public static function getRevision()
+    {
+        $revision='$Revision$';
+        $revision=trim(substr($revision, strrpos($revision, ":")+2, -1));
+        return $revision;
+    }
+  
     /**
      * Cette classe ne doit pas être instancée !
      */

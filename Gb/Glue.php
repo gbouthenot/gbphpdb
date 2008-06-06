@@ -1,6 +1,10 @@
 <?php
 /**
+ * Gb_Glue
  * 
+ * @author Gilles Bouthenot
+ * @version $Revision$
+ * @Id $Id$
  */
 
 if (!defined("_GB_PATH")) {
@@ -9,12 +13,22 @@ if (!defined("_GB_PATH")) {
 
 class Gb_Glue
 {
-    const VERSION="2";
-    
     protected static    $_plugins=array();
     public static       $projectName="";      // Nom du projet
     protected static    $_oldSessionDir;
     protected static    $_starttime=0;
+
+    /**
+     * Renvoie la revision de la classe
+     *
+     * @return integer
+     */
+    public static function getRevision()
+    {
+        $revision='$Revision$';
+        $revision=trim(substr($revision, strrpos($revision, ":")+2, -1));
+        return $revision;
+    }
     
     /**
      * Ajoute un plugin
@@ -105,14 +119,6 @@ class Gb_Glue
             }
         }
         return self::$_oldSessionDir;
-    }
-
-
-
-
-    public static function getVersion()
-    {
-        return self::VERSION;
     }
 
 

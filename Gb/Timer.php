@@ -1,13 +1,10 @@
 <?php
 /**
- * Class Gb_Timer
- *
- * @author Gilles Bouthenot
- * @version 1.00
- *
- */
-/**
+ * Gb_Timer
  * 
+ * @author Gilles Bouthenot
+ * @version $Revision$
+ * @Id $Id$
  */
 
 if (!defined("_GB_PATH")) {
@@ -28,6 +25,18 @@ Class Gb_Timer
   protected static $nbInstance_current=0;         // nom d'instances ouvertes en ce moment          
 
   protected static $fPluginRegistred=false;
+  
+    /**
+     * Renvoie la revision de la classe
+     *
+     * @return integer
+     */
+    public static function getRevision()
+    {
+        $revision='$Revision$';
+        $revision=trim(substr($revision, strrpos($revision, ":")+2, -1));
+        return $revision;
+    }
   
   
   /**

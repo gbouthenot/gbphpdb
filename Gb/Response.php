@@ -1,6 +1,10 @@
 <?php
 /**
+ * Gb_Response
  * 
+ * @author Gilles Bouthenot
+ * @version $Revision$
+ * @Id $Id$
  */
 
 if (!defined("_GB_PATH")) {
@@ -25,7 +29,6 @@ class Gb_Response
     ,"author"             =>array("name", "")
     ,"copyright"          =>array("name", "")
     ,"x-URL"              =>array("name", "")
-    ,"x-scriptVersion"    =>array("name", Gb_Glue::VERSION)
     ,"Expires"            =>array("http-equiv", "")                                  // mettre à vide pour une date du passé
     ,"Content-Type"       =>array("http-equiv", "text/html;  charset=ISO-8859-15")
     ,"Content-Script-Type"=>array("http-equiv", "text/javascript")
@@ -51,6 +54,19 @@ class Gb_Response
     const P_PREVENTUSE=99;
     public static $html_parse=self::P_HTTP;
 
+    /**
+     * Renvoie la revision de la classe
+     *
+     * @return integer
+     */
+    public static function getRevision()
+    {
+        $revision='$Revision$';
+        $revision=trim(substr($revision, strrpos($revision, ":")+2, -1));
+        return $revision;
+    }
+    
+    
     public static function send_headers($fPrint=1)
   {
     $head=self::$head;

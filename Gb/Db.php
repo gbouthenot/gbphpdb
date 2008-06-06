@@ -1,6 +1,10 @@
 <?php
 /**
+ * Gb_Db
  * 
+ * @author Gilles Bouthenot
+ * @version $Revision$
+ * @Id $Id$
  */
 
 if (!defined("_GB_PATH")) {
@@ -39,6 +43,18 @@ Class Gb_Db extends Zend_Db
     protected static $nbRequest=0;                           // Nombre de requetes effectuées
 
     protected static $fPluginRegistred=false;
+    
+    /**
+     * Renvoie la revision de la classe
+     *
+     * @return integer
+     */
+    public static function getRevision()
+    {
+        $revision='$Revision$';
+        $revision=trim(substr($revision, strrpos($revision, ":")+2, -1));
+        return $revision;
+    }
     
     public function getAdapter()
     {

@@ -1,6 +1,10 @@
 <?php
 /**
+ * Gb_Request
  * 
+ * @author Gilles Bouthenot
+ * @version $Revision$
+ * @Id $Id$
  */
 
 if (!defined("_GB_PATH")) {
@@ -9,7 +13,17 @@ if (!defined("_GB_PATH")) {
 
 class Gb_Request
 {
-
+    /**
+     * Renvoie la revision de la classe
+     *
+     * @return integer
+     */
+    public static function getRevision()
+    {
+        $revision='$Revision$';
+        $revision=trim(substr($revision, strrpos($revision, ":")+2, -1));
+        return $revision;
+    }
 
     /**
      * Enlève les slashes des données GET, POST, COOKIE (gpc), si magic_quote_gpc est actif

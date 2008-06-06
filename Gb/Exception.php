@@ -1,6 +1,10 @@
 <?php
 /**
+ * Gb_Exception
  * 
+ * @author Gilles Bouthenot
+ * @version $Revision$
+ * @Id $Id$
  */
 
 if (!defined("_GB_PATH")) {
@@ -14,6 +18,18 @@ if (!defined("_GB_PATH")) {
  */
 class Gb_Exception extends Exception
 {
+    /**
+     * Renvoie la revision de la classe
+     *
+     * @return integer
+     */
+    public static function getRevision()
+    {
+        $revision='$Revision$';
+        $revision=trim(substr($revision, strrpos($revision, ":")+2, -1));
+        return $revision;
+    }
+    
   public function __toString()
   {
     $message=__CLASS__ . ": \n";
