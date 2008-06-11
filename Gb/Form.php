@@ -72,7 +72,7 @@ Class Gb_Form
    *
    * @param Gb_Db[optional] $db
    * @param string[optional] $tableName si vide, pas de bdd
-   * @param array[optional] $where array(condition, array("usa_login='?'", "gbo"), ...)
+   * @param array[optional] $where array($dbGE->quoteInto("vaf_usa_login=?", Auth::getLogin()))
    */
   public function __construct(Gb_Db $db=null, $tableName="", array $where=array())
   {
@@ -270,6 +270,18 @@ Class Gb_Form
         return $this;
     }
 
+    /**
+     * Renvoie booléan si element existe
+     *
+     * @param string $nom
+     * @return boolean
+     */
+    public function elementExist($nom)
+    {
+        if (!isset($this->formElements[$nom]))
+            return false;
+        return true;
+    }    
 
     /**
      * Positionne la valeur d'un élément (fluent interface)
@@ -286,7 +298,8 @@ Class Gb_Form
         $type=$this->formElements[$nom]["type"];
         if ($type=="SELECT") {
             foreach ($this->formElements[$nom]["args"] as $ordre=>$val) {
-                if ($val[0]===$value) {
+                $thisval=is_array($val)?$val[0]:$val;
+                if ($thisval===$value) {
                     $value=$ordre;
                     break;
                 }
@@ -309,7 +322,10 @@ Class Gb_Form
     $value=$this->formElements[$nom]["value"];
 
     if ($this->formElements[$nom]["type"]=="SELECT" && isset($this->formElements[$nom]["args"][$value])) {
-      $value=$this->formElements[$nom]["args"][$value][0];
+      $value=$this->formElements[$nom]["args"][$value];
+      if (is_array($value)) {
+          $value=$value[0];
+      }
     }
     return $value;
   }
@@ -368,8 +384,8 @@ Class Gb_Form
         $num=0;
         $fOptgroup=false;
         foreach ($aValues as $ordre=>$aOption){
-          $sVal=htmlspecialchars($aOption[0], ENT_QUOTES);
-          $sLib=htmlspecialchars(!empty($aOption[1])?$aOption[1]:$aOption[0], ENT_QUOTES);
+          $sVal=htmlspecialchars(is_array($aOption)?$aOption[0]:$aOption, ENT_QUOTES);
+          $sLib=htmlspecialchars(is_array($aOption)?(isset($aOption[1])?$aOption[1]:$aOption[0]):$aOption, ENT_QUOTES);
           if ($sVal=="optgroup") {
               if ($fOptgroup) {
                   $ret.="</optgroup>\n";
@@ -395,8 +411,8 @@ Class Gb_Form
         $html=$aElement["inInput"];
         $ret.="<select multiple='multiple' id='GBFORM_$nom' name='GBFORM_{$nom}[]' $html onchange='javascript:validate_GBFORM_$nom();' onkeyup='javascript:validate_GBFORM_$nom();'>\n";
         foreach ($aValues as $ordre=>$aOption){
-          $sVal=htmlspecialchars($aOption[0], ENT_QUOTES);
-          $sLib=htmlspecialchars($aOption[1], ENT_QUOTES);
+          $sVal=htmlspecialchars(is_array($aOption)?$aOption[0]:$aOption, ENT_QUOTES);
+          $sLib=htmlspecialchars(is_array($aOption)?(isset($aOption[1])?$aOption[1]:$aOption[0]):$aOption, ENT_QUOTES);
           $sSelected="";
           if (in_array($sVal,$value))
             $sSelected="selected='selected'";
@@ -568,7 +584,7 @@ Class Gb_Form
         }
         if (isset($aElement["args"]["minvalue"])){
           $aMinValues=$aElement["args"]["minvalue"];
-                    if (!is_array($aMinValues)) $aMinValues=array($aMinValues);
+          if (!is_array($aMinValues)) $aMinValues=array($aMinValues);
           foreach ($aMinValues as $borne) {
             if (is_array($borne) && isset($aElement["args"]["regexp"])) {
               // si array, alors extrait la valeur du regexp avant de comparer
@@ -870,14 +886,14 @@ Class Gb_Form
             $aErrs[$nom]="Choix invalide";
             continue;
           }
-          if ($value===false) {
+          if ($value==='false') {
             $aErrs[$nom]="Choix invalide";
             continue;
           }
               
           if (strlen($value) && isset($aElement["NOTVALUE"])) {
-            $aBornes=$aElement["NOTVALUE"];
-                        if (!is_array($aBornes)) $aBornes=array($aBornes);
+              $aBornes=$aElement["NOTVALUE"];
+              if (!is_array($aBornes)) $aBornes=array($aBornes);
               foreach ($aBornes as $borne) {
               $bornevalue=$value;
               $sBorne=$borne;
@@ -913,7 +929,7 @@ Class Gb_Form
           }
           if (strlen($value) && isset($aElement["args"]["minvalue"])) {
             $aBornes=$aElement["args"]["minvalue"];
-                        if (!is_array($aBornes)) $aBornes=array($aBornes);
+            if (!is_array($aBornes)) $aBornes=array($aBornes);
             foreach ($aBornes as $borne) {
               $bornevalue=$value;
               if (is_array($borne) && isset($aElement["args"]["regexp"])) {
@@ -959,7 +975,7 @@ Class Gb_Form
           }
           if (strlen($value) && isset($aElement["args"]["notvalue"])) {
             $aBornes=$aElement["args"]["notvalue"];
-                        if (!is_array($aBornes)) $aBornes=array($aBornes);
+            if (!is_array($aBornes)) $aBornes=array($aBornes);
             foreach ($aBornes as $borne) {
               $bornevalue=$value;
               if (is_array($borne) && isset($aElement["args"]["regexp"])) {
@@ -1060,11 +1076,14 @@ Class Gb_Form
     /**
      * Lit les données, les valide et les écrit dans la bdd si elles sont ok
      *
-     * @return boolean true si formulaire valide, false si non valide ou null si aucune données
+     * @return boolean true si formulaire soumis et valide, false si soumis et non valide. Sinon null.
      */
     public function process()
     {
         if ($this->load()) {
+            if (!$this->isPost()) {
+                return null;
+            }
             if ($this->validate()===true && $this->putInDb()===true) {
                 return true;
             }

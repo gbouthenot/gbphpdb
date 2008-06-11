@@ -187,9 +187,9 @@ class Gb_Response
     {
         $hp=self::$html_parse;
         if ($hp>=self::P_HTML && !self::$nologo) {
-            printf("<!-- built with Gb Framework v%s -->\n", Gb_Glue::getVersion());
+            printf("<!-- built with Gb Framework -->\n");
         } elseif (!self::$nologo) {
-            printf("built with Gb Framework v%s\n", Gb_Glue::getVersion());
+            printf("built with Gb Framework \n");
         }
 
         if ($hp>=self::P_BODY && $hp<self::P_XBODY) {
