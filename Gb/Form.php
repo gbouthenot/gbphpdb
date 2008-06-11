@@ -26,6 +26,7 @@ Class Gb_Form
    */
   protected $db;
   protected $where;
+  protected $moreData;
   protected $tableName;
 
   protected static $fPostIndicator=false;
@@ -73,8 +74,9 @@ Class Gb_Form
    * @param Gb_Db[optional] $db
    * @param string[optional] $tableName si vide, pas de bdd
    * @param array[optional] $where array($dbGE->quoteInto("vaf_usa_login=?", Auth::getLogin()))
+   * @param array[optional] $moreData array("abc_datemodif"=>new Zend_Db_Expr("NOW()"), ...)
    */
-  public function __construct(Gb_Db $db=null, $tableName="", array $where=array())
+  public function __construct(Gb_Db $db=null, $tableName="", array $where=array(), array $moreData=array())
   {
     $this->db=$db;
     $this->tableName=$tableName;
@@ -91,6 +93,7 @@ Class Gb_Form
     $this->where=$where2;
 */
     $this->where=$where;
+    $this->moreData=$moreData;
   }
 
   /**
@@ -775,6 +778,7 @@ Class Gb_Form
    */
     public function putInDb(array $moreData=array())
     {
+        $moreData=array_merge($moreData, $this->moreData);
         if ($this->db===null) {
             return true;
         }
