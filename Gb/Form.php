@@ -27,6 +27,7 @@ Class Gb_Form
   protected $db;
   protected $where;
   protected $moreData;
+  protected $moreDataRead;
   protected $tableName;
 
   protected static $fPostIndicator=false;
@@ -225,6 +226,17 @@ Class Gb_Form
         $this->formElements[$nom]=$aParams;
         break;
 
+      case "AUTOCOMPLETEKEY":
+        if (!isset($aParams["value"]))
+          $aParams["value"]="";   // par défaut, chaine vide
+        if (!isset($aParams["args"]["valuelib"]) || !isset($aParams["args"]["valueToLibFunc"]) || !isset($aParams["args"]["autocompleteURL"])) {
+            throw new Gb_Exception("Il manque des arguments AUTOCOMPLETEKEY pour $nom");
+        }
+        $this->formElements[$nom]=$aParams;
+        /* @todo remplir libelle à partir de value si non précisé */
+        
+        break;
+        
         default:
         throw new Gb_Exception("Type de variable de formulaire inconnu pour $nom");
     }
@@ -728,7 +740,17 @@ Class Gb_Form
       return false;
     }
 
-    $sql="SELECT ".implode(", ", $aCols)." FROM ".$this->tableName;
+    $sql =" SELECT ".implode(", ", $aCols);
+
+    // si moreData, ajoute le nom des colonnes au select
+    if (count($this->moreData)) {
+        if (count($aCols)) {
+            $sql.=", ";
+        }
+        $sql.=implode(", ", array_keys($this->moreData));
+    }
+    
+    $sql.=" FROM ".$this->tableName;
     if (count($this->where)) {
       $sql.=" WHERE";
       $sWhere="";
@@ -766,6 +788,17 @@ Class Gb_Form
         
         $this->set($nom, $val);
     }
+
+    // récupère les informations moreData
+    if (count($this->moreData)) {
+        foreach ($this->moreData as $dbcol=>$void) {
+            $void;
+            $a=$this->moreDataRead;
+            $a[$dbcol]=$aLigne[$dbcol];
+            $this->moreDataRead=$a;
+        }
+    }
+    
     return true;
   }
 
@@ -783,7 +816,7 @@ Class Gb_Form
             return true;
         }
     
-        //@todo: checkbox, radio, selectmultiple
+        //@todo: radio, selectmultiple
         // obient le nom des colonnes
         $aCols=$moreData;
         foreach ($this->formElements as $nom=>$aElement) {
@@ -1074,6 +1107,13 @@ Class Gb_Form
         return $this->fPost;
     }
     
+    
+    
+    
+    public function getMoreDataRead()
+    {
+        return $this->moreDataRead;
+    }
 
 
 
@@ -1088,7 +1128,7 @@ Class Gb_Form
             if (!$this->isPost()) {
                 return null;
             }
-            if ($this->validate()===true && $this->putInDb()===true) {
+            if ($this->validate()===true && $this->putInDb()===true && $this->getFromDb()===true) {
                 return true;
             }
             return false;
