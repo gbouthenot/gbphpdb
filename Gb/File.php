@@ -4,7 +4,7 @@
  * 
  * @author Gilles Bouthenot
  * @version $Revision $
- * @Id $Id:  $
+ * @Id $Id$
  */
 
 if (!defined("_GB_PATH")) {
