@@ -3,7 +3,7 @@
  * Gb_File
  * 
  * @author Gilles Bouthenot
- * @version $Revision $
+ * @version $Revision$
  * @Id $Id$
  */
 
