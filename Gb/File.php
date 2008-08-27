@@ -79,9 +79,9 @@ Class Gb_File
     public function getFile($id)
     {
         $cat=$this->_category;
-        $sql =" SELECT fic_id AS 'id', fic_categorie AS 'category', fic_nom AS 'name', fic_taille AS 'length', fic_commentaire AS 'comment', fic_fs_dossier AS 'fs_folder', fic_fs_nom AS 'fs_name'";
+        $sql =" SELECT fic_code AS 'id', fic_categorie AS 'category', fic_nom AS 'name', fic_taille AS 'length', fic_commentaire AS 'comment', fic_fs_dossier AS 'fs_folder', fic_fs_nom AS 'fs_name'";
         $sql.=" FROM ".$this->_tableName;
-        $sql.=" WHERE fic_id=?";
+        $sql.=" WHERE fic_code=?";
         if ($cat) {
             $sql.=" AND fic_categorie=?";
             $aFile=$this->_db->retrieve_one($sql, array($id, $cat));
@@ -170,27 +170,18 @@ Class Gb_File
             throw new Gb_Exception("Erreur filesize($fname)");
         }
 
-        // trouve l'extension de $sourceFname
-        $pos=strrpos($sourceFname, ".");
-        if ($pos===false) {
-            $nonExt=$sourceFname;
-            $ext="";
-        } else {
-            $nonExt=substr($sourceFname, 0, $pos);
-            $ext=".".$this->_sanitize(substr($sourceFname, $pos+1));
-        }
-
+        list($nonExt, $ext)=$this->_sanitize($sourceFname);
+        
         // obtient le numéro du fichier
         $fileid=$this->_db->sequenceNext($this->_tableName."_seq");
         
-        $nonExt=$this->_sanitize($nonExt);
         $newfName=$targetPrefix."{".$fileid."}".$nonExt.$ext;
         
         // insertion du fichier dans la base de donnée --> récupère $fileid
         $this->_db->insert(
             $this->_tableName,
             array(
-                "fic_id"        => $fileid,
+                "fic_code"      => $fileid,
                 "fic_nom"       => $sourceFname,
                 "fic_taille"    => $length,
                 "fic_categorie" => $this->_category,
@@ -212,21 +203,40 @@ Class Gb_File
     
     
     
-    protected function _sanitize($f)
+    /**
+     * transforme un nom de fichier en deux chaines: nom (64 car max), et extension (16 car max), commence par un point
+     *
+     * @param string $fname
+     * @return array(nom, extension (avec le .))
+     */
+    protected function _sanitize($fname)
     {
-        $f=strtolower(Gb_String::mystrtoupper($f));
-        $f2="";
-        $len=strlen($f);
-
-        for ($i=0; $i<$len; $i++) {
-            $c=ord(substr($f, $i, 1));
-            if (   ($c>=ord("a") && $c<=ord("z"))  ||   ($c>=ord("0") && $c<=ord("9"))   ) {
-                $f2.=chr($c);
-            }
+        $auto="0123456789abcdefghijklmnopqrstuvwxyz_-";
+        $fname=strtolower(Gb_String::mystrtoupper($fname));
+        
+        // trouve l'extension de $fname
+        $pos=strrpos($fname, ".");
+        if ($pos===false) {
+            $nonExt=$fname;
+            $ext="";
+            $ext; // empecher warning de zend studio
+        } else {
+            $nonExt=substr($fname, 0, $pos);
+            $f=substr($fname, $pos+1);
+            $f2=""; for ($i=0; $i<strlen($f); $i++) { if ( strpos($auto, $f[$i]) !==false ){ $f2.=$f[$i];} else { $f2.="_"; } }
+            $ext=".".$f2;
         }
-
-        return $f2;
+        $f=$nonExt;
+        $f2=""; for ($i=0; $i<strlen($f); $i++) { if ( strpos($auto, $f[$i]) !==false ){ $f2.=$f[$i];} else { $f2.="_"; } }
+        $nonExt=$f2;
+    
+        $nonExt=substr($nonExt, 0, 64);
+        $ext=substr($ext, 0, 16);
+        
+        return array($nonExt,$ext);
     }
+    
+    
     /**
      * Renvoie la revision de la classe
      *
