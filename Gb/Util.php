@@ -218,6 +218,42 @@ Class Gb_Util
 
 
 
+    protected static $_tmpdir;
+
+    public static function sys_get_temp_dir()
+    {
+        if (self::$_tmpdir===null) {
+           // add support of sys_get_temp_dir for PHP4/5, use the following code:
+           // Based on http://www.phpit.net/
+           // article/creating-zip-tar-archives-dynamically-php/2/
+    
+            if ( function_exists('sys_get_temp_dir')) {
+                self::$_tmpdir=sys_get_temp_dir();
+            } else {
+                // Try to get from environment variable
+               if ( !empty($_ENV['TMP']) ) {
+                   return realpath( $_ENV['TMP'] );
+               } elseif ( !empty($_ENV['TMPDIR']) ) {
+                   return realpath( $_ENV['TMPDIR'] );
+               } elseif ( !empty($_ENV['TEMP']) ) {
+                   return realpath( $_ENV['TEMP'] );
+               } else {
+                   // Detect by creating a temporary file
+                   // Try to use system's temporary directory
+                   // as random name shouldn't exist
+                   $temp_file = tempnam( md5(uniqid(rand(), TRUE)), '' );
+                   if ( $temp_file ) {
+                       $temp_dir = realpath( dirname($temp_file) );
+                       unlink( $temp_file );
+                       self::$_tmpdir=$temp_dir;
+                   } else {
+                       return FALSE;
+                   }
+               }
+            }
+        }
+        return self::$_tmpdir;
+    }
 
 
 

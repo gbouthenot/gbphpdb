@@ -28,13 +28,13 @@ Class Gb_Db extends Zend_Db
      * @var Zend_Db_Adapter_Abstract
      */
     protected $conn;
-    protected $connArray;                                    // array utilisé par Zend_Db::factory()
-    protected $driver;                         // Pdo_Mysql ou Pdo_Oci
+    protected $connArray;                                     // array utilisé par Zend_Db::factory()
+    protected $driver;                                        // Pdo_Mysql ou Pdo_Oci
     protected $dbname;
     protected $fTransaction=false;
     
-    protected $tables;                                      // cache de la liste des tables
-    protected $tablesDesc;                                  // cache descriptif table
+    protected $tables;                                        // cache de la liste des tables
+    protected $tablesDesc;                                    // cache descriptif table
   
     protected static $sqlTime=0;
     protected static $nbInstance_total=0;                    // Nombre de classes gbdb ouvertes au total
@@ -877,9 +877,9 @@ Class Gb_Db extends Zend_Db
      * Renvoie la valeur suivante d'une séquence
      *
      *  la table doit etre de la forme::
-     *  create table seq_sise_numero (id int not null) ENGINE = 'MyIsam";
+     *  create table seq_sise_numero (id int not null) ENGINE = 'MyIsam';
      *  insert into seq_sise_numero values (0);
-     *  update seq_sise_numero set id=LAST_INSERT_ID(id+1);
+     *  le suivant est obtenu avec cette requete: update seq_sise_numero set id=LAST_INSERT_ID(id+1);
      *
      * @param string $tableName
      * @param string[optionel] $colName
