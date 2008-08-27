@@ -74,14 +74,14 @@ Class Gb_File
      * Renvoie un fichier ou false si non existant
      *
      * @param integer $id
-     * @return array|false
+     * @return array|false array('id', 'category', 'nom', 'length', 'comment', 'fs_folder', 'fs_name', 'osname')
      */
-    protected function _getFile($id)
+    public function getFile($id)
     {
         $cat=$this->_category;
-        $sql =" SELECT fic_code AS 'id', fic_categorie AS 'category', fic_nom AS 'nom', fic_taille AS 'length', fic_commentaire AS 'comment', fic_fs_dossier AS 'fs_folder', fic_fs_nom AS 'fs_name'";
-        $sql.=" FROM".$this->_tableName;
-        $sql.=" WHERE fic_code=?";
+        $sql =" SELECT fic_id AS 'id', fic_categorie AS 'category', fic_nom AS 'name', fic_taille AS 'length', fic_commentaire AS 'comment', fic_fs_dossier AS 'fs_folder', fic_fs_nom AS 'fs_name'";
+        $sql.=" FROM ".$this->_tableName;
+        $sql.=" WHERE fic_id=?";
         if ($cat) {
             $sql.=" AND fic_categorie=?";
             $aFile=$this->_db->retrieve_one($sql, array($id, $cat));
@@ -91,25 +91,17 @@ Class Gb_File
         if (!$aFile) {
             return false;
         }
+
+        $fsname="";
+        $fsname.=$this->_fileroot.DIRECTORY_SEPARATOR;
+        $fsname.=$aFile["fs_folder"].DIRECTORY_SEPARATOR;
+        $fsname.=$aFile["fs_name"];
+        
+        $aFile["osname"]=$fsname;
+
         return $aFile;
     }
     
-    
-    public function getFsName($id)
-    {
-        $aFile=$this->_getFile($id);
-        if (!$aFile) {
-            return false;
-        }
-        
-        $fsname="";
-        $fsname.=$this->_fileroot.DIRECTORY_SEPARATOR;
-        $fsname.=$aFile["category"].DIRECTORY_SEPARATOR;
-        $fsname.=$aFile["fs_folder"].DIRECTORY_SEPARATOR;
-        $fsname.=$aFile["fs_name"];
-
-        return $fsname;
-    }
     
     public function purgeTempDir()
     {
