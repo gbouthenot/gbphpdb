@@ -25,15 +25,19 @@ Class Gb_Session
     
     
     /**
-     * Renvoie la revision de la classe
+     * Renvoie la revision de la classe ou un boolean si la version est plus petite que précisée, ou Gb_Exception
      *
-     * @return integer
+     * @return boolean|integer
+     * @throws Gb_Exception
      */
-    public static function getRevision()
+    public static function getRevision($mini=null, $throw=true)
     {
         $revision='$Revision$';
         $revision=trim(substr($revision, strrpos($revision, ":")+2, -1));
-        return $revision;
+        if ($mini===null) { return $revision; }
+        if ($revision>=$mini) { return true; }
+        if ($throw) { throw new Gb_Exception(__CLASS__." r".$revision."<r".$mini); }
+        return false;
     }
     
    /**
@@ -190,19 +194,33 @@ Class Gb_Session
     }
 
     
-/**
-     * Renvoie la valeur SESSION, sans slash ou false si elle n'est pas définie
+    /**
+     * Renvoie la valeur SESSION, sans slash ou default si elle n'est pas définie
      *
-     * @param string $index valeur à chercher
-     * @return string|false $_SESSION[$index]
+     * @param string $key valeur à chercher
+     * @param mixed[optional] $value valeur à renvoyer si non trouvé
+     * @return mixed $_SESSION[$key]
      */
-    public static function get($index)
+    public static function get($key, $default=false)
     {
-        if ( isset($_SESSION[$index]) ) {
-            return $_SESSION[$index];
+        if ( isset($_SESSION[$key]) ) {
+            return $_SESSION[$key];
         } else {
-            return false;
+            return $default;
         }
+    }
+
+    /**
+     * Stocke une valeur dans SESSION
+     *
+     * @param string $key valeur à chercher
+     * @param mixed $key valeur à chercher
+     * @return mixed la valeur
+     */
+    public static function set($key, $value)
+    {
+        $_SESSION[$key]=$value;
+        return $value;
     }
     
 }

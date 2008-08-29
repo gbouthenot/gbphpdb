@@ -42,17 +42,21 @@ Class Gb_Util
   public static $forbidDebug=0;           // ne pas interdire de passer en débug par $_GET["debug"]
 
     /**
-     * Renvoie la revision de la classe
+     * Renvoie la revision de la classe ou un boolean si la version est plus petite que précisée, ou Gb_Exception
      *
-     * @return integer
+     * @return boolean|integer
+     * @throws Gb_Exception
      */
-    public static function getRevision()
+    public static function getRevision($mini=null, $throw=true)
     {
         $revision='$Revision$';
         $revision=trim(substr($revision, strrpos($revision, ":")+2, -1));
-        return $revision;
+        if ($mini===null) { return $revision; }
+        if ($revision>=$mini) { return true; }
+        if ($throw) { throw new Gb_Exception(__CLASS__." r".$revision."<r".$mini); }
+        return false;
     }
-  
+    
 
   /**
    * Cette classe ne doit pas être instancée !
