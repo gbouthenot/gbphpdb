@@ -53,14 +53,15 @@ class Gb_Request
      * Renvoie la valeur POST, sans slash ou false si elle n'est pas définie
      *
      * @param string $index valeur à chercher
-     * @return string|false $_POST[$index]
+     * @param mixed[optional] $default
+     * @return mixed $_POST[$index]
      */
-    public static function getFormPost($index)
+    public static function getFormPost($index, $default=false)
     {
         if ( isset($_POST[$index]) ) {
             return self::gpcStripSlashes($_POST[$index]);
         } else {
-            return false;
+            return $default;
         }
     }
 
@@ -69,14 +70,15 @@ class Gb_Request
      * Renvoie la valeur GET, sans slash ou false si elle n'est pas définie
      *
      * @param string $index valeur à chercher
-     * @return string|false $_GET[$index]
+     * @param mixed[optional] $default
+     * @return mixed $_GET[$index]
      */
-    public static function getFormGet($index)
+    public static function getFormGet($index, $default)
     {
         if ( isset($_GET[$index]) ) {
             return self::gpcStripSlashes($_GET[$index]);
         } else {
-            return false;
+            return $default;
         }
     }
 
@@ -85,16 +87,17 @@ class Gb_Request
      * Renvoie la valeur POST, sans slash ou la valeur GET ou false si elles ne sont par définies
      *
      * @param string $index valeur à chercher
-     * @return string|false $_POST/$_GET[$index]
+     * @param mixed[optional] $default
+     * @return mixed $_POST/$_GET[$index]
      */
-    public static function getForm($index)
+    public static function getForm($index, $default)
     {
         if ( isset($_POST[$index]) ) {
             return self::gpcStripSlashes($_POST[$index]);
         } elseif ( isset($_GET[$index]) ) {
             return self::gpcStripSlashes($_GET[$index]);
         } else {
-            return false;
+            return $default;
         }
     }
 
