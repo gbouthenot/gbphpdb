@@ -270,7 +270,11 @@ Class Gb_Util
      */
     public static function explode($delimiter, $string, $limit=null)
     {
-        $exp=explode($delimiter, $string, $limit);
+        if ($limit===null) {
+            $exp=explode($delimiter, $string);
+        } else {
+            $exp=explode($delimiter, $string, $limit);
+        }
         if (count($exp)==1 && $exp[0]==="") {
             return array();
         }
