@@ -73,7 +73,7 @@ class Gb_Request
      * @param mixed[optional] $default
      * @return mixed $_GET[$index]
      */
-    public static function getFormGet($index, $default)
+    public static function getFormGet($index, $default=false)
     {
         if ( isset($_GET[$index]) ) {
             return self::gpcStripSlashes($_GET[$index]);
@@ -90,7 +90,7 @@ class Gb_Request
      * @param mixed[optional] $default
      * @return mixed $_POST/$_GET[$index]
      */
-    public static function getForm($index, $default)
+    public static function getForm($index, $default=false)
     {
         if ( isset($_POST[$index]) ) {
             return self::gpcStripSlashes($_POST[$index]);

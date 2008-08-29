@@ -260,6 +260,22 @@ Class Gb_Util
     }
 
 
+    /**
+     * comme explode mais renvoie array() au lieu de array("") si l'élément n'a pas été trouvé
+     *
+     * @param string $delimiter
+     * @param string $string
+     * @param integer[optional] $limit
+     * @return array
+     */
+    public static function explode($delimiter, $string, $limit=null)
+    {
+        $exp=explode($delimiter, $string, $limit);
+        if (count($exp)==1 && $exp[0]==="") {
+            return array();
+        }
+        return $exp;
+    }
 
 }
 
