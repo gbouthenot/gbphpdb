@@ -3,8 +3,8 @@
  * Gb_Mvc
  * 
  * @author Gilles Bouthenot
- * @version $Revision: 112 $
- * @Id $Id: File.php 112 2008-08-27 14:48:17Z gbouthenot $
+ * @version $Revision$
+ * @Id $Id$
  */
 
 if (!defined("_GB_PATH")) {
