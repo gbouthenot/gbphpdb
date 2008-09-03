@@ -17,9 +17,24 @@ Class Gb_Args
 {
     protected $_args;
     
-    public function __construct(array $params=array())
+    /**
+     * @param array|string|Gb_Args[optional]  $params
+     */
+    public function __construct($params=array())
     {
-        $this->_args=$params;
+        if (is_array($params)) {
+            $this->_args=$params;
+        } elseif (is_string($params)) {
+            $args=explode("/", $params);
+            if (count($args)==1 && $args[0]=="") {
+                $args=array();
+            }
+            $this->_args=$args;
+        } elseif ($args instanceof Gb_Args ) {
+            $this->_args=$params->getAll();
+        } else {
+            throw new Gb_Exception("invalid params given");
+        }
     }
     
     
@@ -32,7 +47,7 @@ Class Gb_Args
                 return null;
             }
         }
-
+        
         $num=count($this->_args);
         for ($i=0; $i<$num-1; $i++) {
             $current=$this->_args[$i];
@@ -41,6 +56,14 @@ Class Gb_Args
             }
         }
         return null;
+    }
+
+    /**
+     * @return array
+     */
+    public function getAll()
+    {
+        return $this->_args;
     }
 
     public function remove($name=null)
@@ -68,4 +91,13 @@ Class Gb_Args
         return $value;
     }
     
+    /**
+     * @return array
+     */
+    public function removeAll()
+    {
+        $all=$this->_args;
+        $this->_args=array();
+        return $all;
+    }
 }

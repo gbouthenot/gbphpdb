@@ -203,7 +203,7 @@ Class Gb_Form
         $this->formElements[$nom]=$aParams;
         break;
 
-      case "TEXT": case "TEXTAREA":
+      case "TEXT": case "TEXTAREA": case "PASSWORD":
         if (isset($aParams["args"]["regexp"])){
           $regexp=&$aParams["args"]["regexp"];
           if (isset(self::$_commonRegex[$regexp])) {

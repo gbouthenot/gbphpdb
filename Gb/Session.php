@@ -222,5 +222,20 @@ Class Gb_Session
         $_SESSION[$key]=$value;
         return $value;
     }
+
+    public static function _unset($key)
+    {
+        unset($_SESSION[$key]);
+    }
+
+    public static function _isset($key)
+    {
+        return isset($_SESSION[$key]);
+    }
+
+    public static function _empty($key)
+    {
+        return empty($_SESSION[$key]);
+    }
     
 }
