@@ -12,6 +12,7 @@ if (!defined("_GB_PATH")) {
 }
 
 require_once(_GB_PATH."Exception.php");
+require_once(_GB_PATH."Glue.php");
 require_once(_GB_PATH."Request.php");
 require_once(_GB_PATH."Response.php");
 

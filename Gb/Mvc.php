@@ -119,13 +119,14 @@ Class Gb_Mvc
     
     public function start()
     {
+        ob_start();
         $cwd=getcwd();
         chdir($this->_pathApplication);
         
         $this->_initHelpers();
         
         $controller=$this->_args->remove();
-        $this->callController($controller, $this->_args);
+        echo $this->callController($controller, $this->_args);
         
         chdir($cwd);
     }
@@ -145,12 +146,17 @@ Class Gb_Mvc
         $mvcHref;
         $mvcRootUrl;
 
+        $output="";
         $file=$this->_pathControllers."$mvcController/$mvcController.php";
         if (is_file($file) && is_readable($file)) {
+            ob_start();
             include($file);
+            $output=ob_get_contents();
+            ob_end_clean();
         }
         
         $this->_args=$oldMvcArgs;
+        return $output;
     }
 
     public function getHref()

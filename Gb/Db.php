@@ -927,4 +927,10 @@ Class Gb_Db extends Zend_Db
         return $res;
     }
 
+    public function setProfiler($param)
+    {
+        $db=$this->conn;
+        return $db->setProfiler($param);
+    }
+
 }
