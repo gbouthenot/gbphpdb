@@ -1,9 +1,9 @@
 <?php
-require_once 'Test/Gb_CacheTest.php';
-require_once 'Test/Gb_DbTest.php';
-require_once 'Test/Gb_StringTest.php';
-require_once 'Test/Gb_TimerTest.php';
-require_once 'Test/Gb_UtilTest.php';
+require_once 'Gb_CacheTest.php';
+require_once 'Gb_DbTest.php';
+require_once 'Gb_StringTest.php';
+require_once 'Gb_TimerTest.php';
+require_once 'Gb_UtilTest.php';
 
 /**
  * Static test suite.

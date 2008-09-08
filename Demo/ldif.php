@@ -1,7 +1,8 @@
 <?php
 
-require_once("Gb/Db.php");
-require_once("Gb/Util.php");
+require_once("../Gb/Db.php");
+require_once("../Gb/Response.php");
+require_once("../Gb/Util.php");
 
 Gb_Response::$nologo=true;
 Gb_Util::$debug=false;
@@ -17,7 +18,7 @@ function main()
         // converti le codage du mot de passe de hexa à base64
         $password=base64_encode(pack("H*", $password));
         echo "dn: cn=$login,dc=fcomte,dc=iufm,dc=lan\n";
-    	echo "objectClass: person\n";                                                                                                             
+    	echo "objectClass: person\n";
         echo "cn: $login\n";
     	echo "sn: $login\n";
     	echo "userPassword: {MD5}$password\n";

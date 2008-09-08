@@ -2,7 +2,7 @@
 
 error_reporting(E_ALL | E_STRICT);
 
-require_once("Gb/Form.php");
+require_once("../Gb/Form.php");
 
 // création d'un formulaire non associé à une base de données: pas de paramètres dans Gb_Form()
 $myForm=new Gb_Form();

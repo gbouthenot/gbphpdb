@@ -1,7 +1,7 @@
 <?php
 //require_once("Zend/Exception.php");
 require_once("Zend/Loader.php");
-require_once("Gb/Util.php");
+require_once("../Gb/Util.php");
 
 Gb_Util::$debug=1;
 Gb_Response::$noFooterEscape=1;
