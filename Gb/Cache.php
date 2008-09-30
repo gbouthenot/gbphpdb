@@ -93,7 +93,7 @@ Class Gb_Cache
      * @param string $cacheID
      * @param integer|string[optional] $ttl durée de vie en secondes, ou fichier de référence. Par défaut 10 secondes.
      */
-    public function __construct($cacheID, $ttl=10)
+    public function __construct($cacheID, $ttl=10, $fExpired=false)
     {
         require_once("Zend/Cache.php");
 
@@ -131,13 +131,18 @@ Class Gb_Cache
         );
         
         $this->cacheID=$cacheID;
-        $this->values=$this->cacheEngine->load($cacheID);
-        if ( $this->values===false ) {
-            // cache invalide ou expiré
+        if ($fExpired) {
             $this->values=array();
             $this->cacheHit=false;
         } else {
-            $this->cacheHit=true;
+            $this->values=$this->cacheEngine->load($cacheID);
+            if ( $this->values===false ) {
+                // cache invalide ou expiré
+                $this->values=array();
+                $this->cacheHit=false;
+            } else {
+                $this->cacheHit=true;
+            }
         }
         
         self::$nbTotal++;
