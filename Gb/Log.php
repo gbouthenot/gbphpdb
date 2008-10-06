@@ -204,7 +204,7 @@ class Gb_Log
         if (isset($vd[$red+1])) {
             $vd1=$vd[$red+1];
         }
-        self::writelog($level, $text, $vd0["file"], $vd0["line"], $vd1["function"], "...", null);
+        self::writelog($level, $text, $vd0["file"], $vd0["line"], $vd1["function"], "...", null, $o);
   }
     
     
@@ -257,13 +257,14 @@ class Gb_Log
     /**
      * Fonction privée, appelée par Gb_Log et Gb_Timer
      *
-     * @param unknown_type $level
-     * @param unknown_type $text
-     * @param unknown_type $file
-     * @param unknown_type $line
-     * @param unknown_type $fxname
-     * @param unknown_type $fxparam
-     * @param unknown_type $fxreturn
+     * @param integer $level
+     * @param string $text
+     * @param string $file
+     * @param integer $line
+     * @param string $fxname
+     * @param array $fxparam
+     * @param mixed $fxreturn
+     * @param mixed $o
      */
   public static function writelog($level, $text, $file, $line, $fxname="", $fxparam="", $fxreturn="", $o=null)
   {
@@ -290,10 +291,10 @@ class Gb_Log
     if ($level>=self::$loglevel_firebug) {
         // si pas d'object, met un texte nul et l'objet
         if ($o===null) {
-            $object=$textori;
+            $o=$textori;
             $text="";
         }
-        self::fb($text, $level, $object);
+        self::fb($text, $level, $o);
     }
     
     if ($level>=self::$loglevel_file && strlen($logFilename)) {
@@ -511,8 +512,6 @@ class Gb_Log
     if (headers_sent($filename, $linenum)) {
         throw self::newException('Headers already sent in '.$filename.' on line '.$linenum.'. Cannot send log data to FirePHP. You must have Output Buffering enabled via ob_start() or output_buffering ini directive.');
     }
- 
-    $Object = array($label, $Object);
  
     if(!self::detectClientExtension()) {
       return false;
