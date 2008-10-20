@@ -120,7 +120,7 @@ Class Gb_Form
         //                    (si value==='false', la valeur est interdite par fMandatory)
         //                    (si value==='optgroup', la valeur définit un optgroup
         //    SELECTMULTIPLE: idem SELECT mais sans la possibilité d'avoir un default 
-        //              TEXT: array("regexp"=>"/.*/" ou "Year" pour prédéfini) 
+        //              TEXT: array("value"=>valeur par défaut, "regexp"=>"/.*/" ou "Year" pour prédéfini) 
         //          TEXTAREA: idem TEXT
         //            HIDDEN:
         //          CHECKBOX:
@@ -695,15 +695,11 @@ Class Gb_Form
         throw new Gb_Exception("Type inconnu");
     }
 
-    if (strlen($ret)) {
-      $ret2="function validate_GBFORM_$nom()\n";
-      $ret2.="{\n";
-      $ret2.=$ret;
-      $ret2.="}\n";
-      return $ret2;
-    }
-
-    return "";
+    $ret2="function validate_GBFORM_$nom()\n";
+    $ret2.="{\n";
+    $ret2.=$ret;
+    $ret2.="}\n";
+    return $ret2;
   }
 
     
