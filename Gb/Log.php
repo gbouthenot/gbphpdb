@@ -268,7 +268,6 @@ class Gb_Log
      */
   public static function writelog($level, $text, $file, $line, $fxname="", $fxparam="", $fxreturn="", $o=null)
   {
-    $textori=$text;
     $logFilename=self::getLogFilename();
     if (!is_string($text)) {
         $text=self::dump($text);
@@ -291,10 +290,10 @@ class Gb_Log
     if ($level>=self::$loglevel_firebug) {
         // si pas d'object, met un texte nul et l'objet
         if ($o===null) {
-            $o=$textori;
-            $text="";
+            self::fb("", $level, $text);
+        } else {
+            self::fb($text, $level, $o);
         }
-        self::fb($text, $level, $o);
     }
     
     if ($level>=self::$loglevel_file && strlen($logFilename)) {
