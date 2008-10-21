@@ -216,6 +216,16 @@ Class Gb_Util
         $totaltime=microtime(true)-Gb_Glue::getStartTime();
         $totaltime=Gb_Util::roundCeil($totaltime);
         $ret.="Total time: {$totaltime}s";
+
+        if (function_exists('memory_get_peak_usage')) {
+            $mem=memory_get_peak_usage()/1024;
+            if ($mem<1024) {
+                $mem=number_format($mem, 0, ".", " ")." Kio";
+            } else {
+                $mem=number_format($mem/1024, 2, ".", " ")." Mio";
+            }
+            $ret.=" Peak memory: {$mem}";
+        }
         
         return $ret;
       }

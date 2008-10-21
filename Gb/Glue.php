@@ -140,16 +140,6 @@ class Gb_Glue
     {
         self::$_starttime=microtime(true);
     }
-    public static function GbResponseStartTimePlugin()
-    {
-        $ret="";
-
-        $totaltime=microtime(true)-self::$_starttime;
-        $totaltime=Gb_Util::roundCeil($totaltime);
-        $ret.="Total time: $totaltime s";
-        
-        return $ret;
-      }
     
 }
 ?>
