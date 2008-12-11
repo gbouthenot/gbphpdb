@@ -114,6 +114,12 @@ Class Gb_Cache
             $lifetime=$ttl;
         }
         $frontendOptions['lifetime']=$lifetime;       // 3600         Durée de vie en secondes, null:validité permanente
+
+        // garde uniquement les caractères [a-zA-Z0-9_]
+        $n=strlen($cacheID);
+        $cacheID2="";
+        for ($i=0; $i<$n; $i++) { $c=$cacheID[$i]; $o=ord(strtoupper($c)); if ( ($o>=48 && $o<=57) || ($o>=65 && $o<=90) || $o==95 ) { $cacheID2.=$c; } }
+        $cacheID=$cacheID2;
         
         $this->cacheEngine=Zend_Cache::factory(
             $frontend,                                // frontend: Core: par défaut, File: pour le mtime d'un fichier
