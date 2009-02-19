@@ -15,15 +15,8 @@ require_once(_GB_PATH."Exception.php");
 require_once(_GB_PATH."Glue.php");
 require_once(_GB_PATH."Request.php");
 require_once(_GB_PATH."Response.php");
+require_once(_GB_PATH."String.php");
 
-//require_once(_GB_PATH."Cache.php");
-//require_once(_GB_PATH."Db.php");
-//require_once(_GB_PATH."Form.php");
-//require_once(_GB_PATH."Log.php");
-//require_once(_GB_PATH."Session.php");
-//require_once(_GB_PATH."Response.php");
-//require_once(_GB_PATH."String.php");
-//require_once(_GB_PATH."Timer.php");
 
 /**
  * class Gb_Util
@@ -272,25 +265,61 @@ Class Gb_Util
 
 
     /**
-     * comme explode mais renvoie array() au lieu de array("") si l'élément n'a pas été trouvé
-     *
-     * @param string $delimiter
-     * @param string $string
-     * @param integer[optional] $limit
-     * @return array
+     * Envoie une chaine et quitte
+     * ATTENTION, possible bug si strlen ne renvoit pas le nombre d'octets de la chaine...
+     * 
+     * @param string $data
+     * @param string[optional] $fnameOut nom du fichier qui apparait à l'enregistrement
+     * @param boolean[optional] $fAddTimestamp true si on ajoute le timestamp au nom de fichier
      */
-    public static function explode($delimiter, $string, $limit=null)
+    public static function sendString($data, $fnameOut="fichier", $fAddTimestamp)
     {
-        if ($limit===null) {
-            $exp=explode($delimiter, $string);
-        } else {
-            $exp=explode($delimiter, $string, $limit);
+        if ($fAddTimestamp) {
+            $fnameOut.="-".str_replace(":", "", Gb_String::date_iso()).".csv";
         }
-        if (count($exp)==1 && $exp[0]==="") {
-            return array();
-        }
-        return $exp;
+
+        $len=strlen($data);
+        ob_end_clean();
+        header("Content-Type: application/octet-stream");
+        header("Content-Length: $len");
+        header("Content-Disposition: attachment; filename=\"$fnameOut\"");
+        header("Content-Encoding: binary");
+        header("Vary: ");
+        echo $data;
+        exit(0);
     }
 
+    /**
+     * Envoie une chaine et quitte
+     * 
+     * @param string $data
+     * @param string[optional] $fnameOut nom du fichier qui apparait à l'enregistrement
+     * @param boolean[optional] $fAddTimestamp true si on ajoute le timestamp au nom de fichier
+     * @throws Gb_Exception
+     */
+    public static function sendFile($fnameIn, $fnameOut="fichier", $fAddTimestamp)
+    {
+        if ($fAddTimestamp) {
+            $fnameOut.="-".str_replace(":", "", Gb_String::date_iso()).".csv";
+        }
+
+        $len=@filesize($fnameIn);
+        $fhandle=@fopen($fnameIn, "rb");
+        if ($fhandle===FALSE || $len===FALSE) {
+            throw new Gb_Exception("File $fnameIn not found");
+        }
+        
+        
+        ob_end_clean();
+        header("Content-Type: application/octet-stream");
+        header("Content-Length: $len");
+        header("Content-Disposition: attachment; filename=\"$fnameOut\"");
+        header("Content-Encoding: binary");
+        header("Vary: ");
+        fpassthru($fhandle);
+        fclose($fhandle);
+        exit(0);
+    }
+    
 }
 

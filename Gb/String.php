@@ -148,5 +148,57 @@ class Gb_String
         }
         return $d;
     }
+
+    /**
+     * comme explode mais renvoie array() au lieu de array("") si l'élément n'a pas été trouvé
+     *
+     * @param string $delimiter
+     * @param string $string
+     * @param integer[optional] $limit
+     * @return array
+     */
+    public static function explode($delimiter, $string, $limit=null)
+    {
+        if ($limit===null) {
+            $exp=explode($delimiter, $string);
+        } else {
+            $exp=explode($delimiter, $string, $limit);
+        }
+        if (count($exp)==1 && $exp[0]==="") {
+            return array();
+        }
+        return $exp;
+    }
+    
+    
+    /**
+     * Transforme un array en format CSV
+     *
+     * @param array $data données au même format que 
+     * @return string la chaine en csv
+     */
+    public static function arrayToCsv(array $data)
+    {
+        if (count($data)==0) {
+            return "";
+        }
+        $ret="";
+        
+        // 1ère ligne du csv: les entêtes
+        $firstligne=$data[0];
+        foreach(array_keys($firstligne) as $ind) {
+            $ret.=$ind.";";
+        }
+        $ret.="\n";
+        
+        foreach($data as $ligne) {
+            foreach(array_keys($firstligne) as $ind) {
+                $ret.=$ligne[$ind].";";
+            }
+            $ret.="\n";
+        }
+        
+        return $ret;
+    }
     
 }
