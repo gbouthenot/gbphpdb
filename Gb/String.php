@@ -48,11 +48,11 @@ class Gb_String
      * renvoie dans outTime l'heure (nombre de secondes depuis 01/01/1970)
      * $sTime doit être formaté en "jj/mm/aaaa hh:mm:ss[.xxx]" ou "aaaa-mm-jj hh:mm:ss[.xxxxxx]"
      *
-     * @param string_type $sTime
+     * @param string[optional] $sTime
      * @return integer
      * @throws Gb_Exception
      */
-    public static function str_to_time($sTime)
+    public static function str_to_time($sTime="")
     {
         $sTime=self::date_fr($sTime);
         if ( strlen($sTime)==23 )

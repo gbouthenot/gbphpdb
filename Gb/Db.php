@@ -75,7 +75,7 @@ Class Gb_Db extends Zend_Db
      *
      * type est le driver à utiliser (MYSQL, OCI8)
      *
-     * @param array("type"=>"Pdo_Mysql/Pdo_Oci", "host"=>"localhost", "user/username"=>"", "pass/password"=>"", "name/dbname"=>"") $aIn
+     * @param array("type"=>"Pdo_Mysql/Pdo_Oci/Pdo_Sqlite", "host"=>"localhost", "user/username"=>"", "pass/password"=>"", "name/dbname"=>"") $aIn
      * @return GbDb
      */
     function __construct(array $aIn)
@@ -95,6 +95,8 @@ Class Gb_Db extends Zend_Db
         if     (strtoupper($driver)=="MYSQL")       $driver="Pdo_Mysql";
         elseif (strtoupper($driver)=="OCI8")        $driver="Pdo_Oci";
         elseif (strtoupper($driver)=="OCI")         $driver="Pdo_Oci";
+        elseif (strtoupper($driver)=="SQLITE")      $driver="Pdo_Sqlite";
+        elseif (strtoupper($driver)=="PDO_SQLITE")  $driver="Pdo_Sqlite";
         elseif (strtoupper($driver)=="PDO_OCI")     $driver="Pdo_Oci";
         elseif (strtoupper($driver)=="PDO_MYSQL")   $driver="Pdo_Mysql";
         elseif (strtoupper($driver)=="MYSQLI")      $driver="Pdo_Mysql";
