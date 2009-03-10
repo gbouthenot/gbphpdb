@@ -278,7 +278,7 @@ Class Gb_Util
             $fnameOut.="-".str_replace(":", "", Gb_String::date_iso()).".csv";
         }
 
-        $len=strlen($data);
+        $len=mb_strlen($data, 'latin1');
         ob_end_clean();
         header("Content-Type: application/octet-stream");
         header("Content-Length: $len");
@@ -292,7 +292,7 @@ Class Gb_Util
     /**
      * Envoie une chaine et quitte
      * 
-     * @param string $data
+     * @param string $fnameIn Nom du fichier à envoyer
      * @param string[optional] $fnameOut nom du fichier qui apparait à l'enregistrement
      * @param boolean[optional] $fAddTimestamp true si on ajoute le timestamp au nom de fichier
      * @throws Gb_Exception
