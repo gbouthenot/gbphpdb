@@ -30,7 +30,7 @@ class Gb_Response
     ,"copyright"          =>array("name", "")
     ,"x-URL"              =>array("name", "")
     ,"Expires"            =>array("http-equiv", "")                                  // mettre à vide pour une date du passé
-    ,"Content-Type"       =>array("http-equiv", "text/html;  charset=ISO-8859-15")
+    ,"Content-Type"       =>array("http-equiv", "text/html;  charset=ISO-8859-1")
     ,"Content-Script-Type"=>array("http-equiv", "text/javascript")
     ,"Content-Style-Type" =>array("http-equiv", "text/css")
     ,"Content-Language"   =>array("http-equiv", "fr")

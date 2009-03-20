@@ -93,16 +93,20 @@ class Gb_String
         return $out;
     }
     
-  /**
-   * conversion en majuscule, enlève les accents
-   *
-   * @param string $s
-   * @return string
-   */
-  public static function mystrtoupper($s)
-  {
-    return strtr($s, self::STR_SRC, self::STR_UPPER);
-  }
+    /**
+     * conversion en majuscule, charset ASCII, enlève les accents
+     *
+     * @param string $s
+     * @return string
+     */
+    public static function mystrtoupper($s)
+    {
+        if (function_exists("mb_convert_encoding")) {
+            $source=mb_detect_encoding($s, array("UTF-8", "ISO-8859-1"));
+            $s=mb_convert_encoding($s, "ISO-8859-1", $source);
+        }
+        return strtr($s, self::STR_SRC, self::STR_UPPER);
+    }
 
   /**
    * converti, si nécessaire une date au format YYYY-MM-DD en DD/MM/YYYY
