@@ -180,7 +180,7 @@ Class Gb_Util
     $div=0;
     $num2=0;
     if ($num>.1)while($num>1) {$num/=10; $div++;}
-    else        while($num<.1){$num*=10; $div--;}
+    else        while($num<.1 && $num!=0 && $div>(-10)){$num*=10; $div--;}
     do {
       $num*=10;
       $nbdigits--;
