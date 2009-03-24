@@ -116,7 +116,7 @@ Class Gb_Form
    */
   public function addElement($nom, array $aParams)
   {
-        // $aParams["type"]="SELECT" "SELECTMULTIPLE" "TEXT" "PASSWORD" "RADIO" "CHECKBOX" "TEXTAREA" "PRINT"
+        // $aParams["type"]="SELECT" "SELECTMULTIPLE" "TEXT" "PASSWORD" "RADIO" "CHECKBOX" "TEXTAREA" "PRINT" "VAR"
         // $aParams["args"]:
         //            SELECT: liste des valeurs disponibles sous la forme
         //                    array(array(value[,libelle]), "default"=>array(value[,libelle]), ...)
@@ -170,6 +170,9 @@ Class Gb_Form
       $aParams["toDbFunc"]=$aParams["toDbFunc"];
     if (isset($aParams["fromDbFunc"]))
       $aParams["fromDbFunc"]=$aParams["fromDbFunc"];
+
+    if (isset($aParams["dbCol"]) && strlen($aParams["dbCol"])==0)
+      $aParams["dbCol"]=null;
       
       $aParams["message"]="";
 
@@ -246,7 +249,7 @@ Class Gb_Form
         /* @todo remplir libelle à partir de value si non précisé */
         break;
 
-      case "PRINT":
+      case "PRINT": case "VAR":
         unset($aParams["dbCol"]);
         $this->formElements[$nom]=$aParams;
         break;
@@ -489,7 +492,10 @@ Class Gb_Form
         $ret.=$value;
         break;
 
-    default:
+      case "VAR":
+        break;
+
+      default:
         throw new Gb_Exception("Type inconnu");
     }
     
@@ -713,7 +719,7 @@ Class Gb_Form
           }
         break;
 
-      case "PRINT": case "HIDDEN":
+      case "PRINT": case "HIDDEN": case "VAR":
         break;
 
       default:
@@ -832,19 +838,16 @@ Class Gb_Form
   }
 
 
-  /**
-   * Insère/update les valeurs dans la bdd
-   *
-   * @param array $moreData
-   * @return boolean true si tout s'est bien passé
-   */
-    public function putInDb(array $moreData=array())
+    /**
+     * Renvoie les données stockées sous forme de array
+     *
+     * @param array $moreData
+     * @return array
+     */
+    public function getDataAsArray(array $moreData=array())
     {
         $moreData=array_merge($moreData, $this->moreData);
-        if ($this->db===null) {
-            return true;
-        }
-    
+        
         //@todo: radio, selectmultiple
         // obient le nom des colonnes
         $aCols=$moreData;
@@ -867,11 +870,29 @@ Class Gb_Form
                     }
                     $val=call_user_func_array($func, $params);
                 }
-
                 $aCols[$col]=$val;
             }
         }
-    
+        
+        return $aCols;
+    }
+      
+      
+  
+  /**
+   * Insère/update les valeurs dans la bdd
+   *
+   * @param array $moreData
+   * @return boolean true si tout s'est bien passé
+   */
+    public function putInDb(array $moreData=array())
+    {
+        if ($this->db===null) {
+            return true;
+        }
+        
+        $aCols=$this->getDataAsArray($moreData);
+        
         if (strlen($this->tableName)==0 || count($aCols)==0) {
             return false;
         }
@@ -892,7 +913,7 @@ Class Gb_Form
             return false;
         }
 
-        Gb_Log::Log(Gb_Log::LOG_INFO, "GBFORM->putInDb OK table:{$this->tableName} where:".Gb_Log::Dump($this->where)."" );
+        Gb_Log::Log(Gb_Log::LOG_INFO, "GBFORM->putInDb OK table:{$this->tableName} where:".Gb_Log::Dump($this->where)."", $aCols );
         return true;
     }
 

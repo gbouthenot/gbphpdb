@@ -46,6 +46,7 @@ Class Gb_Form_Session extends Gb_Form
     {
         $this->_sessionprefix=$sessionprefix;
         $this->fHasData=false;
+        $this->moreData=array();
     }
 
     public function addElement($nom, array $aParams)
@@ -111,36 +112,37 @@ Class Gb_Form_Session extends Gb_Form
    */
     public function putInDb(array $moreData=array())
     {
-        //@todo: radio, selectmultiple
-        // obient le nom des colonnes
-        $aCols=array();
-        foreach ($this->formElements as $nom=>$aElement) {
-            if (isset($aElement["dbCol"])) {
-                $col=$aElement["dbCol"];
-                $type=$aElement["type"];
-                $val=$this->get($nom);
-                if ($type=="CHECKBOX") {
-                    $val= ($val) ? (1):(0);
-                }
-                // regarde si une fonction est fournie pour transformer avant de mettre dans la db 
-                if (isset($aElement["toDbFunc"])) {
-                    $func=$aElement["toDbFunc"][0];
-                    $params=$aElement["toDbFunc"][1];
-                    foreach ($params as &$param) {
-                        if (is_string($param)) {
-                            $param=sprintf($param, $val);
-                        }
-                    }
-                    $val=call_user_func_array($func, $params);
-                }
-
-                Gb_Session::set($this->_sessionprefix.$col, $val);
-            }
+        $aCols=$this->getDataAsArray($moreData);
+                
+        if (count($aCols)==0) {
+            return false;
         }
-    
-        Gb_Log::Log(Gb_Log::LOG_INFO, "GBFORMSESSION->putInDb OK" );
+            
+        foreach ($aCols as $col=>$val) {
+            Gb_Session::set($this->_sessionprefix.$col, $val);
+        }
+
+        Gb_Log::LogInfo("GBFORMSESSION->putInDb OK", $aCols );
         return true;
     }
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
     
     
 
