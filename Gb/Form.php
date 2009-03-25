@@ -923,11 +923,14 @@ Class Gb_Form
         return $this;
     }
     
-    protected function getFormHash()
+    public function getFormHash()
     {
         if (empty($this->formHash)) {
             $noms="";
-            foreach (array_keys($this->formElements) as $nom) {
+            // Trie les noms par ordre alphabétiques si les éléments n'ont pas été définis dans le même ordre
+            $keys=array_keys($this->formElements);
+            sort($keys, SORT_STRING);
+            foreach ($keys as $nom) {
                 $noms.=$nom;
             }
             $this->formHash=md5($noms);
