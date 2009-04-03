@@ -16,7 +16,7 @@ require_once(_GB_PATH."Form.php");
 require_once(_GB_PATH."Log.php");
 require_once(_GB_PATH."Session.php");
 
-Class Gb_Form_Session extends Gb_Form
+Class Gb_Form_Session extends Gb_Form2
 {
   protected $_sessionprefix;
 
@@ -49,14 +49,6 @@ Class Gb_Form_Session extends Gb_Form
         $this->moreData=array();
     }
 
-    public function addElement($nom, array $aParams)
-    {
-        if (!isset($aParams["dbCol"])) {
-            $aParams["dbCol"]=$nom;
-        }
-        return parent::addElement($nom, $aParams);
-    }
-  
   
   /**
    * Remplit les valeurs depuis la session
@@ -67,35 +59,18 @@ Class Gb_Form_Session extends Gb_Form
   {
     //todo: checkbox
     // obient le nom des colonnes
-    $aCols=array();
-    foreach ($this->formElements as $nom=>$aElement) {
-      if (isset($aElement["dbCol"]) && strlen($aElement["dbCol"])) {
-        $aCols[$nom]=$aElement["dbCol"];
-      }
-    }
+    $aCols=$this->getDataAsArray();
     
     $fData=false;
-    
-    // La requête a renvoyé une ligne
-    foreach ($aCols as $nom=>$dbcol) {
-        $aElement=$this->formElements[$nom];
+    // non ! on doit récupérer le nom de l'element et non dbcol /** @TODO **/
+    foreach (array_keys($aCols) as $nom) {
+        $elem=$this->getElem($nom);
+        $dbcol=$elem->backendCol();
         if (Gb_Session::_isset($this->_sessionprefix.$dbcol)) {
             // trouvé 
             $fData=true;
             $val=Gb_Session::get($this->_sessionprefix.$dbcol);
-            // regarde si une fonction est fournie pour transformer avant de mettre dans la db 
-            if (isset($aElement["fromDbFunc"])) {
-                $func=$aElement["fromDbFunc"][0];
-                $params=$aElement["fromDbFunc"][1];
-                foreach ($params as &$param) {
-                    if (is_string($param)) {
-                        $param=sprintf($param, $val);
-                    }
-                }
-                $val=call_user_func_array($func, $params);
-            }
-            
-            $this->set($nom, $val);
+            $elem->backendValue($val);
             $this->fHasData=true;
         }
     }
@@ -113,17 +88,14 @@ Class Gb_Form_Session extends Gb_Form
     public function putInDb(array $moreData=array())
     {
         $aCols=$this->getDataAsArray($moreData);
-                
-        if (count($aCols)==0) {
-            return false;
+        $fData=false;
+    
+        foreach ($aCols as $dbcol=>$val) {
+            Gb_Session::set($this->_sessionprefix.$dbcol, $val);
         }
-            
-        foreach ($aCols as $col=>$val) {
-            Gb_Session::set($this->_sessionprefix.$col, $val);
-        }
-
+    
         Gb_Log::LogInfo("GBFORMSESSION->putInDb OK", $aCols );
-        return true;
+        return $fData;
     }
     
     

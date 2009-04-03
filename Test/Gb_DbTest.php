@@ -44,7 +44,7 @@ class Gb_DbTest extends PHPUnit_Framework_TestCase
      */
     public function __construct()
     {
-        $this->db=new Gb_Db(array("type"=>"mysql", "host"=>"pollux3", "user"=>"test", "pass"=>"***REMOVED***", "dbname"=>"test"));
+        $this->db=new Gb_Db(array("type"=>"mysql", "host"=>"localhost", "user"=>"test", "pass"=>"***REMOVED***", "dbname"=>"test"));
     }
 
 /*

@@ -103,7 +103,7 @@ Class Gb_Timer
       if (strlen($this->name))
         $text=$this->name;
       else
-        $text="Timer ".$this->intance;
+        $text="Timer ".$this->name;
     }
     $text.=": ".$this->get()." s";
 
