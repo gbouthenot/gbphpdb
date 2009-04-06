@@ -16,7 +16,6 @@ class Gb_Form_Elem_Checkbox extends Gb_Form_Elem
     public function getInput($nom, $value, $inInput, $inputJs)
     {
         $aValues=$this->args();
-        $value=$this->value();
         if ($value) {
             $value="checked='checked'";
         } else {
@@ -71,7 +70,7 @@ class Gb_Form_Elem_Checkbox extends Gb_Form_Elem
     public function __construct($name, array $aParams=array())
     {
         $availableParams=array("args", "notValue");
-        $aParams=array_merge(array("errorMsgMissing"=>"Veuillez faire un choix", "value"=>false), $aParams);
+        $aParams=array_merge(array("errorMsgMissing"=>"Cette case doit Ãªtre cochÃ©e", "value"=>false), $aParams);
         return parent::__construct($name, $availableParams, $aParams);
     }
     
@@ -95,7 +94,7 @@ class Gb_Form_Elem_Checkbox extends Gb_Form_Elem
         $args=$this->args();
 
         // valeur non transmise
-        if (strlen($value)==0) {
+        if ($value==false) {
             if ($fMandatory) {
                 return $this->errorMsgMissing();
             } else {
@@ -104,7 +103,7 @@ class Gb_Form_Elem_Checkbox extends Gb_Form_Elem
         }
 
         $validateFunc=$this->validateFunc();
-        if (strlen($validateFunc)  && strlen($value)) {
+        if (strlen($validateFunc)) {
             // 1er argument: fonction à appeler
             $callback=$validateFunc[0];
             // 2eme: éventuel parametres
@@ -135,6 +134,19 @@ class Gb_Form_Elem_Checkbox extends Gb_Form_Elem
     {   
         if ($text===null) {         return $this->_args; }
         else { $this->_args=$text; return $this;}
+    }
+
+    /**
+     * get/set value
+     * @param string[optional] $text
+     * @return Gb_Form_Elem_Select|String 
+     */
+    public function value($text=null)
+    {
+        if ($text!==null) {
+            if ($text==="on" || $text==="true" || $text==="1" || $text===1 || $text===true) {$text=1;} else {$text=0;}
+        }
+        return parent::value($text);
     }
     
 

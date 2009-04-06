@@ -18,7 +18,7 @@ class Gb_Form_Elem_Selectmultiple extends Gb_Form_Elem
         $aValues=$this->args();
         $value=parent::value();
         $ret="";
-        $ret.="<select multiple='multiple' id='GBFORM_$nom' name='GBFORM_{$nom}[]' $inInput $inputJs>\n";
+        $ret.="<select multiple='multiple' id='GBFORM_$nom' name='GBFORM_{$nom}[]' class='multiple' $inInput $inputJs>\n";
         $num=0;
         $fOptgroup=false;
         foreach ($aValues as $ordre=>$aOption){

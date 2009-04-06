@@ -18,7 +18,7 @@ class Gb_Form_Elem_Select extends Gb_Form_Elem
         $aValues=$this->args();
         $value=parent::value();
         $ret="";
-        $ret.="<select id='GBFORM_$nom' name='GBFORM_$nom' $inInput $inputJs>\n";
+        $ret.="<select id='GBFORM_$nom' name='GBFORM_$nom' class='simple' $inInput $inputJs>\n";
         $num=0;
         $fOptgroup=false;
         foreach ($aValues as $ordre=>$aOption){
