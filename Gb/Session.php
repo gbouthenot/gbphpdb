@@ -198,8 +198,8 @@ Class Gb_Session
      * Renvoie la valeur SESSION, sans slash ou default si elle n'est pas définie
      *
      * @param string $key valeur à chercher
-     * @param mixed[optional] $value valeur à renvoyer si non trouvé
-     * @return mixed $_SESSION[$key]
+     * @param mixed[optional=false] $value valeur à renvoyer si non trouvé
+     * @return mixed| $_SESSION[$key]
      */
     public static function get($key, $default=false)
     {

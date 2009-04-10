@@ -74,7 +74,7 @@ Class Gb_Form2 implements IteratorAggregate
      * @param array[optional] $moreData array("abc_datemodif"=>new Zend_Db_Expr("NOW()"), ...)
      * @TODO broker
      */
-    public function __construct()
+    public function __construct($aParams=array())
     {
         $this->_elems=array();
         $availableParams=array(
@@ -180,9 +180,21 @@ Class Gb_Form2 implements IteratorAggregate
     final public function render()
     {   $ret="";
         if ($this->_toStringRendersAs=="HTML") {
-            $ret=$this->renderAsHtml();
+            $ret=$this->renderHtml();
         } elseif ($this->_toStringRendersAs=="JS") {
-            $ret=$this->renderAsJs();
+            $ret=$this->renderJavascript();
+        }
+        return $ret;
+    }
+    final public function getAjaxArgs()
+    {
+        $hash=$this->formHash();
+        $ret="GBFORMPOST: '$hash'";
+        
+        foreach ($this as $elem) {
+            if ($elem instanceof Gb_Form_Elem || $elem instanceof Gb_Form_Group) {
+                $ret.=(strlen($ret)?",":"").$elem->getAjaxArgs();
+            }
         }
         return $ret;
     }

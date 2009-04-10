@@ -157,6 +157,14 @@ abstract class Gb_Form_Elem
         }
         return $preElem.$container1.$preInput.$htmlInput.$postInput.$errorMsg.$container2.$postElem."\n";
     }
+
+    public function getAjaxArgs()
+    {
+        $name=$this->name();
+        $gbname="GBFORM_".$name;
+        
+        return "{$gbname}: \$F('{$gbname}')";
+    }
     
     protected function getInput($nom, $value, $inInput, $inputjs)
     {

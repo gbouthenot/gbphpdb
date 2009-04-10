@@ -34,10 +34,9 @@ class Gb_Form_Group implements IteratorAggregate
         foreach ($availableParams as $key) {
             if (isset($aParams[$key])) {
                 $val=$aParams[$key];
-            } else {
-                $val=null;
+                call_user_func(array($this, $key), $val);
+                
             }
-            call_user_func(array($this, $key), $val);
         }
     }
     
@@ -59,8 +58,12 @@ class Gb_Form_Group implements IteratorAggregate
             foreach ($this->_modifiers as $key=>$str) {
                 if (method_exists($obj, $key)) {
                     // lit la valeur actuelle
-                    $arg=call_user_func(array($obj, $key));
-                    $arg=sprintf($str, $arg);
+                    if (is_string($str)) {
+                        $arg=call_user_func(array($obj, $key));
+                        $arg=sprintf($str, $arg);
+                    } else {
+                        $arg=$str;
+                    }
                     // ecrit la nouvelle valeur
                     call_user_func(array($obj, $key), $arg);
                 }
@@ -149,7 +152,17 @@ class Gb_Form_Group implements IteratorAggregate
         }
         return $ret;
     }
-
+    final public function getAjaxArgs()
+    {
+        $ret="";
+        foreach ($this as $elem) {
+            if ($elem instanceof Gb_Form_Elem || $elem instanceof Gb_Form_Group) {
+                $ret.=(strlen($ret)?",":"").$elem->getAjaxArgs();
+            }
+        }
+        return $ret;
+    }
+    
     /**
      * get/set preGroup
      * @param string[optional] $text

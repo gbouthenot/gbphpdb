@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Gb_Form_Elem_Text_Text
+ * Gb_Form_Elem_Text
  * 
  * @author Gilles Bouthenot
  * @version $Revision$

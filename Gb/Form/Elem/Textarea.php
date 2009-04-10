@@ -1,38 +1,30 @@
 <?php
 
 /**
- * Gb_Form_Elem_Select
+ * Gb_Form_Elem_Textarea
  * 
  * @author Gilles Bouthenot
  * @version $Revision$
  * @Id $Id$
  */
 
-class Gb_Form_Elem_Checkbox extends Gb_Form_Elem
+class Gb_Form_Elem_Textarea extends Gb_Form_Elem
 {
-    protected $_args;
+    
     
     
     public function getInput($nom, $value, $inInput, $inputJs)
     {
-        $aValues=$this->args();
-        if ($value) {
-            $value="checked='checked'";
-        } else {
-            $value="";
-        }
-        $ret="";
-        $ret.="<input type='checkbox' $value id='GBFORM_$nom' name='GBFORM_$nom' $inInput $inputJs />";
-        return $ret;
+        return "<textarea id='GBFORM_$nom' name='GBFORM_$nom' $inInput $inputJs>".htmlspecialchars($value)."</textarea>";
     }
     
+
     public function renderJavascript()
     {
-        if (!$this->javascriptEnabled() || !$this->fMandatory()) {
+        if (!$this->javascriptEnabled()) {
             return "";
         }
         
-        $args=$this->args();
         $ret="";
         $nom=$this->name();
         
@@ -42,13 +34,33 @@ class Gb_Form_Elem_Checkbox extends Gb_Form_Elem
         $ret.=" var e=\$('GBFORM_{$nom}_div').select('div[class=\"ERROR\"]').first(); if (e!=undefined){e.innerHTML='';}\n";
         $ret.=" var e=\$('GBFORM_{$nom}_div').select('span[class=\"ERROR\"]').first(); if (e!=undefined){e.innerHTML='';}\n";
         
-        $ret.="var value=\$F('GBFORM_$nom');\n";
-        
+        // attention utilise prototype String.strip()
+        $ret.="var value=remove_accents(\$F('GBFORM_$nom').strip());\n";
+
         // traitement fMandatory
         if ($this->fMandatory()) {
-              $ret.="if (value!='true' && value!='on') {\n";
-              $ret.=" \$('GBFORM_{$nom}_div').className='NOK';\n";
-              $ret.="}\n";
+          $ret.="if (value=='') {\n";
+          $ret.=" \$('GBFORM_{$nom}_div').className='NOK';\n";
+          $ret.="}\n";
+        }
+
+        // traitement regexp
+        $regexp=$this->regexp();
+        if ($regexp!==null) {
+            if (isset(self::$_commonRegex[$regexp])) {
+                //regexp connu: remplace par le contenu
+                $regexp=self::$_commonRegex[$regexp];
+            }
+            $ret.="var regexp=$regexp\n";
+            $ret.="if (!regexp.test(value)) {\n";
+            $ret.=" \$('GBFORM_{$nom}_div').className='NOK';\n";
+            $ret.="}\n";
+        }
+        
+        if (!$this->fMandatory()) {
+          $ret.="if (value=='') {\n";
+          $ret.=" \$('GBFORM_{$nom}_div').className='OK';\n";
+          $ret.="}\n";
         }
 
         $ret2="";
@@ -63,27 +75,18 @@ class Gb_Form_Elem_Checkbox extends Gb_Form_Elem
 
     protected function getInputJavascript($nom)
     {
-        if ($this->fMandatory()) {
-            return "onchange='javascript:validate_GBFORM_$nom();' onkeyup='javascript:validate_GBFORM_$nom();'";
-        } else {
-            return "";
-        }
+        return "onchange='javascript:validate_GBFORM_$nom();' onkeyup='javascript:validate_GBFORM_$nom();'";
     }
     
     
     public function __construct($name, array $aParams=array())
     {
-        $availableParams=array("args", "notValue");
-        $aParams=array_merge(array("errorMsgMissing"=>"Cette case doit Ãªtre cochÃ©e", "value"=>false), $aParams);
+        $availableParams=array("regexp");
+        $aParams=array_merge(array("errorMsgMissing"=>"Texte non rempli"), $aParams);
         return parent::__construct($name, $availableParams, $aParams);
     }
     
     
-
-
-
-
-
     /**
      * Valide le formulaire
      * En cas d'erreur, $this->setErrorMsg pour chaque $nom incorrect
@@ -92,22 +95,22 @@ class Gb_Form_Elem_Checkbox extends Gb_Form_Elem
      */
     public function validate(Gb_Form2 $form)
     {
-        $value=$this->value();
-        $notValues=$this->notValue();
+        $value=strtolower(Gb_String::mystrtoupper(trim($this->value())));
+        $regexp=$this->regexp();
         $fMandatory=$this->fMandatory();
-        $args=$this->args();
 
-        // valeur non transmise
-        if ($value==false) {
-            if ($fMandatory) {
-                return $this->errorMsgMissing();
-            } else {
-                return true;
+        if (strlen($value) && strlen($regexp)) {
+            if (!preg_match($regexp, $value)) {
+                return "Valeur incorrecte";
             }
         }
 
+        if ($fMandatory && strlen($value)==0) {
+            return $this->errorMsgMissing();
+        }
+
         $validateFunc=$this->validateFunc();
-        if (strlen($validateFunc)) {
+        if (is_array($validateFunc)  && strlen($value)) {
             // 1er argument: fonction à appeler
             $callback=$validateFunc[0];
             // 2eme: éventuel parametres
@@ -126,34 +129,5 @@ class Gb_Form_Elem_Checkbox extends Gb_Form_Elem
 
         return true;
     }
-
-
-
-    /**
-     * get/set args
-     * @param array[optional] $text
-     * @return Gb_Form_Elem_Select|String 
-     */
-    public function args(array $text=null)
-    {   
-        if ($text===null) {         return $this->_args; }
-        else { $this->_args=$text; return $this;}
-    }
-
-    /**
-     * get/set value
-     * @param string[optional] $text
-     * @return Gb_Form_Elem_Select|String 
-     */
-    public function value($text=null)
-    {
-        if ($text!==null) {
-            if ($text==="on" || $text==="true" || $text==="1" || $text===1 || $text===true) {$text=1;} else {$text=0;}
-        }
-        return parent::value($text);
-    }
-    
-
-    
     
 }
