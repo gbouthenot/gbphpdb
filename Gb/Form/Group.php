@@ -157,7 +157,10 @@ class Gb_Form_Group implements IteratorAggregate
         $ret="";
         foreach ($this as $elem) {
             if ($elem instanceof Gb_Form_Elem || $elem instanceof Gb_Form_Group) {
-                $ret.=(strlen($ret)?",":"").$elem->getAjaxArgs();
+                $arg=$elem->getAjaxArgs();
+                if (strlen($arg)) {
+                    $ret.=(strlen($ret)?",":"").$arg;
+                }
             }
         }
         return $ret;

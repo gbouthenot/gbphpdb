@@ -491,6 +491,7 @@ Class Gb_Db extends Zend_Db
      */
     public function update($table, array $data, array $where=array())
     {
+        if (count($data)==0) { return 0; }
         $time=microtime(true);
         self::$nbRequest++;
         try {
@@ -535,6 +536,7 @@ Class Gb_Db extends Zend_Db
      */
     public function insert($table, array $data)
     {
+        if (count($data)==0) { return 0; }
         $time=microtime(true);
         self::$nbRequest++;
         try {
@@ -558,6 +560,7 @@ Class Gb_Db extends Zend_Db
      */
     public function replace($table, array $data, array $where=array())
     {
+        if (count($data)==0) { return 0; }
         $sqlTime=self::$sqlTime;
         $time=microtime(true);
         self::$nbRequest++;
@@ -619,6 +622,7 @@ Class Gb_Db extends Zend_Db
      */
     public function insertOrDeleteInsert($table, array $data)
     {
+        if (count($data)==0) { return 0; }
         $sqlTime=self::$sqlTime;
         $time=microtime(true);
         self::$nbRequest++;
@@ -709,6 +713,7 @@ Class Gb_Db extends Zend_Db
      */
     public function insertOrUpdateNOTWORKING($table, array $data)
     {
+        if (count($data)==0) { return 0; }
         $sqlTime=self::$sqlTime;
         $time=microtime(true);
         self::$nbRequest++;
@@ -751,6 +756,7 @@ Class Gb_Db extends Zend_Db
     
     public function insertOrUpdate($table, array $data)
     {
+        if (count($data)==0) { return 0; }
         $sqlTime=self::$sqlTime;
         $time=microtime(true);
         self::$nbRequest++;
