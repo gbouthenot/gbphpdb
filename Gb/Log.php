@@ -179,7 +179,7 @@ class Gb_Log
   public static function logAlert($text="", $o=null) { self::log(self::LOG_ALERT, $text, $o, 1); }
   public static function logCrit($text="", $o=null) { self::log(self::LOG_CRIT, $text, $o, 1); }
   public static function logError($text="", $o=null) { self::log(self::LOG_ERROR, $text, $o, 1); }
-  public static function logException($text="", $o=null) { self::log(self::LOG_EXCEPTION, $text, $o, 1); }
+  public static function logException($exception, $o=null) { self::log(self::LOG_EXCEPTION, $exception, $o, 1); }
   public static function logWarning($text="", $o=null) { self::log(self::LOG_WARNING, $text, $o, 1); }
   public static function logNotice($text="", $o=null) { self::log(self::LOG_NOTICE, $text, $o, 1); }
   public static function logInfo($text="", $o=null) { self::log(self::LOG_INFO, $text, $o, 1); }
