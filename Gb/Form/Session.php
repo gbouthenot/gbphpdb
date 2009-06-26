@@ -12,14 +12,13 @@ if (!defined("_GB_PATH")) {
 }
 
 require_once(_GB_PATH."Exception.php");
-require_once(_GB_PATH."Form.php");
+require_once(_GB_PATH."Form2.php");
 require_once(_GB_PATH."Log.php");
 require_once(_GB_PATH."Session.php");
 
 Class Gb_Form_Session extends Gb_Form2
 {
-  protected $_sessionprefix;
-
+    protected $_sessionprefix;
 
     /**
      * Renvoie la revision de la classe ou un boolean si la version est plus petite que précisée, ou Gb_Exception
@@ -41,50 +40,50 @@ Class Gb_Form_Session extends Gb_Form2
      * constructeur
      *
      * @param string[optional] $sessionprefix
+     * @param array[optional] $aOptions options passées à Gb_Form2
      */
-    public function __construct($sessionprefix="")
+    public function __construct($sessionprefix="", $aParams=null)
     {
         $this->_sessionprefix=$sessionprefix;
-        $this->fHasData=false;
-        $this->moreData=array();
+        parent::__construct($aParams);
     }
 
   
-  /**
-   * Remplit les valeurs depuis la session
-   *
-   * @return boolean true si données trouvées
-   */
-  public function getFromDb()
-  {
-    //todo: checkbox
-    // obient le nom des colonnes
-    $aCols=$this->getDataAsArray();
-    
-    $fData=false;
-    // non ! on doit récupérer le nom de l'element et non dbcol /** @TODO **/
-    foreach (array_keys($aCols) as $nom) {
-        $elem=$this->getElem($nom);
-        $dbcol=$elem->backendCol();
-        if (Gb_Session::_isset($this->_sessionprefix.$dbcol)) {
-            // trouvé 
-            $fData=true;
-            $val=Gb_Session::get($this->_sessionprefix.$dbcol);
-            $elem->backendValue($val);
-            $this->fHasData=true;
+    /**
+     * Remplit les valeurs depuis la session
+     *
+     * @return boolean true si données trouvées
+     */
+    public function getFromDb()
+    {
+        //todo: checkbox
+        // obient le nom des colonnes
+        $aCols=$this->getDataAsArray();
+        
+        $fData=false;
+        // non ! on doit récupérer le nom de l'element et non dbcol /** @TODO **/
+        foreach (array_keys($aCols) as $nom) {
+            $elem=$this->getElem($nom);
+            $dbcol=$elem->backendCol();
+            if (Gb_Session::_isset($this->_sessionprefix.$dbcol)) {
+                // trouvé 
+                $fData=true;
+                $val=Gb_Session::get($this->_sessionprefix.$dbcol);
+                $elem->backendValue($val);
+                $this->hasData(true);
+            }
         }
+        
+        return $fData;
     }
-    
-    return $fData;
-  }
 
 
-  /**
-   * Insère/update les valeurs dans la bdd
-   *
-   * @param array $moreData
-   * @return boolean true si tout s'est bien passé
-   */
+    /**
+     * Insère/update les valeurs dans la bdd
+     *
+     * @param array $moreData
+     * @return boolean true si tout s'est bien passé
+     */
     public function putInDb(array $moreData=array())
     {
         $aCols=$this->getDataAsArray($moreData);
@@ -95,27 +94,7 @@ Class Gb_Form_Session extends Gb_Form2
         }
     
         Gb_Log::LogInfo("GBFORMSESSION->putInDb OK", $aCols );
-        return $fData;
+        return true;
     }
     
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-
 }

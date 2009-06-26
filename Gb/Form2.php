@@ -39,12 +39,12 @@ Class Gb_Form2 implements IteratorAggregate
     protected $_action;
     protected $_renderFormTags=true;
     protected $_moreData=array();
+    protected $_hasData;
     
     protected $fPostIndicator;
 
     protected $fValid;
     protected $fLoaded;
-    protected $fHasData=false;
     protected $fPost;
     protected $aErrors;
     protected $_formHash;
@@ -66,20 +66,16 @@ Class Gb_Form2 implements IteratorAggregate
     }
       
     /**
-     * constructeur de Gb_Form
+     * constructeur
      *
-     * @param Gb_Db[optional] $db
-     * @param string[optional] $tableName si vide, pas de bdd
-     * @param array[optional] $where array($dbGE->quoteInto("vaf_usa_login=?", Auth::getLogin()))
-     * @param array[optional] $moreData array("abc_datemodif"=>new Zend_Db_Expr("NOW()"), ...)
-     * @TODO broker
+     * @param array[optional] $aParams
      */
     public function __construct($aParams=array())
     {
         $this->_elems=array();
         $availableParams=array(
-            "toStringRendersAs", "method",         "enctype",
-            "javascriptEnabled", "renderFormTags", "formHash",
+            "toStringRendersAs", "method",         "enctype",  "moreData",
+            "javascriptEnabled", "renderFormTags", "formHash", "hasData",
         );
         
         foreach ($availableParams as $key) {
@@ -241,6 +237,16 @@ Class Gb_Form2 implements IteratorAggregate
     {   
         if ($text===null) {         return $this->_method; }
         else { $this->_method=$text; return $this;}
+    }
+    /**
+     * get/set hasData
+     * @param boolean[optional] $text
+     * @return Gb_Form2|boolean 
+     */
+    final public function hasData($text=null)
+    {   
+        if ($text===null) {         return $this->_hasData; }
+        else { $this->_hasData=$text; return $this;}
     }
     /**
      * get/set enctype
@@ -470,7 +476,7 @@ Class Gb_Form2 implements IteratorAggregate
      * Renvoie les données stockées sous forme de array
      *
      * @param array $moreData
-     * @return array array("nomelement"=>value")
+     * @return array array("nom_element"=>"value")
      */
     public function getDataAsArray(array $moreData=array())
     {
@@ -493,7 +499,7 @@ Class Gb_Form2 implements IteratorAggregate
         
         return $aCols;
     }
-      
+
 
     /**
      * get a elem by name
@@ -515,45 +521,6 @@ Class Gb_Form2 implements IteratorAggregate
         throw new Gb_Exception("Element $name not found");
     }
     
-  
-  /**
-   * Insère/update les valeurs dans la bdd
-   *
-   * @param array $moreData
-   * @return boolean true si tout s'est bien passé
-   */
-    public function putInDb(array $moreData=array())
-    {   return true;   /** @ TODO **/
-        if ($this->db===null) {
-            return true;
-        }
-        
-        $aCols=$this->getDataAsArray($moreData);
-        
-        if (strlen($this->tableName)==0 || count($aCols)==0) {
-            return false;
-        }
-
-        $db=$this->db;
-        try {
-            if (count($this->where)) {
-                // il y a une condition where: fait un replace
-                $db->replace($this->tableName, $aCols, $this->where);
-            } else {
-                // pas de where: fait insert
-                $db->insert($this->tableName, $aCols);
-            }
-                
-        } catch (Exception $e) {
-            $e;
-            Gb_Log::Log(Gb_Log::LOG_ERROR, "GBFORM->putInDb ERROR table:{$this->tableName} where:".Gb_Log::Dump($this->where)." data:".Gb_Log::Dump($aCols) );
-            return false;
-        }
-
-        Gb_Log::Log(Gb_Log::LOG_INFO, "GBFORM->putInDb OK table:{$this->tableName} where:".Gb_Log::Dump($this->where)."", $aCols );
-        return true;
-    }
-
     public function formHash($hash=null)
     {
         if ($hash===null) {
@@ -592,7 +559,7 @@ Class Gb_Form2 implements IteratorAggregate
                         $name="GBFORM_".$elem->name();
                         if (isset($_POST[$name])) {
                             $elem->rawValue($_POST[$name]);
-                            $this->fHasData=true;
+                            $this->hasData(true);
                         } else {
                             $elem->rawValue(false);
                         }
@@ -726,13 +693,13 @@ Class Gb_Form2 implements IteratorAggregate
             $getFromDb=$this->getFromDb();
             $getFromPost=$this->getFromPost();
             if ($getFromDb || $getFromPost ) {
-                $this->fHasData=true;
+                $this->hasData(true);
             } else {
-                $this->fHasData=false;
+                $this->hasData(false);
             }
             $this->fLoaded=true;
         }
-        return $this->fHasData;
+        return $this->hasData();
     }
 
     
@@ -741,10 +708,6 @@ Class Gb_Form2 implements IteratorAggregate
     public function isLoaded()
     {      throw new Gb_Exception("TODO");
         return $this->fLoaded;
-    }
-    public function hasData()
-    {
-        return $this->fHasData;
     }
     
 
