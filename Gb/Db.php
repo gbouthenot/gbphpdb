@@ -449,6 +449,25 @@ Class Gb_Db extends Zend_Db
         return $ret;
     }
 
+    /**
+     * Renvoie la première ligne d'un select et s'assure qu'il n'y a qu'une seule ligne
+     *
+     * @param string $sql exemple "SELECT COUNT(*) FROM tusager WHERE usa_statut='?'
+     * @param array[optional] $bindargurment exemple array("PE2")
+     * @param string[optional] $col Si spécifié, renvoie directement la valeur
+     *
+     * @return array|string|false
+     * @throws Gb_Exception
+     */
+    public function retrieve_unique($sql, $bindargurment=array(), $col="")
+    {
+        $ret=$this->retrieve_all($sql, $bindargurment, null, $col);
+        if (count($ret)!=1) {
+            throw new Gb_Exception("retrieve_unique returned ".count($ret)." rows");
+        }
+        return $ret[0];
+    }
+    
     public function beginTransaction()
     {
         $time=microtime(true);
@@ -485,11 +504,11 @@ Class Gb_Db extends Zend_Db
      *
      * @param string $table
      * @param array $data array("col"=>"val", "col2"=>new Zend_Db_Expr("NOW()"), ...)
-     * @param array[optional] $where array("col='val'", $db->quoteInto("usr_id=?", $usr_id), ...)
+     * @param string|array[optional] $where array("col='val'", $db->quoteInto("usr_id=?", $usr_id), ...)
      * @return int nombre de lignes modifiées
      * @throws Gb_Exception
      */
-    public function update($table, array $data, array $where=array())
+    public function update($table, array $data, $where=array())
     {
         if (count($data)==0) { return 0; }
         $time=microtime(true);
@@ -508,11 +527,11 @@ Class Gb_Db extends Zend_Db
      * SQL delete
      *
      * @param string $table
-     * @param array[optional] $where array($db->quoteInto("col=?", "val"), ...)
+     * @param string|array[optional] $where array($db->quoteInto("col=?", "val"), ...)
      * @return int nombre de lignes modifiées
      * @throws Gb_Exception
      */
-    public function delete($table, array $where=array())
+    public function delete($table, $where=array())
     {
         $time=microtime(true);
         self::$nbRequest++;
@@ -555,12 +574,13 @@ Class Gb_Db extends Zend_Db
      *
      * @param string $table Table à mettre à jour
      * @param array $data array("col"=>"val", "col2"=>new Zend_Db_Expr("NOW()"), ...)
-     * @param array[optional] $where array("col='val'", $db->quoteInto("usr_id=?", $usr_id), ...)
+     * @param string|array[optional] $where array("col='val'", $db->quoteInto("usr_id=?", $usr_id), ...)
      * @throws Gb_Exception
      */
-    public function replace($table, array $data, array $where=array())
+    public function replace($table, array $data, $where=array())
     {
         if (count($data)==0) { return 0; }
+        if (is_string($where)) {$where=array($where);}
         $sqlTime=self::$sqlTime;
         $time=microtime(true);
         self::$nbRequest++;
@@ -617,7 +637,6 @@ Class Gb_Db extends Zend_Db
      *
      * @param string $table Table à mettre à jour
      * @param array $data array("col"=>"val", "col2"=>new Zend_Db_Expr("NOW()"), ...)
-     * @param array[optional] $where array("col='val'", $db->quoteInto("usr_id=?", $usr_id), ...)
      * @throws Gb_Exception
      */
     public function insertOrDeleteInsert($table, array $data)
