@@ -501,6 +501,18 @@ Class Gb_Form2 implements IteratorAggregate
     }
 
 
+  /**
+   * Insère/update les valeurs dans la bdd
+   *
+   * @param array $moreData
+   * @return boolean true si tout s'est bien passé
+   */
+    public function putInDb(array $moreData=array())
+    {
+        return true;
+    }
+    
+    
     /**
      * get a elem by name
      *
