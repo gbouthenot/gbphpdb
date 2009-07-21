@@ -39,6 +39,7 @@ Class Gb_Form2 implements IteratorAggregate
     protected $_action;
     protected $_renderFormTags=true;
     protected $_moreData=array();
+    protected $_moreDataRead=array();
     protected $_hasData;
     
     protected $fPostIndicator;
@@ -75,7 +76,7 @@ Class Gb_Form2 implements IteratorAggregate
         $this->_elems=array();
         $availableParams=array(
             "toStringRendersAs", "method",         "enctype",  "moreData",
-            "javascriptEnabled", "renderFormTags", "formHash", "hasData",
+            "javascriptEnabled", "renderFormTags", "formHash", "hasData", "action",
         );
         
         foreach ($availableParams as $key) {
@@ -125,6 +126,11 @@ Class Gb_Form2 implements IteratorAggregate
     }
 // implements standard OOP END
 
+    /**
+     * Ajoute des Gb_Form_Element au formulaire
+     *
+     * @return Gb_Form2
+     */
     final public function append()
     {
         $args=func_get_args();
@@ -146,22 +152,38 @@ Class Gb_Form2 implements IteratorAggregate
     final public function renderHtml()
     {
         $ret="";
+        if ($this->renderFormTags()) {
+            $ret.=$this->renderFormOpenTag()."\n";
+        }
+        $ret.=$this->renderFormPostTag()."\n";
         foreach ($this as $elem) {
             if ($elem instanceof Gb_Form_Elem || $elem instanceOf Gb_Form_Group) {
                 $ret.=$elem->renderHtml();
             }
         }
-        $hash=$this->formHash();
-        $ret.="<input type='hidden' name='GBFORMPOST' value='$hash' />\n";
-
         if ($this->renderFormTags()) {
-            $method=$this->method();   if (strlen($method))  {$method="method='$method'";}
-            $action=$this->action();   if (strlen($action))  {$action="action='$action'";}
-            $enctype=$this->enctype(); if (strlen($enctype)) {$enctype="enctype='$enctype'";}
-            $ret="<form $method $action $enctype>$ret</form>";
+            $ret.=$this->renderFormCloseTag()."\n";
         }
-        
         return $ret;
+    }
+    final public function renderFormOpenTag()
+    {
+        $ret="";
+        $method=$this->method();   if (strlen($method))  {$method="method='$method'";}
+        $action=$this->action();   if (strlen($action))  {$action="action='$action'";}
+        $enctype=$this->enctype(); if (strlen($enctype)) {$enctype="enctype='$enctype'";}
+        $ret="<form $method $action $enctype>";
+        return $ret;
+    }
+    final public function renderFormPostTag()
+    {
+        $hash=$this->formHash();
+        $ret="<input type='hidden' name='GBFORMPOST' value='$hash' />";
+        return $ret;
+    }
+    final public function renderFormCloseTag()
+    {
+        return "</form>";
     }
     final public function renderJavascript()
     {
@@ -270,7 +292,7 @@ Class Gb_Form2 implements IteratorAggregate
     }
     /**
      * get/set renderFormTags
-     * @param string[optional] $text
+     * @param boolean[optional] $text
      * @return Gb_Form_Elem_Text_Abstract|String 
      */
     public function renderFormTags($text=null)
@@ -301,162 +323,6 @@ Class Gb_Form2 implements IteratorAggregate
     
     
     
-  /**
-   * Ajoute un élément (fluent interface)
-   *
-   * @param string $nom Nom unique, défini le NAME de l'élément doit commencer par une lettre et ne comporter que des caractères alphanumériques
-   * @param array $aParams
-   * @throws Gb_Exception
-   * 
-   * @return Gb_Form (fluent interface)
-   */
-  public function addElement($nom, array $aParams)
-  {
-      throw new Gb_Exception("TODO");
-        // $aParams["type"]="SELECT" "SELECTMULTIPLE" "TEXT" "PASSWORD" "RADIO" "CHECKBOX" "TEXTAREA" "PRINT" "VAR"
-        // $aParams["args"]:
-        //            SELECT: liste des valeurs disponibles sous la forme
-        //                    array(array(value[,libelle]), "default"=>array(value[,libelle]), ...)
-        //                    (value est recodé dans le html mais renvoie la bonne valeur)
-        //                    (si value==='false', la valeur est interdite par fMandatory)
-        //                    (si value==='optgroup', la valeur définit un optgroup
-        //    SELECTMULTIPLE: idem SELECT mais sans la possibilité d'avoir un default 
-        //              TEXT: array("value"=>valeur par défaut, "regexp"=>"/.*/" ou "Year" pour prédéfini) 
-        //          TEXTAREA: idem TEXT
-        //            HIDDEN:
-        //          CHECKBOX:
-        //             RADIO:
-        //             PRINT: message dans $aParams["value"]
-        // $aParams["dbCol"]       : nom de la colonne bdd
-        // $aParams["fMandatory"]  : doit être rempli ? défaut: false
-        // $aParams["toDbFunc"]    : array( "fonction" ou array("classe", "methode") , array("%s", ENT_QUOTES)[optional] ) 
-        // $aParams["fromDbFunc"]  : array( "fonction" ou array("classe", "methode") , array("%s", ENT_QUOTES)[optional] ) 
-        // $aParams["validateFunc"]: array( callback, params=null ): appelle une fonction avec pour 1er parametre, la valeur a checker. Doit retourner true, false ou message d'erreur. 
-        // $aParams["invalidMsg"]  : texte qui s'affiche en cas de saisie invalide
-        // $aParams["class"]       : nom de la classe pour l'élément
-        // $aParams["preInput"]    :
-        // $aParams["inInput"]     : pour TEXT: size et maxlength
-        // $aParams["postInput"]   :
-        // renseignés automatiquement (accessible uniquement en lecture):
-        // $aParams["classSTATUT"] : nom de la classe en cours
-        // $aParams["message"]     : message d'erreur éventuel
-      
-    if (!preg_match("/^[a-zA-Z][a-zA-Z0-9]*/", $nom))
-      throw new Gb_Exception("Nom de variable de formulaire invalide");
-
-    if (isset($this->formElement[$nom]))
-      throw new Gb_Exception("Nom de variable de formulaire déjà défini");
-
-    if (!isset($aParams["type"]))
-      throw new Gb_Exception("Type de variable de formulaire non précisé");
-
-    if (!isset($aParams["fMandatory"]))
-      $aParams["fMandatory"]=false;
-    if (!isset($aParams["preInput"]))
-      $aParams["preInput"]="";
-    if (!isset($aParams["inInput"]))
-      $aParams["inInput"]="";
-    if (!isset($aParams["postInput"]))
-      $aParams["postInput"]="";
-    if (!isset($aParams["class"]))
-      $aParams["class"]="GBFORM";
-    if (!isset($aParams["classSTATUT"]))
-      $aParams["classSTATUT"]="OK";
-
-    if (isset($aParams["toDbFunc"]))
-      $aParams["toDbFunc"]=$aParams["toDbFunc"];
-    if (isset($aParams["fromDbFunc"]))
-      $aParams["fromDbFunc"]=$aParams["fromDbFunc"];
-
-    if (isset($aParams["dbCol"]) && strlen($aParams["dbCol"])==0)
-      $aParams["dbCol"]=null;
-      
-      $aParams["message"]="";
-
-    $type=$aParams["type"];
-    switch($type)
-    {
-      case "SELECT":
-        if (!isset($aParams["args"]) || !is_array($aParams["args"]))
-          throw new Gb_Exception("Paramètres de $nom incorrects");
-        if (isset($aParams["value"])) {
-            $this->formElements[$nom]=$aParams;
-            $this->set($nom, $aParams["value"]);
-        } else {
-            //remplit value avec le numéro sélectionné.
-            $num=0;
-            $args=array();
-            foreach($aParams["args"] as $ordre=>$val) {
-              if ($ordre==="default") {
-                $aParams["value"]=$num;
-              }
-              $args[]=$val;
-              $num++;
-            }
-            $aParams["args"]=$args;
-            if (!isset($aParams["value"])) {
-                $aParams["value"]="0";    // par défaut, 1er élément de la liste
-            }
-            $this->formElements[$nom]=$aParams;
-        }
-        break;
-
-      case "SELECTMULTIPLE":
-        if (!isset($aParams["args"]) || !is_array($aParams["args"]))
-          throw new Gb_Exception("Paramètres de $nom incorrects");
-        if (!isset($aParams["value"]))
-          $aParams["value"]=array();    // par défaut, aucune selection
-        $this->formElements[$nom]=$aParams;
-        break;
-
-      case "TEXT": case "TEXTAREA": case "PASSWORD":
-        if (isset($aParams["args"]["regexp"])){
-          $regexp=&$aParams["args"]["regexp"];
-          if (isset(self::$_commonRegex[$regexp])) {
-            //regexp connu: remplace par le contenu
-            $regexp=self::$_commonRegex[$regexp];
-          }
-        }
-        if (!isset($aParams["value"]))
-          $aParams["value"]="";   // par défaut, chaine vide
-        $this->formElements[$nom]=$aParams;
-        break;
-
-      case "CHECKBOX":
-        if (isset($aParams["value"]) && $aParams["value"]==true)
-          $aParams["value"]=true;
-        else
-          $aParams["value"]=false;
-        $this->formElements[$nom]=$aParams;
-        break;
-
-      case "RADIO": case "HIDDEN":
-        if (!isset($aParams["value"]))
-          $aParams["value"]="";   // par défaut, chaine vide
-        $this->formElements[$nom]=$aParams;
-        break;
-
-      case "AUTOCOMPLETEKEY":
-        if (!isset($aParams["value"]))
-          $aParams["value"]="";   // par défaut, chaine vide
-        if (!isset($aParams["args"]["valuelib"]) || !isset($aParams["args"]["valueToLibFunc"]) || !isset($aParams["args"]["autocompleteURL"])) {
-            throw new Gb_Exception("Il manque des arguments AUTOCOMPLETEKEY pour $nom");
-        }
-        $this->formElements[$nom]=$aParams;
-        /* @todo remplir libelle à partir de value si non précisé */
-        break;
-
-      case "PRINT": case "VAR":
-        unset($aParams["dbCol"]);
-        $this->formElements[$nom]=$aParams;
-        break;
-
-      default:
-        throw new Gb_Exception("Type de variable de formulaire inconnu pour $nom");
-    }
-
-    return $this;
-  }
 
 
   
@@ -475,16 +341,13 @@ Class Gb_Form2 implements IteratorAggregate
     /**
      * Renvoie les données stockées sous forme de array
      *
-     * @param array $moreData
      * @return array array("nom_element"=>"value")
      */
-    public function getDataAsArray(array $moreData=array())
+    public function getDataAsArray()
     {
-        $moreData=array_merge($moreData, $this->moreData());
-        
         //@todo: radio, selectmultiple
         // obient le nom des colonnes
-        $aCols=$moreData;
+        $aCols=array();
         foreach (new RecursiveIteratorIterator($this->getIterator()) as $elem) {
             $class=get_class($elem);
             if (substr($class, 0, 13)=="Gb_Form_Elem_") {
@@ -509,6 +372,7 @@ Class Gb_Form2 implements IteratorAggregate
    */
     public function putInDb(array $moreData=array())
     {
+        $moreData();
         return true;
     }
     
@@ -665,8 +529,8 @@ Class Gb_Form2 implements IteratorAggregate
     
     
     public function getMoreDataRead()
-    {      throw new Gb_Exception("TODO");
-        return $this->moreDataRead;
+    {
+        return $this->_moreDataRead;
     }
 
 
@@ -718,7 +582,7 @@ Class Gb_Form2 implements IteratorAggregate
     
     
     public function isLoaded()
-    {      throw new Gb_Exception("TODO");
+    {
         return $this->fLoaded;
     }
     

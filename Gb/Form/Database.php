@@ -59,18 +59,21 @@ Class Gb_Form_Database extends Gb_Form2
     }
   
     /**
-    * Remplit les valeurs depuis la base
-    *
-    * @return boolean true si données trouvées
-    */
-    public function getFromDb()
+     * Remplit les valeurs depuis la base
+     *
+     * @param array $moreData array("col1", "col2")
+     * @return boolean true si données trouvées
+     */
+    public function getFromDb(array $moreData=array())
     {
+        $moreData=array_merge($moreData, array_keys($this->moreData()));
+        $aDbCols=$moreData;
+        
         //todo: checkbox
         // obient le nom des colonnes
         $aCols=$this->getDataAsArray();
         
         $fData=false;
-        $aDbCols=array();
         // non ! on doit récupérer le nom de l'element et non dbcol /** @TODO **/
         foreach (array_keys($aCols) as $nom) {
             $elem=$this->getElem($nom);
@@ -87,6 +90,11 @@ Class Gb_Form_Database extends Gb_Form2
                 $value=$aRes[$dbcol];
                 $elem->backendValue($value);
             }
+            $moreDataRead=array();
+            foreach ($moreData as $nom) {
+                $moreDataRead[$nom]=$aRes[$nom]; 
+            }
+            $this->_moreDataRead=$moreDataRead;
             $this->hasData(true);
             $fData=true;
         }    
@@ -103,13 +111,14 @@ Class Gb_Form_Database extends Gb_Form2
    */
     public function putInDb(array $moreData=array())
     {
-        $aCols=$this->getDataAsArray($moreData);
+        $aDbCols=array_merge($moreData, $this->moreData());
+
+        $aCols=$this->getDataAsArray();
 
         if (strlen($this->tableName)==0 || count($aCols)==0) {
             return false;
         }
 
-        $aDbCols=array();
         // non ! on doit récupérer le nom de l'element et non dbcol /** @TODO **/
         foreach (array_keys($aCols) as $nom) {
             $elem=$this->getElem($nom);

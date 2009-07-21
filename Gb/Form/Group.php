@@ -103,6 +103,11 @@ class Gb_Form_Group implements IteratorAggregate
     }
 // implements standard OOP END
     
+    /**
+     * Ajoute des Gb_Form_Element au groupe
+     *
+     * @return Gb_Form_Group
+     */
     final public function append()
     {
         $args=func_get_args();

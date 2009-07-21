@@ -142,10 +142,11 @@ abstract class Gb_Form_Elem
         $container=$this->container();
         $errorContainer=$this->errorContainer();
         $errorMsg=$this->errorMsg();
+        $formid=$this->formId();
         if (strlen($container)) {
             $classStatut=$this->classStatut();
             if (strlen($classStatut)) { $classStatut="class='$classStatut'"; } else { $classStatut="class='OKNOK'"; }
-            $container1="<$container id='GBFORM_{$nom}_div' $classStatut >";
+            $container1="<$container id='{$formid}_div' $classStatut >";
             $container2="</$container>";
         }
         if (strlen($errorContainer)) {
@@ -160,10 +161,14 @@ abstract class Gb_Form_Elem
 
     public function getAjaxArgs()
     {
-        $name=$this->name();
-        $gbname="GBFORM_".$name;
+        $gbname=$this->formId();
         
         return "{$gbname}: \$F('{$gbname}')";
+    }
+    
+    public function formId()
+    {
+        return "GBFORM_".$this->name();
     }
     
     protected function getInput($nom, $value, $inInput, $inputjs)
