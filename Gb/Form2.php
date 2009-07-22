@@ -372,7 +372,7 @@ Class Gb_Form2 implements IteratorAggregate
    */
     public function putInDb(array $moreData=array())
     {
-        $moreData();
+        $moreData;
         return true;
     }
     
