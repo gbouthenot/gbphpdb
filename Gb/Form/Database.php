@@ -3,8 +3,8 @@
  * Gb_Form_Session
  * 
  * @author Gilles Bouthenot
- * @version $Revision: 125 $
- * @Id $Id: Form.php 125 2008-10-20 16:28:47Z gbouthenot $
+ * @version $Revision$
+ * @Id $Id$
  */
 
 if (!defined("_GB_PATH")) {
@@ -34,7 +34,7 @@ Class Gb_Form_Database extends Gb_Form2
      */
     public static function getRevision($mini=null, $throw=true)
     {
-        $revision='$Revision: 125 $';
+        $revision='$Revision$';
         $revision=trim(substr($revision, strrpos($revision, ":")+2, -1));
         if ($mini===null) { return $revision; }
         if ($revision>=$mini) { return true; }
