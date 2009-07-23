@@ -129,24 +129,23 @@ abstract class Gb_Form_Elem
         $preInput=$this->_preInput;
         $postInput=$this->_postInput;
         $inInput=$this->_inInput;
-        $nom=$this->name();
         $value=$this->value();
         if ($this->disabled()) {$inInput.=" disabled='disabled' "; }
         
-        $inputjs=$this->javascriptEnabled()?$this->getInputJavascript($nom):"";
-        $htmlInput=$this->getInput($nom, $value, $inInput, $inputjs);
+        $inputjs=$this->javascriptEnabled()?$this->getInputJavascript():"";
+        $htmlInput=$this->getInput($value, $inInput, $inputjs);
         
         $preElem=$this->preElem();
         $postElem=$this->postElem();
-        $container1=$container2="";
+        $container1=$container2="";$container1;$container2; // l'editeur dit qu'ils ne sont pas utilisés !
         $container=$this->container();
         $errorContainer=$this->errorContainer();
         $errorMsg=$this->errorMsg();
-        $formid=$this->formId();
+        $elemid=$this->elemId();
         if (strlen($container)) {
             $classStatut=$this->classStatut();
             if (strlen($classStatut)) { $classStatut="class='$classStatut'"; } else { $classStatut="class='OKNOK'"; }
-            $container1="<$container id='{$formid}_div' $classStatut >";
+            $container1="<$container id='{$elemid}_div' $classStatut >";
             $container2="</$container>";
         }
         if (strlen($errorContainer)) {
@@ -161,26 +160,35 @@ abstract class Gb_Form_Elem
 
     public function getAjaxArgs()
     {
-        $gbname=$this->formId();
+        $gbname=$this->elemId();
         
         return "{$gbname}: \$F('{$gbname}')";
     }
     
-    public function formId()
+    /**
+     * Returns the elem id (GBFORM_name)
+     *
+     * @return string
+     */
+    public function elemId()
     {
         return "GBFORM_".$this->name();
     }
     
-    protected function getInput($nom, $value, $inInput, $inputjs)
+    protected function getInput($value, $inInput, $inputjs)
     {
+        $value;
+        $inInput;
+        $inputjs;
         return "";
     }
-    protected function getInputJavascript($nom)
+    protected function getInputJavascript()
     {
         return "";
     }
     public function validate(Gb_Form2 $form)
     {
+        $form;
         return null;
     }    
 
@@ -236,7 +244,7 @@ abstract class Gb_Form_Elem
     /**
      * get/set value
      * @param string[optional] $text
-     * @return Gb_Form_Elem_Text_Abstract|String 
+     * @return Gb_Form_Elem|String 
      */
     public function value($text=null)
     {   

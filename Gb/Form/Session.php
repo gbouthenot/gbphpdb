@@ -87,7 +87,6 @@ Class Gb_Form_Session extends Gb_Form2
     public function putInDb(array $moreData=array())
     {
         $aCols=$this->getDataAsArray($moreData);
-        $fData=false;
     
         foreach ($aCols as $dbcol=>$val) {
             Gb_Session::set($this->_sessionprefix.$dbcol, $val);

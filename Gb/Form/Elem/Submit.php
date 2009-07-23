@@ -11,16 +11,16 @@ class Gb_Form_Elem_Submit extends Gb_Form_Elem
         return parent::__construct($name, $availableParams, $aParams);
     }
     
-    public function getInput($name, $value, $inInput, $inputJs)
+    public function getInput($value, $inInput, $inputJs)
     {
+        $elemid=$this->elemId();
         $value=htmlspecialchars($value);
         if (strlen($value)) { $value="value='$value'"; }
-        return "<input type='submit' class='submit' name='GBFORM_{$name}' $value $inInput $inputJs />";
+        return "<input type='submit' class='submit' name='{$elemid}' $value $inInput $inputJs />";
     }
     
-    public function getInputJavascript($nom)
+    public function getInputJavascript()
     {
-        $nom;
         $onclick=$this->onclick();
         if (strlen($onclick)) { $onclick="onclick='$onclick'"; }
         return $onclick;

@@ -13,12 +13,14 @@ class Gb_Form_Elem_Select extends Gb_Form_Elem
     protected $_args;
     
     
-    public function getInput($nom, $value, $inInput, $inputJs)
+    public function getInput($value, $inInput, $inputJs)
     {
+        $value();
         $aValues=$this->args();
         $value=parent::value();
+        $elemid=$this->elemId();
         $ret="";
-        $ret.="<select id='GBFORM_$nom' name='GBFORM_$nom' class='simple' $inInput $inputJs>\n";
+        $ret.="<select id='{$elemid}' name='{$elemid}' class='simple' $inInput $inputJs>\n";
         $num=0;
         $fOptgroup=false;
         foreach ($aValues as $ordre=>$aOption){
@@ -53,16 +55,16 @@ class Gb_Form_Elem_Select extends Gb_Form_Elem
         
         $args=$this->args();
         $ret="";
-        $nom=$this->name();
+        $elemid=$this->elemId();
         
         // par défaut, met en classOK, si erreur, repasse en classNOK
-        $ret.=" \$('GBFORM_{$nom}_div').className='OK';\n";
+        $ret.=" \$('{$elemid}_div').className='OK';\n";
         // enlève le message d'erreur
-        $ret.=" var e=\$('GBFORM_{$nom}_div').select('div[class=\"ERROR\"]').first(); if (e!=undefined){e.innerHTML='';}\n";
-        $ret.=" var e=\$('GBFORM_{$nom}_div').select('span[class=\"ERROR\"]').first(); if (e!=undefined){e.innerHTML='';}\n";
+        $ret.=" var e=\$('{$elemid}_div').select('div[class=\"ERROR\"]').first(); if (e!=undefined){e.innerHTML='';}\n";
+        $ret.=" var e=\$('{$elemid}_div').select('span[class=\"ERROR\"]').first(); if (e!=undefined){e.innerHTML='';}\n";
         
         // attention utilise prototype String.strip()
-        $ret.="var value=\$F('GBFORM_$nom');\n";
+        $ret.="var value=\$F('{$elemid}');\n";
         
         // traitement fMandatory
         if ($this->fMandatory()) {
@@ -72,9 +74,9 @@ class Gb_Form_Elem_Select extends Gb_Form_Elem
                 if ($val===false) { $val="false"; }
                 $aValues[]="'$ordre':'$val'";
             }
-            $ret.="var GBFORM_{$nom}_values = { ".implode(", ",$aValues)."};\n";
-            $ret.="if ((GBFORM_{$nom}_values[value])=='false') {\n";
-            $ret.=" \$('GBFORM_{$nom}_div').className='NOK';\n";
+            $ret.="var {$elemid}_values = { ".implode(", ",$aValues)."};\n";
+            $ret.="if (({$elemid}_values[value])=='false') {\n";
+            $ret.=" \$('{$elemid}_div').className='NOK';\n";
             $ret.="}\n";
         }
 
@@ -90,14 +92,14 @@ class Gb_Form_Elem_Select extends Gb_Form_Elem
                    $ret.=" var notvalue=\"".addslashes($notValue)."\";\n";
                  }
                  $ret.=" if (bornevalue == notvalue) {";
-                 $ret.=" \$('GBFORM_{$nom}_div').className='NOK';";
+                 $ret.=" \$('{$elemid}_div').className='NOK';";
                  $ret.="}\n";
             }
         }
 
         $ret2="";
         if (strlen($ret)) {
-            $ret2="function validate_GBFORM_{$nom}()\n";
+            $ret2="function validate_{$elemid}()\n";
             $ret2.="{\n";
             $ret2.=$ret;
             $ret2.="}\n";
@@ -105,9 +107,10 @@ class Gb_Form_Elem_Select extends Gb_Form_Elem
         return $ret2;
     }
 
-    protected function getInputJavascript($nom)
+    protected function getInputJavascript()
     {
-        return "onchange='javascript:validate_GBFORM_$nom();' onkeyup='javascript:validate_GBFORM_$nom();'";
+        $elemid=$this->elemId();
+        return "onchange='javascript:validate_{$elemid}();' onkeyup='javascript:validate_{$elemid}();'";
     }
     
     
@@ -243,7 +246,7 @@ class Gb_Form_Elem_Select extends Gb_Form_Elem
     /**
      * get/set value
      * @param string[optional] $text
-     * @return Gb_Form_Elem_Text_Abstract|String 
+     * @return Gb_Form_Elem_Select|String 
      */
     public function value($text=null)
     {   
@@ -264,6 +267,7 @@ class Gb_Form_Elem_Select extends Gb_Form_Elem
                 }
             }
             $this->rawValue($text);
+            return $this;
         }
     }
     

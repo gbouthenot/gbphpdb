@@ -13,16 +13,16 @@ class Gb_Form_Elem_Checkbox extends Gb_Form_Elem
     protected $_args;
     
     
-    public function getInput($nom, $value, $inInput, $inputJs)
+    public function getInput($value, $inInput, $inputJs)
     {
-        $aValues=$this->args();
         if ($value) {
             $value="checked='checked'";
         } else {
             $value="";
         }
         $ret="";
-        $ret.="<input type='checkbox' $value id='GBFORM_$nom' name='GBFORM_$nom' $inInput $inputJs />";
+        $elemid=$this->elemId();
+        $ret.="<input type='checkbox' $value id='$elemid' name='$elemid' $inInput $inputJs />";
         return $ret;
     }
     
@@ -32,28 +32,27 @@ class Gb_Form_Elem_Checkbox extends Gb_Form_Elem
             return "";
         }
         
-        $args=$this->args();
         $ret="";
-        $nom=$this->name();
+        $elemid=$this->elemId();
         
         // par défaut, met en classOK, si erreur, repasse en classNOK
-        $ret.=" \$('GBFORM_{$nom}_div').className='OK';\n";
+        $ret.=" \$('{$elemid}_div').className='OK';\n";
         // enlève le message d'erreur
-        $ret.=" var e=\$('GBFORM_{$nom}_div').select('div[class=\"ERROR\"]').first(); if (e!=undefined){e.innerHTML='';}\n";
-        $ret.=" var e=\$('GBFORM_{$nom}_div').select('span[class=\"ERROR\"]').first(); if (e!=undefined){e.innerHTML='';}\n";
+        $ret.=" var e=\$('{$elemid}_div').select('div[class=\"ERROR\"]').first(); if (e!=undefined){e.innerHTML='';}\n";
+        $ret.=" var e=\$('{$elemid}_div').select('span[class=\"ERROR\"]').first(); if (e!=undefined){e.innerHTML='';}\n";
         
-        $ret.="var value=\$F('GBFORM_$nom');\n";
+        $ret.="var value=\$F('$elemid');\n";
         
         // traitement fMandatory
         if ($this->fMandatory()) {
               $ret.="if (value!='true' && value!='on') {\n";
-              $ret.=" \$('GBFORM_{$nom}_div').className='NOK';\n";
+              $ret.=" \$('{$elemid}_div').className='NOK';\n";
               $ret.="}\n";
         }
 
         $ret2="";
         if (strlen($ret)) {
-            $ret2="function validate_GBFORM_{$nom}()\n";
+            $ret2="function validate_$elemid()\n";
             $ret2.="{\n";
             $ret2.=$ret;
             $ret2.="}\n";
@@ -61,10 +60,11 @@ class Gb_Form_Elem_Checkbox extends Gb_Form_Elem
         return $ret2;
     }
 
-    protected function getInputJavascript($nom)
+    protected function getInputJavascript()
     {
+        $elemid=$this->elemId();
         if ($this->fMandatory()) {
-            return "onchange='javascript:validate_GBFORM_$nom();' onkeyup='javascript:validate_GBFORM_$nom();'";
+            return "onchange='javascript:validate_$elemid();' onkeyup='javascript:validate_$elemid();'";
         } else {
             return "";
         }
@@ -92,10 +92,9 @@ class Gb_Form_Elem_Checkbox extends Gb_Form_Elem
      */
     public function validate(Gb_Form2 $form)
     {
+        $form;
         $value=$this->value();
-        $notValues=$this->notValue();
         $fMandatory=$this->fMandatory();
-        $args=$this->args();
 
         // valeur non transmise
         if ($value==false) {
@@ -143,7 +142,7 @@ class Gb_Form_Elem_Checkbox extends Gb_Form_Elem
     /**
      * get/set value
      * @param string[optional] $text
-     * @return Gb_Form_Elem_Select|String 
+     * @return Gb_Form_Elem|String 
      */
     public function value($text=null)
     {

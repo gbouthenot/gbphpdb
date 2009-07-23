@@ -17,10 +17,11 @@ class Gb_Form_Elem_Hidden extends Gb_Form_Elem
         return parent::__construct($name, $availableParams, $aParams);
     }
     
-    public function getInput($nom, $value, $inInput, $inputJs)
+    public function getInput($value, $inInput, $inputJs)
     {
         $sValue=htmlspecialchars($value, ENT_QUOTES);
-        return "<input type='hidden' id='GBFORM_$nom' name='GBFORM_$nom' value='$sValue' $inInput $inputJs />";
+        $elemid=$this->elemId();
+        return "<input type='hidden' id='{$elemid}' name='{$elemid}' value='$sValue' $inInput $inputJs />";
     }
 
 }

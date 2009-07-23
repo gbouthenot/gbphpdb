@@ -1,13 +1,5 @@
 <?php
 
-require_once("Form/Elem.php");
-require_once("Form/Elem/Text/Abstract.php");
-require_once("Form/Elem/Hidden.php");
-require_once("Form/Elem/Password.php");
-require_once("Form/Elem/Submit.php");
-require_once("Form/Elem/Select.php");
-require_once("Form/Elem/Text.php");
-require_once("Form/Group.php");
 require_once("Form/Iterator.php");
 
 /**
@@ -22,33 +14,30 @@ if (!defined("_GB_PATH")) {
     define("_GB_PATH", dirname(__FILE__).DIRECTORY_SEPARATOR);
 }
 
-require_once(_GB_PATH."Db.php");
 require_once(_GB_PATH."Exception.php");
-require_once(_GB_PATH."Log.php");
-require_once(_GB_PATH."String.php");
-require_once(_GB_PATH."Util.php");
 
 Class Gb_Form2 implements IteratorAggregate
 {
     protected $_elems;
 
-    protected $_toStringRendersAs="HTML";
-    protected $_method="post";
-    protected $_enctype="www/form-data";
-    protected $_javascriptEnabled=true;
+    //
+    // Properties -> these functions are handled by functions named after the properties name i.e. action() sets the _action
+    //
     protected $_action;
-    protected $_renderFormTags=true;
+    protected $_enctype="www/form-data";
+    protected $_errors;
+    protected $_formHash;
+    protected $_hasData;
+    protected $_isLoaded;
+    protected $_isPost;
+    protected $_isValid;
+    protected $_javascriptEnabled=true;
+    protected $_method="post";
     protected $_moreData=array();
     protected $_moreDataRead=array();
-    protected $_hasData;
+    protected $_renderFormTags=true;
+    protected $_toStringRendersAs="HTML";
     
-    protected $fPostIndicator;
-
-    protected $fValid;
-    protected $fLoaded;
-    protected $fPost;
-    protected $aErrors;
-    protected $_formHash;
 
     /**
      * Renvoie la revision de la classe ou un boolean si la version est plus petite que précisée, ou Gb_Exception
@@ -185,13 +174,21 @@ Class Gb_Form2 implements IteratorAggregate
     {
         return "</form>";
     }
-    final public function renderJavascript()
+    final public function renderJavascript($fRenderScriptTag=false)
     {
         $ret="";
+        if ($fRenderScriptTag) {
+            $ret.="<script type='text/javascript'>\n";
+            $ret.="/* <![CDATA[ */\n";
+        }
         foreach ($this as $elem) {
             if ($elem instanceof Gb_Form_Elem || $elem instanceOf Gb_Form_Group) {
                 $ret.=$elem->renderJavascript();
             }
+        }
+        if ($fRenderScriptTag) {
+            $ret.="/* ]]> */\n";
+            $ret.="</script>\n"; 
         }
         return $ret;
     }
@@ -200,6 +197,9 @@ Class Gb_Form2 implements IteratorAggregate
         if ($this->_toStringRendersAs=="HTML") {
             $ret=$this->renderHtml();
         } elseif ($this->_toStringRendersAs=="JS") {
+            $ret=$this->renderJavascript();
+        } elseif ($this->_toStringRendersAs=="BOTH") {
+            $ret=$this->renderHtml();
             $ret=$this->renderJavascript();
         }
         return $ret;
@@ -219,46 +219,75 @@ Class Gb_Form2 implements IteratorAggregate
         }
         return $ret;
     }
-    
+
     /**
-     * Set the type of data returned by __toString()
-     *
-     * @param string $type "HTML" or "JS"
-     * @return Gb_Form_Elem_Abstract
-     * @throws Gb_Exception
-     */
-    final public function toStringRendersAs($type=null)
-    {
-        if ($type===null) { return $this->_toStringRendersAs; }
-        $type=strtoupper($type);
-        if ($type=="HTML") {$this->_toStringRendersAs="HTML";}
-        elseif ($type=="JS") {$this->_toStringRendersAs="JS";}
-        else { throw new Gb_Exception("type $type unhandled"); }
-        return $this;
-    }
-    /**
-     * Enable / Disable javascript
-     *
-     * @param boolean $flag
-     * @return Gb_Form_Elem_Abstract
-     * @throws Gb_Exception
-     */
-    final public function javascriptEnabled($flag=null)
-    {
-        if ($flag===null) { return $this->_javascriptEnabled; }
-        if ($flag===false || $flag===true) { $this->_javascriptEnabled=$flag; }
-        else { throw new Gb_Exception("flag $flag not valid"); }
-        return $this;
-    }
-    /**
-     * get/set method
+     * get/set action
      * @param string[optional] $text
-     * @return Gb_Form_Elem_Text_Abstract|String 
+     * @return Gb_Form2|String 
      */
-    final public function method($text=null)
+    final public function action($text=null)
     {   
-        if ($text===null) {         return $this->_method; }
-        else { $this->_method=$text; return $this;}
+        if ($text===null) {         return $this->_action; }
+        else { $this->_action=$text; return $this;}
+    }
+    /**
+     * get/set enctype
+     * @param string[optional] $text
+     * @return Gb_Form2|String 
+     */
+    final public function enctype($text=null)
+    {   
+        if ($text===null) {         return $this->_enctype; }
+        else { $this->_enctype=$text; return $this;}
+    }
+    /**
+     * Get/set errors. Validate if hasData. Else returns null
+     *
+     * @param array[optional] $param
+     * @return Gb_Form2|array
+     */
+    public function errors(array $param=null)
+    {
+        if ($param===null) {
+            if ($this->_errors===null) {
+                // Si le formulaire a des données, le valider
+                if ($this->hasData()) {
+                    $this->validate(false);
+                }
+            }
+            return $this->_errors;
+        } else {
+            $this->_errors=$param;
+            return $this;
+        }
+    }
+    /**
+     * Get/set formhash. Compute it
+     *
+     * @param string[optional] $hash
+     * @return Gb_Form2|string
+     */
+    final public function formHash($hash=null)
+    {
+        if ($hash===null) {
+            if ($this->_formHash===null) {
+                // Trie les noms par ordre alphabétiques si les éléments n'ont pas été définis dans le même ordre
+                $keys=array();
+                foreach (new RecursiveIteratorIterator($this->getIterator()) as $name=>$elem) {
+                    $c=get_class($elem);
+                    if (substr($c, 0, 13)=="Gb_Form_Elem_") {
+                        $name=$elem->name();
+                    }
+                    $keys[]=$name;
+                }
+                sort($keys, SORT_STRING);
+                $this->_formHash=md5(serialize($keys));
+            }
+            return $this->_formHash;
+        } else {
+            $this->_formHash=$hash;
+            return $this;
+        }
     }
     /**
      * get/set hasData
@@ -271,46 +300,130 @@ Class Gb_Form2 implements IteratorAggregate
         else { $this->_hasData=$text; return $this;}
     }
     /**
-     * get/set enctype
-     * @param string[optional] $text
-     * @return Gb_Form_Elem_Text_Abstract|String 
+     * Get/set isLoaded
+     *
+     * @param boolean[optional] $param
+     * @return Gb_Form2|boolean
      */
-    final public function enctype($text=null)
-    {   
-        if ($text===null) {         return $this->_enctype; }
-        else { $this->_enctype=$text; return $this;}
+    final public function isLoaded($param=null)
+    {
+        if ($param===null) {         return $this->fLoaded; }
+        else { $this->_isLoaded=$param; return $this;}
     }
     /**
-     * get/set action
-     * @param string[optional] $text
-     * @return Gb_Form_Elem_Text_Abstract|String 
+     * Get/set isPost Computes hash
+     *
+     * @param boolean[optional] $param
+     * @return Gb_Form2|boolean
      */
-    final public function action($text=null)
-    {   
-        if ($text===null) {         return $this->_action; }
-        else { $this->_action=$text; return $this;}
+    final public function isPost($param=null)
+    {
+        if ($param===null) {
+            if ($this->_isPost===null) {
+                if (isset($_POST["GBFORMPOST"]) && $_POST["GBFORMPOST"]==$this->formHash()) {
+                    $this->_isPost=true;
+                } else {
+                    $this->_isPost=false;
+               }
+            }
+            return $this->fPost;
+        } else {
+            $this->_isPost=$param;
+            return $this;
+        }
     }
     /**
-     * get/set renderFormTags
-     * @param boolean[optional] $text
-     * @return Gb_Form_Elem_Text_Abstract|String 
+     * Get/set isValid, validate if hasData()
+     *
+     * @param boolean[optional] $param
+     * @return Gb_Form2|boolean|null null if not hasdata
      */
-    public function renderFormTags($text=null)
+    final public function isValid($param=null)
+    {
+        if ($param===null) {
+            if ($this->_isValid===null) {
+                // Si le formulaire a des données, le valider
+                if ($this->hasData()) {
+                    $this->_isValid=$this->validate(false);
+                }
+            }
+            return $this->_isValid;
+        } else {
+            $this->_isValid=$param;
+            return $this;
+        }
+    }
+    /**
+     * get/set method
+     * @param string[optional] $text
+     * @return Gb_Form2|String 
+     */
+    final public function method($text=null)
     {   
-        if ($text===null) {         return $this->_renderFormTags; }
-        else { $this->_renderFormTags=$text; return $this;}
+        if ($text===null) {         return $this->_method; }
+        else { $this->_method=$text; return $this;}
     }
     /**
      * get/set moreData
      * @param array[optional] $text
-     * @return Gb_Form_Elem_Text_Abstract|String 
+     * @return Gb_Form2|array 
      */
     final public function moreData(array $text=null)
     {   
         if ($text===null) {         return $this->_moreData; }
         else { $this->_moreData=$text; return $this;}
     }
-    
+    /**
+     * get/set moreDataRead
+     * @param array[optional] $text
+     * @return Gb_Form2|array 
+     */
+    final public function moreDataRead(array $text=null)
+    {   
+        if ($text===null) {         return $this->_moreData; }
+        else { $this->_moreDataRead=$text; return $this;}
+    }
+    /**
+     * Enable / Disable javascript
+     *
+     * @param boolean $flag
+     * @return Gb_Form2|boolean
+     * @throws Gb_Exception
+     */
+    final public function javascriptEnabled($flag=null)
+    {
+        if ($flag===null) { return $this->_javascriptEnabled; }
+        if ($flag===false || $flag===true) { $this->_javascriptEnabled=$flag; }
+        else { throw new Gb_Exception("flag $flag not valid"); }
+        return $this;
+    }
+    /**
+     * get/set renderFormTags
+     * @param boolean[optional] $text
+     * @return Gb_Form2|Boolean 
+     */
+    final public function renderFormTags($text=null)
+    {   
+        if ($text===null) {         return $this->_renderFormTags; }
+        else { $this->_renderFormTags=$text; return $this;}
+    }
+    /**
+     * Set the type of data returned by __toString()
+     *
+     * @param string $type "HTML" or "JS"
+     * @return Gb_Form2|string
+     * @throws Gb_Exception
+     */
+    final public function toStringRendersAs($type=null)
+    {
+        if ($type===null) { return $this->_toStringRendersAs; }
+        $type=strtoupper($type);
+        if ($type=="HTML")     {$this->_toStringRendersAs="HTML";}
+        elseif ($type=="JS")   {$this->_toStringRendersAs="JS";}
+        elseif ($type=="BOTH") {$this->_toStringRendersAs="BOTH";}
+        else { throw new Gb_Exception("type $type unhandled"); }
+        return $this;
+    }
     
     
     
@@ -397,28 +510,11 @@ Class Gb_Form2 implements IteratorAggregate
         throw new Gb_Exception("Element $name not found");
     }
     
-    public function formHash($hash=null)
-    {
-        if ($hash===null) {
-            if ($this->_formHash===null) {
-                // Trie les noms par ordre alphabétiques si les éléments n'ont pas été définis dans le même ordre
-                $keys=array();
-                foreach (new RecursiveIteratorIterator($this->getIterator()) as $name=>$elem) {
-                    $c=get_class($elem);
-                    if (substr($c, 0, 13)=="Gb_Form_Elem_") {
-                        $name=$elem->name();
-                    }
-                    $keys[]=$name;
-                }
-                sort($keys, SORT_STRING);
-                $this->_formHash=md5(serialize($keys));
-            }
-            return $this->_formHash;
-        } else {
-            $this->_formHash=$hash;
-            return $this;
-        }
-    }
+
+    
+    
+    
+    
     
 
    /**
@@ -432,7 +528,7 @@ Class Gb_Form2 implements IteratorAggregate
                 $class=get_class($elem);
                 if (substr($class, 0, 13)=="Gb_Form_Elem_") {
                     if (!$elem->disabled()) {
-                        $name="GBFORM_".$elem->name();
+                        $name=$elem->elemId();
                         if (isset($_POST[$name])) {
                             $elem->rawValue($_POST[$name]);
                             $this->hasData(true);
@@ -451,9 +547,9 @@ Class Gb_Form2 implements IteratorAggregate
     
     /**
      * Valide le formulaire
-     * En cas d'erreur, $this->setErrorMsg pour chaque $nom incorrect
+     * En cas d'erreur, $this->setErrorMsg pour chaque $nom incorrect. Met à jour isValid() et errors()
      *
-     * @TODO description
+     * @param boolean $fWrite Affiche les messages d'erreur dans les éléments
      * @return array("nom" => "erreur") ou true si aucune erreur (attention utiliser ===)
      */
     public function validate($fWrite=true)
@@ -475,55 +571,17 @@ Class Gb_Form2 implements IteratorAggregate
             }
         }
 
+        $this->errors($aErrs);
         if (count($aErrs)) {
+            $this->isValid(false);
             return $aErrs;
         } else {
+            $this->isValid(true);
             return true;
         }
     }
     
     
-    
-    
-    public function isValid()
-    {
-        if ($this->hasData()) {
-            $valid=$this->validate(false);
-            if ($valid===true) {
-                return true;
-            } else {
-                return false;
-            }
-        } else {
-            return null;
-        }
-    }
-    
-    
-    
-    
-    public function getErrors()
-    {      throw new Gb_Exception("TODO");
-        if ($this->fValid===null) {
-            $this->validate();
-        }
-        return $this->aErrors;
-    }
-    
-    
-    
-    
-    public function isPost()
-    {
-        if ($this->fPost===null) {
-            if (isset($_POST["GBFORMPOST"]) && $_POST["GBFORMPOST"]==$this->formHash()) {
-                $this->fPost=true;
-            } else {
-                $this->fPost=false;
-           }
-        }
-        return $this->fPost;
-    }
     
     
     
@@ -581,10 +639,6 @@ Class Gb_Form2 implements IteratorAggregate
     
     
     
-    public function isLoaded()
-    {
-        return $this->fLoaded;
-    }
     
 
     

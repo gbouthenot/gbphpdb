@@ -17,14 +17,16 @@ class Gb_Form_Elem_Print extends Gb_Form_Elem
         return parent::__construct($name, $availableParams, $aParams);
     }
     
-    public function getInput($nom, $value, $inInput, $inputJs)
+    public function getInput($value, $inInput, $inputJs)
     {
+        $value;$inInput;$inputJs;
         return $value;
     }
 
     // post value interdit sur cet élément
     public function rawValue($text=null)
     {
+        $text;
         return $this->value();
     }
 }

@@ -13,11 +13,12 @@ abstract class Gb_Form_Elem_Text_Abstract extends Gb_Form_Elem
     
     
     
-    public function getInput($nom, $value, $inInput, $inputJs)
+    public function getInput($value, $inInput, $inputJs)
     {
         $sValue=htmlspecialchars($value);
         $htmlInInput=$this->getHtmlInInput();
-        return "<input $htmlInInput id='GBFORM_$nom' name='GBFORM_$nom' value='$sValue' $inInput $inputJs />";
+        $elemid=$this->elemId();
+        return "<input $htmlInInput id='{$elemid}' name='{$elemid}' value='$sValue' $inInput $inputJs />";
     }
     
     abstract protected function getHtmlInInput();
@@ -30,21 +31,21 @@ abstract class Gb_Form_Elem_Text_Abstract extends Gb_Form_Elem
         }
         
         $ret="";
-        $nom=$this->name();
+        $elemid=$this->elemId();
         
         // par défaut, met en classOK, si erreur, repasse en classNOK
-        $ret.=" \$('GBFORM_{$nom}_div').className='OK';\n";
+        $ret.=" \$('{$elemid}_div').className='OK';\n";
         // enlève le message d'erreur
-        $ret.=" var e=\$('GBFORM_{$nom}_div').select('div[class=\"ERROR\"]').first(); if (e!=undefined){e.innerHTML='';}\n";
-        $ret.=" var e=\$('GBFORM_{$nom}_div').select('span[class=\"ERROR\"]').first(); if (e!=undefined){e.innerHTML='';}\n";
+        $ret.=" var e=\$('{$elemid}_div').select('div[class=\"ERROR\"]').first(); if (e!=undefined){e.innerHTML='';}\n";
+        $ret.=" var e=\$('{$elemid}_div').select('span[class=\"ERROR\"]').first(); if (e!=undefined){e.innerHTML='';}\n";
         
         // attention utilise prototype String.strip()
-        $ret.="var value=remove_accents(\$F('GBFORM_$nom').strip());\n";
+        $ret.="var value=remove_accents(\$F('{$elemid}').strip());\n";
 
         // traitement fMandatory
         if ($this->fMandatory()) {
           $ret.="if (value=='') {\n";
-          $ret.=" \$('GBFORM_{$nom}_div').className='NOK';\n";
+          $ret.=" \$('{$elemid}_div').className='NOK';\n";
           $ret.="}\n";
         }
 
@@ -57,23 +58,23 @@ abstract class Gb_Form_Elem_Text_Abstract extends Gb_Form_Elem
             }
             $ret.="var regexp=$regexp\n";
             $ret.="if (!regexp.test(value)) {\n";
-            $ret.=" \$('GBFORM_{$nom}_div').className='NOK';\n";
+            $ret.=" \$('{$elemid}_div').className='NOK';\n";
             $ret.="}\n";
         }
         
-        $ret.=$this->_maxminvalueJS($nom, $this->minValue(), "<",  true,  $regexp);    // traitement minvalue
-        $ret.=$this->_maxminvalueJS($nom, $this->maxValue(), ">",  true,  $regexp);    // traitement maxvalue
-        $ret.=$this->_maxminvalueJS($nom, $this->notValue(), "==", false, $regexp);    // traitement notvalue
+        $ret.=$this->_maxminvalueJS($this->minValue(), "<",  true,  $regexp);    // traitement minvalue
+        $ret.=$this->_maxminvalueJS($this->maxValue(), ">",  true,  $regexp);    // traitement maxvalue
+        $ret.=$this->_maxminvalueJS($this->notValue(), "==", false, $regexp);    // traitement notvalue
         
         if (!$this->fMandatory()) {
           $ret.="if (value=='') {\n";
-          $ret.=" \$('GBFORM_{$nom}_div').className='OK';\n";
+          $ret.=" \$('{$elemid}_div').className='OK';\n";
           $ret.="}\n";
         }
 
         $ret2="";
         if (strlen($ret)) {
-            $ret2="function validate_GBFORM_{$nom}()\n";
+            $ret2="function validate_{$elemid}()\n";
             $ret2.="{\n";
             $ret2.=$ret;
             $ret2.="}\n";
@@ -81,9 +82,10 @@ abstract class Gb_Form_Elem_Text_Abstract extends Gb_Form_Elem
         return $ret2;
     }
 
-    protected function getInputJavascript($nom)
+    protected function getInputJavascript()
     {
-        return "onchange='javascript:validate_GBFORM_$nom();' onkeyup='javascript:validate_GBFORM_$nom();'";
+        $elemid=$this->elemId();
+        return "onchange='javascript:validate_{$elemid}();' onkeyup='javascript:validate_{$elemid}();'";
     }
     
     
@@ -95,9 +97,11 @@ abstract class Gb_Form_Elem_Text_Abstract extends Gb_Form_Elem
     }
     
     
-    private function _maxminvalueJS($nom, $aValues, $operator, $fEval, $regexp)
+    private function _maxminvalueJS($aValues, $operator, $fEval, $regexp)
     {
         $ret="";
+        $elemid=$this->elemId();
+        
         // traitement minvalue/maxvalue
         if (count($aValues)) {
             foreach ($aValues as $borne) {
@@ -120,7 +124,7 @@ abstract class Gb_Form_Elem_Text_Abstract extends Gb_Form_Elem
                     $ret.=" var borne={$borne};\n";
                 }
                 $ret.=" if (bornevalue $operator borne) {";
-                $ret.=" \$('GBFORM_{$nom}_div').className='NOK';";
+                $ret.=" \$('{$elemid}_div').className='NOK';";
                 $ret.="}\n";
             }
         }
@@ -170,9 +174,9 @@ abstract class Gb_Form_Elem_Text_Abstract extends Gb_Form_Elem
             }
         }
 
-        $chk=$this->_maxminvalueValidate("<", $value, $minValue, $form); if (strlen($chk)) { return $chk; }
-        $chk=$this->_maxminvalueValidate(">", $value, $maxValue, $form); if (strlen($chk)) { return $chk; }
-        $chk=$this->_maxminvalueValidate("=", $value, $notValue, $form); if (strlen($chk)) { return $chk; }
+        $chk=$this->_maxminvalueValidate("<", $value, $minValue, $form, $regexp); if (strlen($chk)) { return $chk; }
+        $chk=$this->_maxminvalueValidate(">", $value, $maxValue, $form, $regexp); if (strlen($chk)) { return $chk; }
+        $chk=$this->_maxminvalueValidate("=", $value, $notValue, $form, $regexp); if (strlen($chk)) { return $chk; }
 
         if ($fMandatory && strlen($value)==0) {
             return $this->errorMsgMissing();
@@ -199,7 +203,7 @@ abstract class Gb_Form_Elem_Text_Abstract extends Gb_Form_Elem
         return true;
     }
 
-    private function _maxminvalueValidate($op, $value, $aBornes, Gb_Form2 $form)
+    private function _maxminvalueValidate($op, $value, $aBornes, Gb_Form2 $form, $regexp)
     {
         if (strlen($value) && count($aBornes)) {
             foreach ($aBornes as $borne) {
