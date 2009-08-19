@@ -100,7 +100,7 @@ class Gb_Glue
       $php_self=str_replace("\\", "/", $php_self);
       
       // 1: [////]   2: le répertoire    3: /    4:nomfich.php[/]
-      unset($matches);
+      $matches=null;
       preg_match("@^($d*)(.*)($d+)(.+$d*)$@", $php_self, $matches);
       if (isset($matches[2]) && strlen($matches[2]))
         $sProjectName=str_replace($d, "__", $matches[2]);

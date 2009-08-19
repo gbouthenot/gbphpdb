@@ -106,7 +106,7 @@ class Gb_Log
             $logFilename=ini_get("error_log");
             $d=addslashes(DIRECTORY_SEPARATOR);;
             // 1: /var/log/php5 2:php_error.log
-            unset($matches);
+            $matches=null;
             preg_match("@^(.+$d)(.+)\$@", $logFilename, $matches);
             if (isset($matches[1])) { 
                 self::$logFilename=$matches[1].Gb_Glue::getProjectName().".log";
@@ -230,7 +230,7 @@ class Gb_Log
 //    $aParam=func_get_args();
 //    array_shift($aParam);
 
-    unset($sCallName);
+    $sCallName=null;
     if (is_callable($fName, false, $sCallName)) // $sCallName reçoit le nom imprimable de la fonction, utile pour les objets
       $ret=call_user_func_array($fName, $aParam);
     else
@@ -728,6 +728,7 @@ class FirePHP {
    */
   public function errorHandler($errno, $errstr, $errfile, $errline, $errcontext)
   {
+      $errcontext;
     // Don't throw exception if error reporting is switched off
     if (error_reporting() == 0) {
       return;
@@ -895,6 +896,7 @@ class FirePHP {
    * @return boolean
    */
   public function detectClientExtension() {
+      $m=null;
     /* Check if FirePHP is installed on client */
     if(!@preg_match_all('/\sFirePHP\/([\.|\d]*)\s?/si',$this->getUserAgent(),$m) ||
        !version_compare($m[1][0],'0.0.6','>=')) {
@@ -912,7 +914,7 @@ class FirePHP {
    * @throws Exception
    */
   public function fb($Object) {
-  
+  $filename=$linenum=null;
     if(!$this->enabled) {
       return false;
     }

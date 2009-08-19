@@ -15,7 +15,7 @@ class Gb_Form_Elem_Select extends Gb_Form_Elem
     
     public function getInput($value, $inInput, $inputJs)
     {
-        $value();
+        $value;
         $aValues=$this->args();
         $value=parent::value();
         $elemid=$this->elemId();

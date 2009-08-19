@@ -367,13 +367,13 @@ Class Gb_Db extends Zend_Db
             $ret=array();
             if ($fCol && !$fIdx) {
                 // on veut array[numero]=valeur de la colonne
-                while ( ($res=$stmt->fetch(Zend_Db::FETCH_ASSOC)) ) {
+                while ( ($res=$stmt->fetch(Zend_Db::FETCH_ASSOC))!==false ) {
                     $ret[]=$res[$col];
                 }
             }
             elseif ($fCol && $fIdx) {
                 // on veut array[index]=valeur de la colonne
-                while ( ($res=$stmt->fetch(Zend_Db::FETCH_ASSOC)) ) {
+                while ( ($res=$stmt->fetch(Zend_Db::FETCH_ASSOC))!==false ) {
                     $key=$res[$index];
                     unset($res[$index]);
                     $ret[$key]=$res[$col];
@@ -381,13 +381,13 @@ Class Gb_Db extends Zend_Db
             }
             elseif (!$fCol && !$fIdx) {
                 //on veut juste un array[numero]=array(colonnes=>valeur)
-                while ( ($res=$stmt->fetch(Zend_Db::FETCH_ASSOC)) ) {
+                while ( ($res=$stmt->fetch(Zend_Db::FETCH_ASSOC))!==false ) {
                     $ret[]=$res;
                 }
             }
             elseif (!$fCol && $fIdx) {
                 //on veut un array[index]=array(colonnes=>valeur)
-                while ( ($res=$stmt->fetch(Zend_Db::FETCH_ASSOC)) ) {
+                while ( ($res=$stmt->fetch(Zend_Db::FETCH_ASSOC))!==false ) {
                     $key=$res[$index];
                     unset($res[$index]);
                     $ret[$key]=$res;

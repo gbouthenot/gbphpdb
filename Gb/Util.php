@@ -113,14 +113,29 @@ Class Gb_Util
   {
     // si arr2 est plus grand, échange arr1 et arr2 pour itérer sur le plus petit
     if (count($arr2)>count($arr1)) {
-      list($arr1, $arr2)=array($arr2, $arr1);
+        foreach ($arr1 as $k=>$v)
+          $arr2[$k]=$v;
+        return $arr2;
     }
     foreach ($arr2 as $k=>$v)
       $arr1[$k]=$v;
     return $arr1;
   }
 
-
+    /**
+     * Insert an array into another one
+     * @param array $insert
+     * @param array $into
+     * @param integer $pos
+     * @return array
+     */
+    public function array_insert(array $insert, array $into, $pos) {
+        $a1=array_slice($into, 0, $pos);
+        $a1[]=$insert;
+        $a2=array_slice($into, $pos);
+        return array_merge($a1, $a2);
+    }
+  
 
 
 
@@ -148,7 +163,7 @@ Class Gb_Util
     if (file_exists($file) && is_readable($file)) {
       ob_start();
       include($file);
-      return  ob_get_clean();
+      return ob_get_clean();
     } else {
       throw new Gb_Exception("Fichier $file inaccessible");
     }
