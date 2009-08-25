@@ -40,7 +40,7 @@ Class Gb_Form2 implements IteratorAggregate
     
 
     /**
-     * Renvoie la revision de la classe ou un boolean si la version est plus petite que précisée, ou Gb_Exception
+     * Renvoie la revision de la classe ou un boolean si la version est plus petite que prï¿½cisï¿½e, ou Gb_Exception
      *
      * @return boolean|integer
      * @throws Gb_Exception
@@ -250,7 +250,7 @@ Class Gb_Form2 implements IteratorAggregate
     {
         if ($param===null) {
             if ($this->_errors===null) {
-                // Si le formulaire a des données, le valider
+                // Si le formulaire a des donnï¿½es, le valider
                 if ($this->hasData()) {
                     $this->validate(false);
                 }
@@ -271,7 +271,7 @@ Class Gb_Form2 implements IteratorAggregate
     {
         if ($hash===null) {
             if ($this->_formHash===null) {
-                // Trie les noms par ordre alphabétiques si les éléments n'ont pas été définis dans le même ordre
+                // Trie les noms par ordre alphabï¿½tiques si les ï¿½lï¿½ments n'ont pas ï¿½tï¿½ dï¿½finis dans le mï¿½me ordre
                 $keys=array();
                 foreach (new RecursiveIteratorIterator($this->getIterator()) as $name=>$elem) {
                     $c=get_class($elem);
@@ -307,7 +307,7 @@ Class Gb_Form2 implements IteratorAggregate
      */
     final public function isLoaded($param=null)
     {
-        if ($param===null) {         return $this->fLoaded; }
+        if ($param===null) {         return $this->_isLoaded; }
         else { $this->_isLoaded=$param; return $this;}
     }
     /**
@@ -326,7 +326,7 @@ Class Gb_Form2 implements IteratorAggregate
                     $this->_isPost=false;
                }
             }
-            return $this->fPost;
+            return $this->_isPost;
         } else {
             $this->_isPost=$param;
             return $this;
@@ -342,7 +342,7 @@ Class Gb_Form2 implements IteratorAggregate
     {
         if ($param===null) {
             if ($this->_isValid===null) {
-                // Si le formulaire a des données, le valider
+                // Si le formulaire a des donnï¿½es, le valider
                 if ($this->hasData()) {
                     $this->_isValid=$this->validate(false);
                 }
@@ -441,9 +441,9 @@ Class Gb_Form2 implements IteratorAggregate
   
   
   /**
-   * Remplit les valeurs depuis la base de données
+   * Remplit les valeurs depuis la base de donnÃ©es
    *
-   * @return boolean true si données trouvées
+   * @return boolean true si donnÃ©es trouvÃ©es
    */
     public function getFromDb()
     {
@@ -452,7 +452,7 @@ Class Gb_Form2 implements IteratorAggregate
 
 
     /**
-     * Renvoie les données stockées sous forme de array
+     * Renvoie les donnï¿½es stockï¿½es sous forme de array
      *
      * @return array array("nom_element"=>"value")
      */
@@ -478,10 +478,10 @@ Class Gb_Form2 implements IteratorAggregate
 
 
   /**
-   * Insère/update les valeurs dans la bdd
+   * Insï¿½re/update les valeurs dans la bdd
    *
    * @param array $moreData
-   * @return boolean true si tout s'est bien passé
+   * @return boolean true si tout s'est bien passï¿½
    */
     public function putInDb(array $moreData=array())
     {
@@ -547,9 +547,9 @@ Class Gb_Form2 implements IteratorAggregate
     
     /**
      * Valide le formulaire
-     * En cas d'erreur, $this->setErrorMsg pour chaque $nom incorrect. Met à jour isValid() et errors()
+     * En cas d'erreur, $this->setErrorMsg pour chaque $nom incorrect. Met ï¿½ jour isValid() et errors()
      *
-     * @param boolean $fWrite Affiche les messages d'erreur dans les éléments
+     * @param boolean $fWrite Affiche les messages d'erreur dans les ï¿½lï¿½ments
      * @return array("nom" => "erreur") ou true si aucune erreur (attention utiliser ===)
      */
     public function validate($fWrite=true)
@@ -594,7 +594,7 @@ Class Gb_Form2 implements IteratorAggregate
 
 
     /**
-     * Lit les données, les valide et les écrit dans la bdd si elles sont ok
+     * Lit les donnÃ©es, les valide et les Ã©crit dans la bdd si elles sont ok
      *
      * @return boolean true si formulaire soumis et valide, false si soumis et non valide. Sinon null.
      */
@@ -616,14 +616,14 @@ Class Gb_Form2 implements IteratorAggregate
     
     
     /**
-     * Lit les données de la db et de post
+     * Lit les donnÃ©es de la db et de post
      * 
-     * @return boolean si des données ont été lues
+     * @return boolean si des donnÃ©es ont Ã©tÃ© lues
      *
      */
     public function load()
     {
-        if (!$this->fLoaded) {
+        if (!$this->isLoaded()) {
             $getFromDb=$this->getFromDb();
             $getFromPost=$this->getFromPost();
             if ($getFromDb || $getFromPost ) {
@@ -631,7 +631,7 @@ Class Gb_Form2 implements IteratorAggregate
             } else {
                 $this->hasData(false);
             }
-            $this->fLoaded=true;
+            $this->isLoaded(true);
         }
         return $this->hasData();
     }
