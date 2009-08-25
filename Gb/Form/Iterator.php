@@ -1,6 +1,18 @@
 <?php
 
+if (!defined("_GB_PATH")) {
+    define("_GB_PATH", realpath(dirname(__FILE__).DIRECTORY_SEPARATOR.'..').DIRECTORY_SEPARATOR);
+}
+
 require_once("Gb/Exception.php");
+
+/**
+ * Gb_Form_Iterator
+ * 
+ * @author Gilles Bouthenot
+ * @version $Revision$
+ * @Id $Id$
+ */
 
 class Gb_Form_Iterator implements RecursiveIterator, Countable
 {

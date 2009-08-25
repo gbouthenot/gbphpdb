@@ -1,4 +1,9 @@
 <?php
+
+if (!defined("_GB_PATH")) {
+    define("_GB_PATH", realpath(dirname(__FILE__).DIRECTORY_SEPARATOR.'..').DIRECTORY_SEPARATOR);
+}
+
 require_once("Iterator.php");
 require_once("Elem.php");
 require_once("Elem/Text/Abstract.php");
@@ -6,6 +11,13 @@ require_once("Elem/Text.php");
 require_once("Elem/Password.php");
 require_once("Elem/Hidden.php");
 
+/**
+ * Gb_Form_Group
+ * 
+ * @author Gilles Bouthenot
+ * @version $Revision$
+ * @Id $Id$
+ */
 
 class Gb_Form_Group implements IteratorAggregate
 {

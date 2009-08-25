@@ -204,5 +204,94 @@ class Gb_String
         
         return $ret;
     }
+
+    /**
+     * Format a number of seconds in day min sec
+     * @return string
+     */
+    public static function formatTime($time)
+    {
+        $hours=   floor($time/3600);
+        $minutes= floor(($time-$hours*3600)/60);
+        $seconds= $time-$hours*3600-$minutes*60;
+        $time_format=  (($hours)?($hours."h "):(""))  .  (($hours||$minutes)?($minutes."m "):(""))  .  ($seconds."s");
+        return $time_format;
+    }
     
+    /**
+     * Format a number of bytes in Kib/Mib/Gib/Tib
+     * @return string
+     */
+    public static function formatSize($bytestotal)
+    {
+        if ($bytestotal>1099511627776) {
+            $size_format=number_format($bytestotal/1099511627776, 3)." TiB";
+        } elseif ($bytestotal>1073741824) {
+            $size_format=number_format($bytestotal/1073741824, 3)." GiB";
+        } elseif ($bytestotal>1048576) {
+            $size_format=number_format($bytestotal/1048576, 3)." MiB";
+        } elseif ($bytestotal>1024) {
+            $size_format=number_format($bytestotal/1024, 3)." KiB";
+        } else {
+            $size_format=number_format($bytestotal, 3)." B";
+        }
+        return $size_format;        
+    }
+
+    /**
+     * Format an array
+     *
+     * @param array $array
+     * @param string $format text|html
+     * @return string
+     */
+    public function formatTable(array $array, $format)
+    {
+        $format=strtolower($format);
+        $ret="";
+        if (count($array)==0) {
+            return "";        
+        }
+        
+        if ($format=="text") {
+            reset($array);
+            $firstrowkeys=array_keys(current($array));
+            
+            // get the max length of each column
+            $max=array();
+            foreach ($firstrowkeys as $number=>$keyname) {
+                $max[$number]=strlen($keyname);
+            }
+            foreach ($array as $line) {
+                foreach ($firstrowkeys as $number=>$keyname) {
+                    $max[$number]=max($max[$number], strlen($line[$keyname]));
+                }
+            }
+            
+            $rowsep="";
+            $rowhead="";
+            foreach ($firstrowkeys as $number=>$keyname) {
+                $len=$max[$number];
+                $rowsep.="+".str_repeat("-", $len+2);
+                $rowhead.="| ".str_pad($keyname, $len, " ", STR_PAD_BOTH)." ";          
+            }
+            $rowsep.="+\n";
+            $rowhead.="|\n";
+            
+            $ret.=$rowsep.$rowhead.$rowsep;
+            foreach ($array as $line) {
+                foreach ($firstrowkeys as $number=>$keyname) {
+                    $len=$max[$number];
+                    $ret.="| ".str_pad($line[$keyname], $len, " ", STR_PAD_LEFT)." ";
+                }
+                $ret.="|\n";
+            }
+            $ret.=$rowsep;
+        } elseif ($format=="html") {
+            
+        }
+        
+        return $ret;
+    }
+
 }
