@@ -31,7 +31,6 @@ Class Gb_Form2 implements IteratorAggregate
     protected $_isLoaded;
     protected $_isPost;
     protected $_isValid;
-    protected $_javascriptEnabled=true;
     protected $_method="post";
     protected $_moreData=array();
     protected $_moreDataRead=array();
@@ -64,8 +63,9 @@ Class Gb_Form2 implements IteratorAggregate
     {
         $this->_elems=array();
         $availableParams=array(
-            "toStringRendersAs", "method",         "enctype",  "moreData",
-            "javascriptEnabled", "renderFormTags", "formHash", "hasData", "action",
+            "action", "enctype", "errors", "formHash", "hasData",
+            "isLoaded", "isPost", "isValid",
+            "method", "moreData", "moreDataRead", "renderFormTags", "toStringRendersAs", 
         );
         
         foreach ($availableParams as $key) {
@@ -177,16 +177,15 @@ Class Gb_Form2 implements IteratorAggregate
     final public function renderJavascript($fRenderScriptTag=false)
     {
         $ret="";
-        if ($fRenderScriptTag) {
-            $ret.="<script type='text/javascript'>\n";
-            $ret.="/* <![CDATA[ */\n";
-        }
         foreach ($this as $elem) {
             if ($elem instanceof Gb_Form_Elem || $elem instanceOf Gb_Form_Group) {
                 $ret.=$elem->renderJavascript();
             }
         }
-        if ($fRenderScriptTag) {
+        if ($fRenderScriptTag && strlen($ret)) {
+            $head= "<script type='text/javascript'>\n";
+            $head.="/* <![CDATA[ */\n";
+            $ret=$head.$ret;
             $ret.="/* ]]> */\n";
             $ret.="</script>\n"; 
         }
@@ -382,20 +381,6 @@ Class Gb_Form2 implements IteratorAggregate
     {   
         if ($text===null) {         return $this->_moreData; }
         else { $this->_moreDataRead=$text; return $this;}
-    }
-    /**
-     * Enable / Disable javascript
-     *
-     * @param boolean $flag
-     * @return Gb_Form2|boolean
-     * @throws Gb_Exception
-     */
-    final public function javascriptEnabled($flag=null)
-    {
-        if ($flag===null) { return $this->_javascriptEnabled; }
-        if ($flag===false || $flag===true) { $this->_javascriptEnabled=$flag; }
-        else { throw new Gb_Exception("flag $flag not valid"); }
-        return $this;
     }
     /**
      * get/set renderFormTags
