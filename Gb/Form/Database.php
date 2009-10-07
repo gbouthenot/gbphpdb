@@ -10,7 +10,7 @@ require_once(_GB_PATH."Log.php");
 require_once(_GB_PATH."Session.php");
 
 /**
- * Gb_Form_Session
+ * Gb_Form_Database
  * 
  * @author Gilles Bouthenot
  * @version $Revision$
@@ -28,7 +28,7 @@ class Gb_Form_Database extends Gb_Form2
     protected $where;
     
     /**
-     * Renvoie la revision de la classe ou un boolean si la version est plus petite que précisée, ou Gb_Exception
+     * Renvoie la revision de la classe ou un boolean si la version est plus petite que prï¿½cisï¿½e, ou Gb_Exception
      *
      * @return boolean|integer
      * @throws Gb_Exception
@@ -47,9 +47,9 @@ class Gb_Form_Database extends Gb_Form2
      * constructeur
      *
      * @param Gb_Db[optional] $db
-     * @param string[optional] $tableName par défaut
+     * @param string[optional] $tableName par dï¿½faut
      * @param array[optional] $where array($dbGE->quoteInto("vaf_usa_login=?", Auth::getLogin()))
-     * @param array[optional] $aOptions options passées à Gb_Form2
+     * @param array[optional] $aOptions options passï¿½es ï¿½ Gb_Form2
      */
     public function __construct(Gb_Db $db=null, $tableName="", array $where=array(), $aParams=null)
     {
@@ -63,7 +63,7 @@ class Gb_Form_Database extends Gb_Form2
      * Remplit les valeurs depuis la base
      *
      * @param array $moreData array("col1", "col2")
-     * @return boolean true si données trouvées
+     * @return boolean true si donnï¿½es trouvï¿½es
      */
     public function getFromDb(array $moreData=array())
     {
@@ -75,7 +75,7 @@ class Gb_Form_Database extends Gb_Form2
         $aCols=$this->getDataAsArray();
         
         $fData=false;
-        // non ! on doit récupérer le nom de l'element et non dbcol /** @TODO **/
+        // non ! on doit rï¿½cupï¿½rer le nom de l'element et non dbcol /** @TODO **/
         foreach (array_keys($aCols) as $nom) {
             $elem=$this->getElem($nom);
             $dbcol=$elem->backendCol();
@@ -105,10 +105,10 @@ class Gb_Form_Database extends Gb_Form2
 
 
   /**
-   * Insère/update les valeurs dans la bdd
+   * Insï¿½re/update les valeurs dans la bdd
    *
    * @param array $moreData
-   * @return boolean true si tout s'est bien passé
+   * @return boolean true si tout s'est bien passï¿½
    */
     public function putInDb(array $moreData=array())
     {
@@ -120,7 +120,7 @@ class Gb_Form_Database extends Gb_Form2
             return false;
         }
 
-        // non ! on doit récupérer le nom de l'element et non dbcol /** @TODO **/
+        // non ! on doit rï¿½cupï¿½rer le nom de l'element et non dbcol /** @TODO **/
         foreach (array_keys($aCols) as $nom) {
             $elem=$this->getElem($nom);
             $dbcol=$elem->backendCol();

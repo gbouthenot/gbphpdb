@@ -20,6 +20,7 @@ class Gb_Form_Elem_Submit extends Gb_Form_Elem
     {
         $availableParams=array("onclick");
         $aParams["javascriptEnabled"]=false;
+        $aParams["backendCol"]=false;
         return parent::__construct($name, $availableParams, $aParams);
     }
     

@@ -90,6 +90,7 @@ Class Gb_Db_Engine
      * Execute
      * @param array $request
      * @param array[optional] $bindParams
+     * @return array
      */
     public function execute(array $request, array $bindParams=array())
     {

@@ -581,7 +581,7 @@ Class Gb_Form2 implements IteratorAggregate
     /**
      * Lit les données, les valide et les écrit dans la bdd si elles sont ok
      *
-     * @return boolean true si formulaire soumis et valide, false si soumis et non valide. Sinon null.
+     * @return mixed null si formulaire non soumis, true si formulaire soumis et valide, array si soumis et non valide. false si autre erreur
      */
     public function process()
     {
@@ -589,7 +589,11 @@ Class Gb_Form2 implements IteratorAggregate
             if (!$this->isPost()) {
                 return null;
             }
-            if ($this->validate()===true && $this->putInDb()===true && $this->getFromDb()===true) {
+            $validate=$this->validate();
+            if ($validate !== true) {
+                return $validate;
+            }
+            if ($this->putInDb()===true && $this->getFromDb()===true) {
                 return true;
             }
             return false;

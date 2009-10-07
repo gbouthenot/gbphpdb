@@ -34,8 +34,8 @@ Class Gb_File
      * @param string $fileroot "/var/lib/php5/files"
      * @param Gb_Db $db
      * @param string $tableName
-     * @param string $category "c2i" si null, tous fichiers autorisés et upload désactivé
-     * @param string[optional] $tmpdir "/var/lib/php5/files/tmp" si null alors upload désactivé
+     * @param string $category "c2i" si null, tous fichiers autorisï¿½s et upload dï¿½sactivï¿½
+     * @param string[optional] $tmpdir "/var/lib/php5/files/tmp" si null alors upload dï¿½sactivï¿½
      * 
      * @throws Gb_Exception
      */
@@ -48,7 +48,7 @@ Class Gb_File
         }
         $this->_tableName=$tableName;
 
-        // vérifie que les répertoires existent
+        // vï¿½rifie que les rï¿½pertoires existent
         if (!is_dir($fileroot)) {
             throw new Gb_Exception("root $fileroot is not a dir !");
         }
@@ -105,15 +105,15 @@ Class Gb_File
     
     public function purgeTempDir()
     {
-        /** @todo a implémenter*/
+        /** @todo a implï¿½menter*/
     }
     
 
     /**
-     * Déplace un fichier uploadé dans dans tmpdir
+     * Dï¿½place un fichier uploadï¿½ dans dans tmpdir
      *
-     * @param string $fname nom temporaire du fichier uploadé (source, donné par $_FILES[n]["tmp_name"])
-     * @param string $prefix[optional] préfixe du nom de fichier utilisté
+     * @param string $fname nom temporaire du fichier uploadï¿½ (source, donnï¿½ par $_FILES[n]["tmp_name"])
+     * @param string $prefix[optional] prï¿½fixe du nom de fichier utilistï¿½
      * 
      * @return string nom complet du fichier
      * @throws Gb_Exception
@@ -125,7 +125,7 @@ Class Gb_File
 
         $res=move_uploaded_file($fname, $tmpfname);
         if ($res===false) {
-            throw new Gb_Exception("impossible de déplacer le fichier");
+            throw new Gb_Exception("impossible de dï¿½placer le fichier");
         }
      
         return $tmpfname;
@@ -133,7 +133,7 @@ Class Gb_File
     
     
     /**
-     * Enter description here...
+     * DÃ©place le fichier et l'ajoute Ã  la bdd
      *
      * @param string $fname nom de fichier dans le filesystem
      * @param string $sourceFname nom de fichier original
@@ -153,13 +153,13 @@ Class Gb_File
             throw new Gb_Exception("Erreur fichier introuvable ($fname)");
         }
         
-        // crée le répertoire destination
+        // crï¿½e le rï¿½pertoire destination
         $fsfolder=$this->_fileroot;
         foreach (explode("/", $targetFolder) as $folder) {
             $fsfolder.=DIRECTORY_SEPARATOR.$folder;
             if (!is_dir($fsfolder)) {
                 if ( mkdir($fsfolder, 0770)!==true || !is_dir($fsfolder) || !is_writable($fsfolder)) {
-                    throw new Gb_Exception("Impossible de créer $fsfolder");
+                    throw new Gb_Exception("Impossible de crï¿½er $fsfolder");
                 }
             }
         }
@@ -172,12 +172,12 @@ Class Gb_File
 
         list($nonExt, $ext)=$this->_sanitize($sourceFname);
         
-        // obtient le numéro du fichier
+        // obtient le numï¿½ro du fichier
         $fileid=$this->_db->sequenceNext($this->_tableName."_seq");
         
         $newfName=$targetPrefix."{".$fileid."}".$nonExt.$ext;
         
-        // insertion du fichier dans la base de donnée --> récupère $fileid
+        // insertion du fichier dans la base de donnï¿½e --> rï¿½cupï¿½re $fileid
         $this->_db->insert(
             $this->_tableName,
             array(
@@ -201,6 +201,25 @@ Class Gb_File
         return $fileid;
     }
     
+    
+    
+    public function delete($id)
+    {
+        $id=(int) $id;
+        if ($id==0) {
+            throw new Gb_Exception("File $id not valid");
+        }
+        $aFile=$this->getFile($id);
+        if (!is_array($aFile)) {
+            throw new Gb_Exception("File $id not available");
+        }
+        unlink($aFile["osname"]);
+        $this->_db->delete(
+            $this->_tableName,
+            $this->_db->quoteInto("fic_code=?",$id)
+        );
+        
+    }
     
     
     /**
@@ -238,7 +257,7 @@ Class Gb_File
     
     
     /**
-     * Renvoie la revision de la classe ou un boolean si la version est plus petite que précisée, ou Gb_Exception
+     * Renvoie la revision de la classe ou un boolean si la version est plus petite que prï¿½cisï¿½e, ou Gb_Exception
      *
      * @return boolean|integer
      * @throws Gb_Exception
