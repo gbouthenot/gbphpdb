@@ -35,14 +35,16 @@ class Gb_Mail
      *
      * @param string|array $to destinataires, s�par�s par virgule
      * @param string $sujet
-     * @param string $body
+     * @param string $bodytext
      * @param string $from
      * @param string|array[optional] $bcc destinataires, s�par�s par virgule
      * @param string|array[optional] $cc destinataires, s�par�s par virgule
+     * @param string[optional] $charset charset
+     * @param string[optional] $bodyhtml charset
      * 
      * @return boolean
      */
-    public static function mymail($to, $sujet, $body, $from, $bcc=array(), $cc=array())
+    public static function mymail($to, $sujet, $bodytext, $from, $bcc=array(), $cc=array(), $charset='UTF-8', $bodyhtml=null)
     {
         require_once 'Zend/Mail.php';
         require_once 'Zend/Mail/Transport/Smtp.php';
@@ -82,8 +84,15 @@ class Gb_Mail
         }
     
         $mail->setFrom($from, substr($from, 0, strpos($from, "@")));
-        $mail->setBodyText($body);
+        if (strlen($bodytext)) {
+            $mail->setBodyText($bodytext, $charset);
+        }
+        if (strlen($bodyhtml)) {
+            $mail->setBodyHtml($bodyhtml, $charset);
+        }
+
         $mail->setSubject($sujet);
+
         return $mail->send($transport);
     }
 }
