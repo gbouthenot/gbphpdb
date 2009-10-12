@@ -15,7 +15,7 @@ class Gb_Mail
 {
 
     /**
-     * Renvoie la revision de la classe ou un boolean si la version est plus petite que précisée, ou Gb_Exception
+     * Renvoie la revision de la classe ou un boolean si la version est plus petite que prï¿½cisï¿½e, ou Gb_Exception
      *
      * @return boolean|integer
      * @throws Gb_Exception
@@ -33,36 +33,51 @@ class Gb_Mail
     /**
      * Envoie un mail en utilisant le smtp local
      *
-     * @param string $to destinataires, séparés par virgule
+     * @param string|array $to destinataires, sï¿½parï¿½s par virgule
      * @param string $sujet
      * @param string $body
      * @param string $from
-     * @param string[optional] $bcc destinataires, séparés par virgule
+     * @param string|array[optional] $bcc destinataires, sï¿½parï¿½s par virgule
+     * @param string|array[optional] $cc destinataires, sï¿½parï¿½s par virgule
      * 
      * @return boolean
      */
-    public static function mymail($to, $sujet, $body, $from, $bcc="")
+    public static function mymail($to, $sujet, $body, $from, $bcc=array(), $cc=array())
     {
         require_once 'Zend/Mail.php';
         require_once 'Zend/Mail/Transport/Smtp.php';
         
         $transport=new Zend_Mail_Transport_Smtp("127.0.0.1");
         
-        $aTo=explode(",", $to);
-        $aBcc=explode(",", $bcc);
+        if (is_string($to)) {
+            $to=explode(",", $to);
+        }
+        if (is_string($bcc)) {
+            $bcc=explode(",", $bcc);
+        }
+        if (is_string($cc)) {
+            $cc=explode(",", $cc);
+        }
+
         $from=str_ireplace("From: ", "", $from);
 
         $mail=new Zend_Mail();
 
-        foreach ($aTo as $to) {
-            if (strlen($to)) {
-                $mail->AddTo($to);
+        foreach ($to as $t) {
+            if (strlen($t)) {
+                $mail->AddTo($t);
             }
         }
     
-        foreach ($aBcc as $to) {
-            if (strlen($to)) {
-                $mail->addBcc($to);
+        foreach ($cc as $t) {
+            if (strlen($t)) {
+                $mail->addCc($t);
+            }
+        }
+
+        foreach ($bcc as $t) {
+            if (strlen($t)) {
+                $mail->addBcc($t);
             }
         }
     
