@@ -22,9 +22,9 @@ class Gb_Log
     const LOG_ALERT=10;
     const LOG_CRIT=9;
     const LOG_ERROR=8;           // Ecriture bdd NOK
-    const LOG_EXCEPTION=7;       // Ne devrait pas être atteint
+    const LOG_EXCEPTION=7;       // Ne devrait pas ï¿½tre atteint
     const LOG_WARNING=6;
-    const LOG_NOTICE=5;          // Génération INE
+    const LOG_NOTICE=5;          // Gï¿½nï¿½ration INE
     const LOG_INFO=4;            // Ecriture bdd OK
     const LOG_DEBUG=3;
     const LOG_DUMP=2;            // comme debug mais verbeux
@@ -33,7 +33,7 @@ class Gb_Log
     const LOG_NONE=99;
     const LOG_ALL=0;
 
-    public static $logFilename="";                  // Fichier de log, par défaut error_log/PROJECTNAME.log
+    public static $logFilename="";                  // Fichier de log, par dï¿½faut error_log/PROJECTNAME.log
     public static $loglevel_firebug=self::LOG_NONE;
     public static $loglevel_footer=self::LOG_DEBUG;
     public static $loglevel_file=self::LOG_WARNING;
@@ -69,7 +69,7 @@ class Gb_Log
     );
     
     /**
-     * Renvoie la revision de la classe ou un boolean si la version est plus petite que précisée, ou Gb_Exception
+     * Renvoie la revision de la classe ou un boolean si la version est plus petite que prï¿½cisï¿½e, ou Gb_Exception
      *
      * @return boolean|integer
      * @throws Gb_Exception
@@ -86,7 +86,7 @@ class Gb_Log
         
 
    /**
-    * Cette classe ne doit pas être instancée !
+    * Cette classe ne doit pas ï¿½tre instancï¿½e !
     */
     private function __construct()
     {
@@ -111,7 +111,7 @@ class Gb_Log
             if (isset($matches[1])) { 
                 self::$logFilename=$matches[1].Gb_Glue::getProjectName().".log";
             } else {
-                // pas de répertoire: utilise session_save_path
+                // pas de rï¿½pertoire: utilise session_save_path
                 $updir=Gb_Glue::getOldSessionDir();
                 self::$logFilename=$updir.DIRECTORY_SEPARATOR.Gb_Glue::getProjectName().".log";
             }
@@ -122,7 +122,7 @@ class Gb_Log
   /**
    * Loggue dans un fichier
    *
-   * @param string $sText Message à ecrire
+   * @param string $sText Message ï¿½ ecrire
    * @param string[optional] $sFName Fichier dans lequel ecrire, sinon self::getLogFilename
    */
   public static function log_file($sText, $sFName="")
@@ -194,8 +194,8 @@ class Gb_Log
      *
      * @param integer $level Gb_Log::LOG_DEBUG,INFO,NOTICE,WARNING,ERROR,CRIT,ALERT,EMERG
      * @param string  $text message
-     * @param mixed   $o object à dumper
-     * @param integer[optional] $red offset backtrace (0 par défaut: met la ligne de l'appel de la fonction)
+     * @param mixed   $o object ï¿½ dumper
+     * @param integer[optional] $red offset backtrace (0 par dï¿½faut: met la ligne de l'appel de la fonction)
      */
   public static function log($level=self::LOG_DEBUG, $text="", $o=null, $red=0)
   {
@@ -216,14 +216,14 @@ class Gb_Log
      * @param integer $level Gb_Log::LOG_DEBUG,INFO,NOTICE,WARNING,ERROR,CRIT,ALERT,EMERG
      * @param string $text message
      * @param string|array $fName fonction ou array(classe,methode)
-     * @param array[optional] $aParam paramètres
+     * @param array[optional] $aParam paramï¿½tres
      * @return unknown
      */
   public static function log_function($level, $text, $fName, array $aParam=array())
   {
     $prevtime=microtime(true);
 
-// récupère les arguments : NON: ca ne marche pas avec les références !
+// rï¿½cupï¿½re les arguments : NON: ca ne marche pas avec les rï¿½fï¿½rences !
 //    $aParam=array();
 //    for ($i=1; $i<func_num_args(); $i++)
 //      $aParam[]=func_get_arg($i);
@@ -231,7 +231,7 @@ class Gb_Log
 //    array_shift($aParam);
 
     $sCallName=null;
-    if (is_callable($fName, false, $sCallName)) // $sCallName reçoit le nom imprimable de la fonction, utile pour les objets
+    if (is_callable($fName, false, $sCallName)) // $sCallName reï¿½oit le nom imprimable de la fonction, utile pour les objets
       $ret=call_user_func_array($fName, $aParam);
     else
       throw(new Gb_Exception("Fonction inexistante"));
@@ -255,7 +255,7 @@ class Gb_Log
   
 
     /**
-     * Fonction privée, appelée par Gb_Log et Gb_Timer
+     * Fonction privï¿½e, appelï¿½e par Gb_Log et Gb_Timer
      *
      * @param integer $level
      * @param string $text
@@ -307,14 +307,14 @@ class Gb_Log
     }
     
     if ($level>=self::$loglevel_file && strlen($logFilename)) {
-        // écrit dans fichier de log
+        // ï¿½crit dans fichier de log
       $sLog=$date;
       $sLog.=$REMOTE_ADDR;
 
       if (strlen($HTTP_X_FORWARDED_FOR))          $sLog.="/".$HTTP_X_FORWARDED_FOR;
       $sLog.=" ";
 
-      // padding et limite à 40 caractères
+      // padding et limite ï¿½ 40 caractï¿½res
       $sLog=substr(str_pad($sLog, 40),0, 40);
 
       $sLog.=$sLevel." ";
@@ -346,7 +346,7 @@ class Gb_Log
     }
 
     if ($level>=self::$loglevel_footer) {
-         // écrit dans le footer
+         // ï¿½crit dans le footer
       $sLog="$sLevel t+$timecode: ";
       $sLog.=$text.$texto." (";
       if (strlen($file))
@@ -363,10 +363,10 @@ class Gb_Log
   
   /**
    * Renvoie une description sur une ligne d'une variable (comme print_r, mais sur une ligne)
-   * préférer dump
+   * prï¿½fï¿½rer dump
    *
-   * @param mixed $var Variable à dumper
-   * @pram string[optional] $sFormat mettre "%s" au lieu de "array(%s)" par défaut
+   * @param mixed $var Variable ï¿½ dumper
+   * @pram string[optional] $sFormat mettre "%s" au lieu de "array(%s)" par dï¿½faut
    * @return string
    */
   public static function dump_array(array $var, $sFormat="array(%s)")
@@ -382,11 +382,11 @@ class Gb_Log
       else
       {
         $pr=var_export($arg, true);
-        $pr=preg_replace("/^ +/m", "", $pr);                // enlève les espaces en début de ligne
+        $pr=preg_replace("/^ +/m", "", $pr);                // enlï¿½ve les espaces en dï¿½but de ligne
         $pr=preg_replace("/,\n\\)/m", ")", $pr);             // remplace les ,) par )
         $pr=preg_replace("/,$/m", ", ", $pr);               // remplace "," par ", " en fin de ligne
         $pr=str_replace("\n", "", $pr);                     // met tout sur une ligne
-        $pr=str_replace(" => ", "=>", $pr);                 // enlève les espaces avant et après "=>"
+        $pr=str_replace(" => ", "=>", $pr);                 // enlï¿½ve les espaces avant et aprï¿½s "=>"
         $pr=str_replace("array (", "array( ", $pr);         // formate array (
       }
       if ($fShowKey || $curnum!==$num)
@@ -403,7 +403,7 @@ class Gb_Log
   /**
    * Renvoie une description sur une ligne d'une variable (comme print_r, mais sur une ligne)
    *
-   * @param mixed $var Variable à dumper
+   * @param mixed $var Variable ï¿½ dumper
    * @return string
    */
   public static function dump($var)
@@ -411,11 +411,11 @@ class Gb_Log
         if (is_array($var))
             return self::dump_array($var);
         $pr=var_export($var, true);
-        $pr=preg_replace("/^ +/m", "", $pr);                // enlève les espaces en début de ligne
+        $pr=preg_replace("/^ +/m", "", $pr);                // enlï¿½ve les espaces en dï¿½but de ligne
         $pr=preg_replace("/,\n\\)/m", ")", $pr);             // remplace les ,) par )
         $pr=preg_replace("/,$/m", ", ", $pr);               // remplace "," par ", " en fin de ligne
         $pr=str_replace("\n", "", $pr);                     // met tout sur une ligne
-        $pr=str_replace(" => ", "=>", $pr);                 // enlève les espaces avant et après "=>"
+        $pr=str_replace(" => ", "=>", $pr);                 // enlï¿½ve les espaces avant et aprï¿½s "=>"
         $pr=str_replace("array (", "array( ", $pr);         // formate array (
     return $pr;
   }
@@ -431,7 +431,7 @@ class Gb_Log
  * 
  * Software License Agreement (New BSD License)
  * 
- * Copyright (c) 2006-2008, Christoph Dorn
+ * Copyright (c) 2006-2009, Christoph Dorn
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without modification,
@@ -461,7 +461,7 @@ class Gb_Log
  * 
  * ***** END LICENSE BLOCK *****
  * 
- * @copyright   Copyright (C) 2007-2008 Christoph Dorn
+ * @copyright   Copyright (C) 2007-2009 Christoph Dorn
  * @author      Christoph Dorn <christoph@christophdorn.com>
  * @license     http://www.opensource.org/licenses/bsd-license.php
  * @package     FirePHP
@@ -475,7 +475,7 @@ class Gb_Log
  * 
  * For more information see: http://www.firephp.org/
  * 
- * @copyright   Copyright (C) 2007-2008 Christoph Dorn
+ * @copyright   Copyright (C) 2007-2009 Christoph Dorn
  * @author      Christoph Dorn <christoph@christophdorn.com>
  * @license     http://www.opensource.org/licenses/bsd-license.php
  * @package     FirePHP
@@ -487,7 +487,7 @@ class FirePHP {
    *
    * @var string
    */
-  const VERSION = '0.2.1';
+  const VERSION = '0.3';
   
   /**
    * Firebug LOG level
@@ -577,6 +577,34 @@ class FirePHP {
   protected static $instance = null;
   
   /**
+   * Flag whether we are logging from within the exception handler
+   * 
+   * @var boolean
+   */
+  protected $inExceptionHandler = false;
+  
+  /**
+   * Flag whether to throw PHP errors that have been converted to ErrorExceptions
+   * 
+   * @var boolean
+   */
+  protected $throwErrorExceptions = true;
+  
+  /**
+   * Flag whether to convert PHP assertion errors to Exceptions
+   * 
+   * @var boolean
+   */
+  protected $convertAssertionErrorsToExceptions = true;
+  
+  /**
+   * Flag whether to throw PHP assertion errors that have been converted to Exceptions
+   * 
+   * @var boolean
+   */
+  protected $throwAssertionExceptions = false;
+  
+  /**
    * Wildfire protocol message index
    *
    * @var int
@@ -588,8 +616,11 @@ class FirePHP {
    * 
    * @var array
    */
-  protected $options = array();
-  
+  protected $options = array('maxObjectDepth' => 10,
+                             'maxArrayDepth' => 20,
+                             'useNativeJsonEncode' => true,
+                             'includeLineNumbers' => true);
+
   /**
    * Filters used to exclude object members when encoding
    * 
@@ -610,17 +641,13 @@ class FirePHP {
    * @var boolean
    */
   protected $enabled = true;
-  
+
   /**
    * The object constructor
    */
   function __construct() {
-    $this->options['maxObjectDepth'] = 10;
-    $this->options['maxArrayDepth'] = 20;
-    $this->options['useNativeJsonEncode'] = true;
-    $this->options['includeLineNumbers'] = true;
   }
-    
+
   /**
    * When the object gets serialized only include specific object members.
    * 
@@ -677,11 +704,11 @@ class FirePHP {
    * Filters are used to exclude object members.
    * 
    * @param string $Class The class name of the object
-   * @param array $Filter An array or members to exclude
+   * @param array $Filter An array of members to exclude
    * @return void
    */
   public function setObjectFilter($Class, $Filter) {
-    $this->objectFilters[$Class] = $Filter;
+    $this->objectFilters[strtolower($Class)] = $Filter;
   }
   
   /**
@@ -701,18 +728,31 @@ class FirePHP {
   }
   
   /**
+   * Get options from the library
+   *
+   * @return array The currently set options
+   */
+  public function getOptions() {
+    return $this->options;
+  }
+  
+  /**
    * Register FirePHP as your error handler
    * 
    * Will throw exceptions for each php error.
+   * 
+   * @return mixed Returns a string containing the previously defined error handler (if any)
    */
-  public function registerErrorHandler()
+  public function registerErrorHandler($throwErrorExceptions=true)
   {
     //NOTE: The following errors will not be caught by this error handler:
     //      E_ERROR, E_PARSE, E_CORE_ERROR,
     //      E_CORE_WARNING, E_COMPILE_ERROR,
     //      E_COMPILE_WARNING, E_STRICT
     
-    set_error_handler(array($this,'errorHandler'));     
+    $this->throwErrorExceptions = $throwErrorExceptions;
+    
+    return set_error_handler(array($this,'errorHandler'));     
   }
 
   /**
@@ -728,23 +768,32 @@ class FirePHP {
    */
   public function errorHandler($errno, $errstr, $errfile, $errline, $errcontext)
   {
-      $errcontext;
     // Don't throw exception if error reporting is switched off
     if (error_reporting() == 0) {
       return;
     }
     // Only throw exceptions for errors we are asking for
     if (error_reporting() & $errno) {
-      throw new ErrorException($errstr, 0, $errno, $errfile, $errline);
+
+      $exception = new ErrorException($errstr, 0, $errno, $errfile, $errline);
+      if($this->throwErrorExceptions) {
+        throw $exception;
+      } else {
+        $this->fb($exception);
+      }
     }
   }
   
   /**
    * Register FirePHP as your exception handler
+   * 
+   * @return mixed Returns the name of the previously defined exception handler,
+   *               or NULL on error.
+   *               If no previous handler was defined, NULL is also returned.
    */
   public function registerExceptionHandler()
   {
-    set_exception_handler(array($this,'exceptionHandler'));     
+    return set_exception_handler(array($this,'exceptionHandler'));     
   }
   
   /**
@@ -756,8 +805,63 @@ class FirePHP {
    * @throws Exception
    */
   function exceptionHandler($Exception) {
+    
+    $this->inExceptionHandler = true;
+
+    header('HTTP/1.1 500 Internal Server Error');
+
     $this->fb($Exception);
+    
+    $this->inExceptionHandler = false;
   }
+  
+  /**
+   * Register FirePHP driver as your assert callback
+   * 
+   * @param boolean $convertAssertionErrorsToExceptions
+   * @param boolean $throwAssertionExceptions
+   * @return mixed Returns the original setting or FALSE on errors
+   */
+  public function registerAssertionHandler($convertAssertionErrorsToExceptions=true, $throwAssertionExceptions=false)
+  {
+    $this->convertAssertionErrorsToExceptions = $convertAssertionErrorsToExceptions;
+    $this->throwAssertionExceptions = $throwAssertionExceptions;
+    
+    if($throwAssertionExceptions && !$convertAssertionErrorsToExceptions) {
+      throw $this->newException('Cannot throw assertion exceptions as assertion errors are not being converted to exceptions!');
+    }
+    
+    return assert_options(ASSERT_CALLBACK, array($this, 'assertionHandler'));
+  }
+  
+  /**
+   * FirePHP's assertion handler
+   *
+   * Logs all assertions to your firebug console and then stops the script.
+   *
+   * @param string $file File source of assertion
+   * @param int    $line Line source of assertion
+   * @param mixed  $code Assertion code
+   */
+  public function assertionHandler($file, $line, $code)
+  {
+
+    if($this->convertAssertionErrorsToExceptions) {
+      
+      $exception = new ErrorException('Assertion Failed - Code[ '.$code.' ]', 0, null, $file, $line);
+
+      if($this->throwAssertionExceptions) {
+        throw $exception;
+      } else {
+        $this->fb($exception);
+      }
+    
+    } else {
+    
+      $this->fb($code, 'Assertion Failed', FirePHP::ERROR, array('File'=>$file,'Line'=>$line));
+    
+    }
+  }  
   
   /**
    * Set custom processor url for FirePHP
@@ -780,14 +884,33 @@ class FirePHP {
   }
   
   /**
-   * Start a group for following messages
+   * Start a group for following messages.
+   * 
+   * Options:
+   *   Collapsed: [true|false]
+   *   Color:     [#RRGGBB|ColorName]
    *
    * @param string $Name
+   * @param array $Options OPTIONAL Instructions on how to log the group
    * @return true
    * @throws Exception
    */
-  public function group($Name) {
-    return $this->fb(null, $Name, FirePHP::GROUP_START);
+  public function group($Name, $Options=null) {
+    
+    if(!$Name) {
+      throw $this->newException('You must specify a label for the group!');
+    }
+    
+    if($Options) {
+      if(!is_array($Options)) {
+        throw $this->newException('Options must be defined as an array!');
+      }
+      if(array_key_exists('Collapsed', $Options)) {
+        $Options['Collapsed'] = ($Options['Collapsed'])?'true':'false';
+      }
+    }
+    
+    return $this->fb(null, $Name, FirePHP::GROUP_START, $Options);
   }
   
   /**
@@ -896,7 +1019,6 @@ class FirePHP {
    * @return boolean
    */
   public function detectClientExtension() {
-      $m=null;
     /* Check if FirePHP is installed on client */
     if(!@preg_match_all('/\sFirePHP\/([\.|\d]*)\s?/si',$this->getUserAgent(),$m) ||
        !version_compare($m[1][0],'0.0.6','>=')) {
@@ -914,17 +1036,24 @@ class FirePHP {
    * @throws Exception
    */
   public function fb($Object) {
-  $filename=$linenum=null;
+  
     if(!$this->enabled) {
       return false;
     }
   
     if (headers_sent($filename, $linenum)) {
+      // If we are logging from within the exception handler we cannot throw another exception
+      if($this->inExceptionHandler) {
+        // Simply echo the error out to the page
+        echo '<div style="border: 2px solid red; font-family: Arial; font-size: 12px; background-color: lightgray; padding: 5px;"><span style="color: red; font-weight: bold;">FirePHP ERROR:</span> Headers already sent in <b>'.$filename.'</b> on line <b>'.$linenum.'</b>. Cannot send log data to FirePHP. You must have Output Buffering enabled via ob_start() or output_buffering ini directive.</div>';
+      } else {
         throw $this->newException('Headers already sent in '.$filename.' on line '.$linenum.'. Cannot send log data to FirePHP. You must have Output Buffering enabled via ob_start() or output_buffering ini directive.');
+      }
     }
   
     $Type = null;
     $Label = null;
+    $Options = array();
   
     if(func_num_args()==1) {
     } else
@@ -950,6 +1079,11 @@ class FirePHP {
     if(func_num_args()==3) {
       $Type = func_get_arg(2);
       $Label = func_get_arg(1);
+    } else
+    if(func_num_args()==4) {
+      $Type = func_get_arg(2);
+      $Label = func_get_arg(1);
+      $Options = func_get_arg(3);
     } else {
       throw $this->newException('Wrong number of arguments to fb() function!');
     }
@@ -1014,11 +1148,12 @@ class FirePHP {
 
         if(isset($trace[$i]['class'])
            && isset($trace[$i]['file'])
-           && ($trace[$i]['class']=='FirePHP' || $trace[$i]['class']=='Gb_Log'
+           && ($trace[$i]['class']=='FirePHP'
+               || $trace[$i]['class']=='Gb_Log' /* AJOUT GILLES BOUTHENOT */
                || $trace[$i]['class']=='FB')
            && (substr($this->_standardizePath($trace[$i]['file']),-18,18)=='FirePHPCore/fb.php'
-               || substr($this->_standardizePath($trace[$i]['file']),-29,29)=='FirePHPCore/FirePHP.class.php'
-               || substr($this->_standardizePath($trace[$i]['file']),-10,10)=='Gb/Log.php')) {
+               || substr($this->_standardizePath($trace[$i]['file']),-10,10)=='Gb/Log.php' /* AJOUT GILLES BOUTHENOT */
+               || substr($this->_standardizePath($trace[$i]['file']),-29,29)=='FirePHPCore/FirePHP.class.php')) {
           /* Skip - FB::trace(), FB::send(), $firephp->trace(), $firephp->fb() */
         } else
         if(isset($trace[$i]['class'])
@@ -1057,6 +1192,13 @@ class FirePHP {
 
       $skipFinalObjectEncode = true;
       
+    } else
+    if($Type==self::GROUP_START) {
+      
+      if(!$Label) {
+        throw $this->newException('You must specify a label for the group!');
+      }
+      
     } else {
       if($Type===null) {
         $Type = self::LOG;
@@ -1071,11 +1213,12 @@ class FirePHP {
   
           if(isset($trace[$i]['class'])
              && isset($trace[$i]['file'])
-             && ($trace[$i]['class']=='FirePHP'  || $trace[$i]['class']=='Gb_Log'
+             && ($trace[$i]['class']=='FirePHP'
+                 || $trace[$i]['class']=='Gb_Log' /* AJOUT GILLES BOUTHENOT */
                  || $trace[$i]['class']=='FB')
              && (substr($this->_standardizePath($trace[$i]['file']),-18,18)=='FirePHPCore/fb.php'
-                 || substr($this->_standardizePath($trace[$i]['file']),-29,29)=='FirePHPCore/FirePHP.class.php'
-                 || substr($this->_standardizePath($trace[$i]['file']),-10,10)=='Gb/Log.php')) {
+                 || substr($this->_standardizePath($trace[$i]['file']),-10,10)=='Gb/Log.php' /* AJOUT GILLES BOUTHENOT */
+                 || substr($this->_standardizePath($trace[$i]['file']),-29,29)=='FirePHPCore/FirePHP.class.php')) {
             /* Skip - FB::trace(), FB::send(), $firephp->trace(), $firephp->fb() */
           } else
           if(isset($trace[$i]['class'])
@@ -1114,14 +1257,15 @@ class FirePHP {
     if($Type==self::DUMP) {
         $msg = '{"'.$Label.'":'.$this->jsonEncode($Object, $skipFinalObjectEncode).'}';
     } else {
-      $msg_meta = array('Type'=>$Type);
+      $msg_meta = $Options;
+      $msg_meta['Type'] = $Type;
       if($Label!==null) {
         $msg_meta['Label'] = $Label;
       }
-      if(isset($meta['file'])) {
+      if(isset($meta['file']) && !isset($msg_meta['File'])) {
         $msg_meta['File'] = $meta['file'];
       }
-      if(isset($meta['line'])) {
+      if(isset($meta['line']) && !isset($msg_meta['Line'])) {
         $msg_meta['Line'] = $meta['line'];
       }
         $msg = '['.$this->jsonEncode($msg_meta).','.$this->jsonEncode($Object, $skipFinalObjectEncode).']';
@@ -1148,7 +1292,7 @@ class FirePHP {
             $this->messageIndex++;
             
             if ($this->messageIndex > 99999) {
-                throw new Exception('Maximum number (99,999) of messages reached!');             
+                throw $this->newException('Maximum number (99,999) of messages reached!');             
             }
         }
     }
@@ -1257,7 +1401,7 @@ class FirePHP {
       return $this->json_encode($Object);
     }
   }
-  
+
   /**
    * Encodes a table by encoding each row and column with encodeObject()
    * 
@@ -1265,17 +1409,26 @@ class FirePHP {
    * @return array
    */  
   protected function encodeTable($Table) {
+    
     if(!$Table) return $Table;
-    for( $i=0 ; $i<count($Table) ; $i++ ) {
-      if(is_array($Table[$i])) {
-        for( $j=0 ; $j<count($Table[$i]) ; $j++ ) {
-          $Table[$i][$j] = $this->encodeObject($Table[$i][$j]);
+    
+    $new_table = array();
+    foreach($Table as $row) {
+  
+      if(is_array($row)) {
+        $new_row = array();
+        
+        foreach($row as $item) {
+          $new_row[] = $this->encodeObject($item);
         }
+        
+        $new_table[] = $new_row;
       }
     }
-    return $Table;
+    
+    return $new_table;
   }
-  
+
   /**
    * Encodes an object including members with
    * protected and private visibility
@@ -1307,6 +1460,7 @@ class FirePHP {
         array_push($this->objectStack, $Object);
                 
         $return['__className'] = $class = get_class($Object);
+        $class_lower = strtolower($class);
 
         $reflectionClass = new ReflectionClass($class);  
         $properties = array();
@@ -1334,9 +1488,9 @@ class FirePHP {
             $raw_name = "\0".'*'."\0".$raw_name;
           }
           
-          if(!(isset($this->objectFilters[$class])
-               && is_array($this->objectFilters[$class])
-               && in_array($raw_name,$this->objectFilters[$class]))) {
+          if(!(isset($this->objectFilters[$class_lower])
+               && is_array($this->objectFilters[$class_lower])
+               && in_array($raw_name,$this->objectFilters[$class_lower]))) {
 
             if(array_key_exists($raw_name,$members)
                && !$property->isStatic()) {
@@ -1373,9 +1527,9 @@ class FirePHP {
           if(!isset($properties[$name])) {
             $name = 'undeclared:'.$name;
               
-            if(!(isset($this->objectFilters[$class])
-                 && is_array($this->objectFilters[$class])
-                 && in_array($raw_name,$this->objectFilters[$class]))) {
+            if(!(isset($this->objectFilters[$class_lower])
+                 && is_array($this->objectFilters[$class_lower])
+                 && in_array($raw_name,$this->objectFilters[$class_lower]))) {
               
               $return[$name] = $this->encodeObject($value, $ObjectDepth + 1, 1);
             } else {
@@ -1802,3 +1956,8 @@ class FirePHP {
       return $this->json_encode(strval($name)) . ':' . $encoded_value;
   }
 }
+
+
+
+
+
