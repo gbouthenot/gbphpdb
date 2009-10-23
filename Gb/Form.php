@@ -391,7 +391,7 @@ Class Gb_Form
     if ($this->fPostIndicator===null) {
       // positionnement de la variable indiquant que l'indicateur a �t� mis.
       $hash=$this->getFormHash();
-      $ret.="<input type='hidden' name='GBFORMPOST' value='$hash' />\n";
+      $ret.="<input type='hidden' name='GBFORMPOST' id='GBFORMPOST' value='$hash' />\n";
       $this->fPostIndicator=true;
     }
 

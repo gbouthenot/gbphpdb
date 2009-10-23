@@ -30,7 +30,7 @@ Class Gb_Args
                 $args=array();
             }
             $this->_args=$args;
-        } elseif ($args instanceof Gb_Args ) {
+        } elseif ($params instanceof Gb_Args ) {
             $this->_args=$params->getAll();
         } else {
             throw new Gb_Exception("invalid params given");
@@ -90,6 +90,21 @@ Class Gb_Args
         }
         return $value;
     }
+
+    public function prepend($name, $value=null)
+    {
+        $args2=array();
+        if ($value===null) {
+            $args2[]=$name;
+        } else {
+            $args2[$name]=$value;
+        }
+        foreach ($this->_args as $k=>$v) {
+            $args2[$k]=$v;
+        }
+        $this->_args=$args2;
+        return $this;
+    }
     
     /**
      * @return array
@@ -99,5 +114,17 @@ Class Gb_Args
         $all=$this->_args;
         $this->_args=array();
         return $all;
+    }
+
+    /**
+     * replace the args by those specified
+     * @param Gb_Args|array $args2
+     * @returns Gb_Args
+     */
+    public function replace($args2)
+    {
+        $args3=new Gb_Args($args2);
+        $this->_args=$args3->getAll();
+        return $this;
     }
 }

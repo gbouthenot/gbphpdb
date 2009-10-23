@@ -69,12 +69,12 @@ Class Gb_Mvc
         $href.=$_SERVER["SERVER_NAME"];
         $href.=$_SERVER["SERVER_PORT"]!=80 ? ":".$_SERVER["SERVER_PORT"] : "";
         $href.=$rooturl;
-        
+
         $pos=strpos($req, $rooturl);
         if ($pos!==false) {
             $req=substr($req, $pos+strlen($rooturl));
         }
-        
+
         $req2=trim($req, "/");
         $args=explode("/", $req2);
         if (count($args)==1 && $args[0]=="") {
@@ -88,7 +88,7 @@ Class Gb_Mvc
         $this->_href=$href;
         $this->_rootUrl=$rooturl;
     }
-    
+
     protected function _initPaths()
     {
         $this->_pathApplication=str_replace("/", DIRECTORY_SEPARATOR, $this->_pathApplication);
@@ -96,8 +96,7 @@ Class Gb_Mvc
         $this->_pathViews=str_replace("/", DIRECTORY_SEPARATOR, $this->_pathViews);
         $this->_pathHelpers=str_replace("/", DIRECTORY_SEPARATOR, $this->_pathHelpers);
     }
-    
-    
+
     protected function _initHelpers()
     {
         $path=$this->_pathHelpers;
@@ -110,27 +109,30 @@ Class Gb_Mvc
         }
         $dir->close();
     }
-    
+
     private function __construct()
     {
         $this->_initPaths();
         $this->_getMvcArgs();
     }
-    
-    public function start()
+
+    public function start($defaultController=null)
     {
         ob_start();
         $cwd=getcwd();
         chdir($this->_pathApplication);
-        
+
         $this->_initHelpers();
-        
+
         $controller=$this->_args->remove();
+        if ($controller===null) {
+            $controller=$defaultController;
+        }
         echo $this->callController($controller, $this->_args);
-        
+
         chdir($cwd);
     }
-    
+
     public function callController($mvcController, Gb_Args $mvcArgs=null)
     {
         if ($mvcArgs===null) {
@@ -153,6 +155,20 @@ Class Gb_Mvc
             include($file);
             $output=ob_get_contents();
             ob_end_clean();
+        } else {
+            // controller does not exist -> call error controller
+            // we should not call again callController
+            $mvcController="error";
+            $this->_args->prepend("invalidcontroller");
+            $file=$this->_pathControllers."$mvcController/$mvcController.php";
+            if (is_file($file) && is_readable($file)) {
+                ob_start();
+                include($file);
+                $output=ob_get_contents();
+                ob_end_clean();
+            } else {
+                throw new Gb_Exception("PANIC: error controller not found.");
+            }
         }
         
         $this->_args=$oldMvcArgs;
