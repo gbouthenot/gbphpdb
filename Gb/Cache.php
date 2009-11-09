@@ -16,7 +16,7 @@ require_once(_GB_PATH."Glue.php");
 
 Class Gb_Cache
 {
-    public static       $cacheDir=""; // Répertoire du cache par défaut session_path/PROJECTNAME/cache
+    public static       $cacheDir=""; // Rï¿½pertoire du cache par dï¿½faut session_path/PROJECTNAME/cache
     protected static    $nbTotal=0;                    // Nombre d'objet au total
     protected static    $nbCacheHits=0;                // Nombre de cache hit
     protected static    $nbCacheMiss=0;                // Nombre de cache miss
@@ -25,7 +25,7 @@ Class Gb_Cache
     
     /**
      * Renvoie le nom du repertoire de cache
-     * crée le répertoire si besoin
+     * crï¿½e le rï¿½pertoire si besoin
      *
      * @return string cacheDir
    * @throws Gb_Exception
@@ -41,7 +41,7 @@ Class Gb_Cache
             if ( (!is_dir($updir3) || !is_writable($updir3)) && is_dir($updir2) && is_writable($updir2) )
                 @mkdir($updir3, 0700);
             if ( !is_dir($updir3) || !is_writable($updir3) )
-                throw new Gb_Exception("Impossible de créer le répertoire $updir3 pour stocker le cache !");
+                throw new Gb_Exception("Impossible de crï¿½er le rï¿½pertoire $updir3 pour stocker le cache !");
             self::$cacheDir=$updir3;
         }
         return self::$cacheDir;
@@ -72,7 +72,7 @@ Class Gb_Cache
     protected $values;
     
     /**
-     * Renvoie la revision de la classe ou un boolean si la version est plus petite que précisée, ou Gb_Exception
+     * Renvoie la revision de la classe ou un boolean si la version est plus petite que prï¿½cisï¿½e, ou Gb_Exception
      *
      * @return boolean|integer
      * @throws Gb_Exception
@@ -88,51 +88,68 @@ Class Gb_Cache
     }    
     
     /**
-     * Crée un cacheableObject
+     * Crï¿½e un cacheableObject
      *
      * @param string $cacheID
-     * @param integer|string[optional] $ttl durée de vie en secondes, ou fichier de référence. Par défaut 10 secondes.
+     * @param integer|string|array[optional] $ttl durï¿½e de vie en secondes, ou fichier de rï¿½fï¿½rence. Ou array de durÃ©e et fichiers. Par dï¿½faut 10 secondes.
+     * @param boolean $fActivated use cache (useful for debuging)
      */
-    public function __construct($cacheID, $ttl=10, $fExpired=false)
+    public function __construct($cacheID, $ttl=10, $fExpired=false, $fActivated=true)
     {
         require_once("Zend/Cache.php");
 
         $frontendOptions=array(
-                'caching'=>true,                      // true         Active/désactive le cache (utile pour debug)
+                'caching'=>$fActivated,               // true         Active/dï¿½sactive le cache (utile pour debug)
                 'logging'=>false,                     // false        Utilise Zend_Log
-                'write_control'=>false,               // true         Vérifier l'écriture
+                'write_control'=>false,               // true         Vï¿½rifier l'ï¿½criture
                 'automatic_serialization'=>true,      // false        Permet de sauvegarder pas uniquement des strings
-                'automatic_cleaning_factor'=>10,      // 10           Probabilité de 1/x de nettoyer le cache
+                'automatic_cleaning_factor'=>10,      // 10           Probabilitï¿½ de 1/x de nettoyer le cache
         );
 
-        if (is_string($ttl)) {
-            $frontend='File';
-            $lifetime=null;
-            $frontendOptions['master_file']=$ttl;     // string       Nom du fichier dont la date de modification servira de référence
+		$lifetime=null;
+		$masterfiles=array();
+
+		if (is_string($ttl)) {
+            $masterfiles=array($ttl);  // string       Nom du fichier dont la date de modification servira de rï¿½fï¿½rence
+        } elseif (is_array($ttl)) {
+        	foreach ($ttl as $tt) {
+        		if (is_string($tt)) {
+        			$masterfiles[]=$tt;
+        		} else {
+        			$lifetime=$tt;
+        		}
+        	}
         } else {
-            $frontend='Core';
             $lifetime=$ttl;
         }
-        $frontendOptions['lifetime']=$lifetime;       // 3600         Durée de vie en secondes, null:validité permanente
 
-        // garde uniquement les caractères [a-zA-Z0-9_]
+        if (count($masterfiles)) {
+            $frontend='File';
+            $frontendOptions['master_files']=$masterfiles;
+        } else {
+        	$frontend='Core';
+        }
+        
+        $frontendOptions['lifetime']=$lifetime;       // 3600         Durï¿½e de vie en secondes, null:validitï¿½ permanente
+
+        // garde uniquement les caractï¿½res [a-zA-Z0-9_]
         $n=strlen($cacheID);
         $cacheID2="";
         for ($i=0; $i<$n; $i++) { $c=$cacheID[$i]; $o=ord(strtoupper($c)); if ( ($o>=48 && $o<=57) || ($o>=65 && $o<=90) || $o==95 ) { $cacheID2.=$c; } }
         $cacheID=$cacheID2;
         
         $this->cacheEngine=Zend_Cache::factory(
-            $frontend,                                // frontend: Core: par défaut, File: pour le mtime d'un fichier
-            'File',                                   // backend: où le cache est stocké: File
+            $frontend,                                // frontend: Core: par dï¿½faut, File: pour le mtime d'un fichier
+            'File',                                   // backend: oï¿½ le cache est stockï¿½: File
             $frontendOptions,
             array(
-                'cache_dir'=>self::getCacheDir(),     // '/tmp/'      Répertoire où stocker les fichiers
+                'cache_dir'=>self::getCacheDir(),     // '/tmp/'      Rï¿½pertoire oï¿½ stocker les fichiers
                 'file_locking'=>true,                 // true         Utiliser file_locking
-                'read_control'=>true,                 // true         Utilisation d'un checksum pour contrôler la validité des données
+                'read_control'=>true,                 // true         Utilisation d'un checksum pour contrï¿½ler la validitï¿½ des donnï¿½es
                 'read_control_type'=>'crc32',         // 'crc32'      Type du checksum: crc32, md5 ou strlen
-                'hashed_directory_level'=>0,          // 0            Profondeur de répertoire à utiliser
-                'hashed_directory_umask'=>0700,       // 0700         umask à utiliser pour la structure de répertoires
-                'file_name_prefix'=>'gb_cache',       // 'zend_cache' Préfixe ajouté aux fichiers. Attention, si vous enregistrer dans un répertoire générique comme /tmp/, à ce que ce préfix soit spécifique à chaque application !
+                'hashed_directory_level'=>0,          // 0            Profondeur de rï¿½pertoire ï¿½ utiliser
+                'hashed_directory_umask'=>0700,       // 0700         umask ï¿½ utiliser pour la structure de rï¿½pertoires
+                'file_name_prefix'=>'gb_cache',       // 'zend_cache' Prï¿½fixe ajoutï¿½ aux fichiers. Attention, si vous enregistrer dans un rï¿½pertoire gï¿½nï¿½rique comme /tmp/, ï¿½ ce que ce prï¿½fix soit spï¿½cifique ï¿½ chaque application !
                 )
         );
         
@@ -143,7 +160,7 @@ Class Gb_Cache
         } else {
             $this->values=$this->cacheEngine->load($cacheID);
             if ( $this->values===false ) {
-                // cache invalide ou expiré
+                // cache invalide ou expirï¿½
                 $this->values=array();
                 $this->cacheHit=false;
             } else {
@@ -162,7 +179,7 @@ Class Gb_Cache
     }
 
     /**
-     * Sauve l'objet s'il a été modifié et qu'il n'est pas marqué comme expiré
+     * Sauve l'objet s'il a ï¿½tï¿½ modifiï¿½ et qu'il n'est pas marquï¿½ comme expirï¿½
      */
     public function __destruct()
     {
@@ -172,7 +189,7 @@ Class Gb_Cache
     }
 
     /**
-     * Marque l'objet comme expiré, c'est à dire qu'au prochain appel, le cache ne sera pas utilisé
+     * Marque l'objet comme expirï¿½, c'est ï¿½ dire qu'au prochain appel, le cache ne sera pas utilisï¿½
      */
     public function expire()
     {
@@ -221,7 +238,7 @@ Class Gb_Cache
     }
 
     /**
-     * Enlève un attribut
+     * Enlï¿½ve un attribut
      *
      * @param string $index
      */
