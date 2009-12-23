@@ -16,12 +16,12 @@ require_once(_GB_PATH."Exception.php");
 
 class Gb_String
 {
-  // " et $ ignorés
-  const STR_SRC=  "' !#%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~€?‚ƒ„…†‡ˆ‰Š‹Œ?Ž??‘’“”•–—˜™š›œ?žŸ ¡¢£¤¥¦§¨©ª«¬­®¯°±²³´µ¶·¸¹º»¼½¾¿ÀÁÂÃÄÅÆÇÈÉÊËÌÍÎÏÐÑÒÓÔÕÖ×ØÙÚÛÜÝÞßàáâãäåæçèéêëìíîïðñòóôõö÷øùúûüýþ";
-  const STR_UPPER="' !#%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`ABCDEFGHIJKLMNOPQRSTUVWXYZ{|}~€?,F,_†‡ˆ%S‹O?Z??''“”.--˜TS›O?ZY IC£¤¥|§¨C2<¬­R¯°±23'UQ.¸10>¼½¾?AAAAAAACEEEEIIIIDNOOOOOXOUUUUYþBAAAAAAACEEEEIIIIONOOOOO/OUUUUYþ";
+  // " et $ ignorï¿½s
+  const STR_SRC=  "' !#%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~ï¿½?ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½?ï¿½??ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½?ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½";
+  const STR_UPPER="' !#%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`ABCDEFGHIJKLMNOPQRSTUVWXYZ{|}~ï¿½?,F,_ï¿½ï¿½ï¿½%Sï¿½O?Z??''ï¿½ï¿½.--ï¿½TSï¿½O?ZYï¿½ICï¿½ï¿½ï¿½|ï¿½ï¿½C2<ï¿½ï¿½Rï¿½ï¿½ï¿½23'UQ.ï¿½10>ï¿½ï¿½ï¿½?AAAAAAACEEEEIIIIDNOOOOOXOUUUUYï¿½BAAAAAAACEEEEIIIIONOOOOO/OUUUUYï¿½";
 
     /**
-     * Renvoie la revision de la classe ou un boolean si la version est plus petite que précisée, ou Gb_Exception
+     * Renvoie la revision de la classe ou un boolean si la version est plus petite que prï¿½cisï¿½e, ou Gb_Exception
      *
      * @return boolean|integer
      * @throws Gb_Exception
@@ -37,7 +37,7 @@ class Gb_String
     }
     
     /**
-     * Cette classe ne doit pas être instancée !
+     * Cette classe ne doit pas ï¿½tre instancï¿½e !
      */
     private function __construct()
     {
@@ -46,7 +46,7 @@ class Gb_String
 
     /**
      * renvoie dans outTime l'heure (nombre de secondes depuis 01/01/1970)
-     * $sTime doit être formaté en "jj/mm/aaaa hh:mm:ss[.xxx]" ou "aaaa-mm-jj hh:mm:ss[.xxxxxx]"
+     * $sTime doit ï¿½tre formatï¿½ en "jj/mm/aaaa hh:mm:ss[.xxx]" ou "aaaa-mm-jj hh:mm:ss[.xxxxxx]"
      *
      * @param string[optional] $sTime
      * @return integer
@@ -73,7 +73,7 @@ class Gb_String
 
 
     /**
-     * Renvoie les premiers mots de la chaine jusqu'à un minimum de lettres
+     * Renvoie les premiers mots de la chaine jusqu'ï¿½ un minimum de lettres
      *
      * @param string $prenoms
      * @param integer $lmin
@@ -94,7 +94,7 @@ class Gb_String
     }
     
     /**
-     * conversion en majuscule, charset ASCII, enlève les accents
+     * conversion en majuscule, charset ASCII, enlï¿½ve les accents
      *
      * @param string $s
      * @return string
@@ -109,9 +109,9 @@ class Gb_String
     }
 
   /**
-   * converti, si nécessaire une date au format YYYY-MM-DD en DD/MM/YYYY
+   * converti, si nï¿½cessaire une date au format YYYY-MM-DD en DD/MM/YYYY
    *
-   * @param string|integer[optional] $d date à convertir ou "" si date courante
+   * @param string|integer[optional] $d date ï¿½ convertir ou "" si date courante
    * @return string
    */
     public static function date_fr($d="")
@@ -132,9 +132,9 @@ class Gb_String
     }
 
   /**
-   * converti, si nécessaire une date au format DD/MM/YYYY en YYYY-MM-DD
+   * converti, si nï¿½cessaire une date au format DD/MM/YYYY en YYYY-MM-DD
    *
-   * @param string|int[optional] $d date à convertir ou "" si date courante
+   * @param string|int[optional] $d date ï¿½ convertir ou "" si date courante
    * @return string
    */
     public static function date_iso($d="")
@@ -154,7 +154,7 @@ class Gb_String
     }
 
     /**
-     * comme explode mais renvoie array() au lieu de array("") si l'élément n'a pas été trouvé
+     * comme explode mais renvoie array() au lieu de array("") si l'ï¿½lï¿½ment n'a pas ï¿½tï¿½ trouvï¿½
      *
      * @param string $delimiter
      * @param string $string
@@ -178,7 +178,7 @@ class Gb_String
     /**
      * Transforme un array en format CSV
      *
-     * @param array $data données au même format que 
+     * @param array $data donnï¿½es au mï¿½me format que 
      * @return string la chaine en csv
      */
     public static function arrayToCsv(array $data)
@@ -188,7 +188,7 @@ class Gb_String
         }
         $ret="";
         
-        // 1ère ligne du csv: les entêtes
+        // 1ï¿½re ligne du csv: les entï¿½tes
         $firstligne=$data[0];
         foreach(array_keys($firstligne) as $ind) {
             $ret.=$ind.";";
@@ -233,7 +233,7 @@ class Gb_String
         } elseif ($bytestotal>1024) {
             $size_format=number_format($bytestotal/1024, 3)." KiB";
         } else {
-            $size_format=number_format($bytestotal, 3)." B";
+            $size_format=number_format($bytestotal, 0)." B";
         }
         return $size_format;        
     }
@@ -245,7 +245,7 @@ class Gb_String
      * @param string $format text|html
      * @return string
      */
-    public function formatTable(array $array, $format)
+    public static function formatTable(array $array, $format)
     {
         $format=strtolower($format);
         $ret="";
@@ -294,4 +294,26 @@ class Gb_String
         return $ret;
     }
 
+    /**
+     * Idem realpath, mais fonctionne aussi sur fichier non existant
+     * InspirÃ© par Sven Arduwie http://fr.php.net/manual/fr/function.realpath.php#84012 , mais retourne chemin absolu
+     * @param string $path
+     * @return string
+     */
+    public static function realpath($path)
+    {
+        $path = str_replace(array('/', '\\'), DIRECTORY_SEPARATOR, $path);
+        $parts = array_filter(explode(DIRECTORY_SEPARATOR, $path), 'strlen');
+        $absolutes = array();
+        foreach ($parts as $part) {
+            if ('.' == $part) continue;
+            if ('..' == $part) {
+                array_pop($absolutes);
+            } else {
+                $absolutes[] = $part;
+            }
+        }
+        return DIRECTORY_SEPARATOR.implode(DIRECTORY_SEPARATOR, $absolutes);
+        
+    }
 }

@@ -23,20 +23,20 @@ require_once(_GB_PATH."String.php");
  *
  * @author Gilles Bouthenot
  * @version 1.01
- *  function str_readfile($filename) : à remplacer par file_get_contents($filename)
+ *  function str_readfile($filename) : ï¿½ remplacer par file_get_contents($filename)
  *
  */
 Class Gb_Util
 {
   // ***********************
-  // variables statiques accessibles depuis l'extérieur avec Gb_Util::$head et depuis la classe avec self::$head
+  // variables statiques accessibles depuis l'extï¿½rieur avec Gb_Util::$head et depuis la classe avec self::$head
   // ************************
 
-  public static $debug=0;                 // par défaut, pas de mode débug
-  public static $forbidDebug=0;           // ne pas interdire de passer en débug par $_GET["debug"]
+  public static $debug=0;                 // par dï¿½faut, pas de mode dï¿½bug
+  public static $forbidDebug=0;           // ne pas interdire de passer en dï¿½bug par $_GET["debug"]
 
     /**
-     * Renvoie la revision de la classe ou un boolean si la version est plus petite que précisée, ou Gb_Exception
+     * Renvoie la revision de la classe ou un boolean si la version est plus petite que prï¿½cisï¿½e, ou Gb_Exception
      *
      * @return boolean|integer
      * @throws Gb_Exception
@@ -53,7 +53,7 @@ Class Gb_Util
     
 
   /**
-   * Cette classe ne doit pas être instancée !
+   * Cette classe ne doit pas ï¿½tre instancï¿½e !
    */
   private function __construct()
   {
@@ -65,9 +65,9 @@ Class Gb_Util
    *
    * Met error_reporting si debug, ou bien si _GET["debug"] (sauf si forbidDebug)
    * Appelle main()
-   * Si débug (ou showFooter), affiche le footer
+   * Si dï¿½bug (ou showFooter), affiche le footer
    *
-   * @param string[optional] $function fonction à appeler (main si non précisé)
+   * @param string[optional] $function fonction ï¿½ appeler (main si non prï¿½cisï¿½)
    */
   public static function startup($function="main", $param=array())
   {
@@ -103,7 +103,7 @@ Class Gb_Util
 
   /**
    * Combine deux arrays
-   * Idem que array_merge, mais sans renuméroter les clés si clé numérique (évite de concaténer)
+   * Idem que array_merge, mais sans renumï¿½roter les clï¿½s si clï¿½ numï¿½rique (ï¿½vite de concatï¿½ner)
    *
    * @param array $arr1
    * @param array $arr2
@@ -111,7 +111,7 @@ Class Gb_Util
    */
   public static function array_merge(array $arr1, array $arr2)
   {
-    // si arr2 est plus grand, échange arr1 et arr2 pour itérer sur le plus petit
+    // si arr2 est plus grand, ï¿½change arr1 et arr2 pour itï¿½rer sur le plus petit
     if (count($arr2)>count($arr1)) {
         foreach ($arr1 as $k=>$v)
           $arr2[$k]=$v;
@@ -151,15 +151,15 @@ Class Gb_Util
   
     
   /**
-   * Inclut et execute un fichier et retourne le résultat dans une chaine
+   * Inclut et execute un fichier et retourne le rï¿½sultat dans une chaine
    *
-   * @param string $file fichier à include
+   * @param string $file fichier ï¿½ include
    * @return string le fichier
    * @throws Gb_Exception
    */
   public static function include_file($file)
-  { // fait include d'un fichier, mais retourne le résultat dans une chaine
-    // cela permet d'inclure un fichier et de l'éxecuter en même temps
+  { // fait include d'un fichier, mais retourne le rï¿½sultat dans une chaine
+    // cela permet d'inclure un fichier et de l'ï¿½xecuter en mï¿½me temps
     if (file_exists($file) && is_readable($file)) {
       ob_start();
       include($file);
@@ -170,9 +170,9 @@ Class Gb_Util
   }
 
   /**
-   * renvoie ?debug=1 ou &debug=1 si debug activé
+   * renvoie ?debug=1 ou &debug=1 si debug activï¿½
    *
-   * @param string $c caractère à renvoyer ("&" (par défaut) ou "?")
+   * @param string $c caractï¿½re ï¿½ renvoyer ("&" (par dï¿½faut) ou "?")
    * @return string
    */
   public static function url_debug($c="&")
@@ -284,7 +284,7 @@ Class Gb_Util
      * ATTENTION, possible bug si strlen ne renvoit pas le nombre d'octets de la chaine...
      * 
      * @param string $data
-     * @param string[optional] $fnameOut nom du fichier qui apparait à l'enregistrement
+     * @param string[optional] $fnameOut nom du fichier qui apparait ï¿½ l'enregistrement
      * @param boolean[optional] $fAddTimestamp true si on ajoute le timestamp au nom de fichier
      */
     public static function sendString($data, $fnameOut="fichier", $fAddTimestamp)
@@ -307,8 +307,8 @@ Class Gb_Util
     /**
      * Envoie une chaine et quitte
      * 
-     * @param string $fnameIn Nom du fichier à envoyer
-     * @param string[optional] $fnameOut nom du fichier qui apparait à l'enregistrement
+     * @param string $fnameIn Nom du fichier ï¿½ envoyer
+     * @param string[optional] $fnameOut nom du fichier qui apparait ï¿½ l'enregistrement
      * @param boolean[optional] $fAddTimestamp true si on ajoute le timestamp au nom de fichier
      * @throws Gb_Exception
      */
@@ -328,7 +328,7 @@ Class Gb_Util
         ob_end_clean();
         header("Content-Type: application/octet-stream");
         header("Content-Length: $len");
-        header("Content-Disposition: attachment; filename=\"$fnameOut\"");
+        header('Content-Disposition: attachment; filename="'.addslashes($fnameOut).'"');
         header("Content-Encoding: binary");
         header("Vary: ");
         fpassthru($fhandle);
