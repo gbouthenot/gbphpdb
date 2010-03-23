@@ -284,10 +284,10 @@ Class Gb_Util
      * ATTENTION, possible bug si strlen ne renvoit pas le nombre d'octets de la chaine...
      * 
      * @param string $data
-     * @param string[optional] $fnameOut nom du fichier qui apparait � l'enregistrement
+     * @param string[optional] $fnameOut nom du fichier qui apparait à l'enregistrement
      * @param boolean[optional] $fAddTimestamp true si on ajoute le timestamp au nom de fichier
      */
-    public static function sendString($data, $fnameOut="fichier", $fAddTimestamp)
+    public static function sendString($data, $fnameOut="fichier", $fAddTimestamp=null)
     {
         if ($fAddTimestamp) {
             $fnameOut.="-".str_replace(":", "", Gb_String::date_iso()).".csv";
@@ -299,21 +299,25 @@ Class Gb_Util
         header("Content-Length: $len");
         header("Content-Disposition: attachment; filename=\"$fnameOut\"");
         header("Content-Encoding: binary");
+        header("Connection: close");
         header("Vary: ");
         echo $data;
         exit(0);
     }
 
     /**
-     * Envoie une chaine et quitte
+     * Envoie un fichier dont on donne le nom et quitte
      * 
-     * @param string $fnameIn Nom du fichier � envoyer
-     * @param string[optional] $fnameOut nom du fichier qui apparait � l'enregistrement
+     * @param string $fnameIn Nom du fichier à envoyer
+     * @param string[optional] $fnameOut nom du fichier qui apparait à l'enregistrement (par défaut basename de $fnameIn)
      * @param boolean[optional] $fAddTimestamp true si on ajoute le timestamp au nom de fichier
      * @throws Gb_Exception
      */
-    public static function sendFile($fnameIn, $fnameOut="fichier", $fAddTimestamp)
+    public static function sendFile($fnameIn, $fnameOut=null, $fAddTimestamp=null)
     {
+        if ($fnameOut===null) {
+            $fnameOut=basename($fnameIn);
+        }
         if ($fAddTimestamp) {
             $fnameOut.="-".str_replace(":", "", Gb_String::date_iso()).".csv";
         }
@@ -330,6 +334,7 @@ Class Gb_Util
         header("Content-Length: $len");
         header('Content-Disposition: attachment; filename="'.addslashes($fnameOut).'"');
         header("Content-Encoding: binary");
+        header("Connection: close");
         header("Vary: ");
         fpassthru($fhandle);
         fclose($fhandle);
