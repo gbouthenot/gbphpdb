@@ -253,33 +253,59 @@ class Gb_String
             return "";        
         }
         
+        // should we also display the key index ?
+        $fShowIndex=false;
+        $firstkeys=array_keys($array);
+        $firstkey=$firstkeys[0];
+        if ($firstkey !== 0) {
+            $fShowIndex=true;
+        }
+
         if ($format=="text") {
             reset($array);
             $firstrowkeys=array_keys(current($array));
-            
+                        
             // get the max length of each column
             $max=array();
+            // first the column name
+            $max["index"]=strlen("index");
             foreach ($firstrowkeys as $number=>$keyname) {
                 $max[$number]=strlen($keyname);
             }
-            foreach ($array as $line) {
+            
+            // then the column values
+            foreach ($array as $indexname=>$line) {
+                $max["index"]=max($max["index"], strlen($indexname));
                 foreach ($firstrowkeys as $number=>$keyname) {
                     $max[$number]=max($max[$number], strlen($line[$keyname]));
                 }
             }
             
+            $indexlen=$max["index"];
             $rowsep="";
             $rowhead="";
+            if ($fShowIndex) {
+                $rowsep.="+";
+                $rowhead.="| ";
+                $rowsep.=str_repeat("-", $indexlen+2);
+                $rowhead.=str_pad("index", $indexlen, " ", STR_PAD_BOTH)." ";          
+            }
             foreach ($firstrowkeys as $number=>$keyname) {
+                $rowsep.="+";
+                $rowhead.="| ";
+
                 $len=$max[$number];
-                $rowsep.="+".str_repeat("-", $len+2);
-                $rowhead.="| ".str_pad($keyname, $len, " ", STR_PAD_BOTH)." ";          
+                $rowsep.=str_repeat("-", $len+2);
+                $rowhead.=str_pad($keyname, $len, " ", STR_PAD_BOTH)." ";          
             }
             $rowsep.="+\n";
             $rowhead.="|\n";
             
             $ret.=$rowsep.$rowhead.$rowsep;
-            foreach ($array as $line) {
+            foreach ($array as $indexname=>$line) {
+                if ($fShowIndex) {
+                    $ret.="| ".str_pad($indexname, $indexlen, " ", STR_PAD_LEFT)." ";
+                }
                 foreach ($firstrowkeys as $number=>$keyname) {
                     $len=$max[$number];
                     $ret.="| ".str_pad($line[$keyname], $len, " ", STR_PAD_LEFT)." ";
