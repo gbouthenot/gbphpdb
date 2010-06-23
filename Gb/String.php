@@ -321,6 +321,26 @@ class Gb_String
     }
 
     /**
+     * Prepend or Append a string on each line of a string
+     * @param string $text
+     * @param string[optional] $prepend
+     * @param string[optional] $append
+     */
+    public static function appendPrepend($text, $prepend="", $append="")
+    {
+        $aText=split("\n", $text);
+        // remove last line if it is empty (ie the last line ended with \n)
+        $last=array_pop($aText);
+        if (strlen($last)) { $aText[]=$last; }
+        $text3="";
+        foreach ($aText as $line) {
+            $text3.=$prepend.$line.$append."\n";
+        }
+        return $text3;
+    }
+    
+    
+    /**
      * Idem realpath, mais fonctionne aussi sur fichier non existant
      * Inspiré par Sven Arduwie http://fr.php.net/manual/fr/function.realpath.php#84012 , mais retourne chemin absolu
      * @param string $path
