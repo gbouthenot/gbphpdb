@@ -34,7 +34,7 @@ abstract class Gb_Form_Elem
     );
     
     /**
-     * Renvoie la revision de la classe ou un boolean si la version est plus petite que précisée, ou Gb_Exception
+     * Renvoie la revision de la classe ou un boolean si la version est plus petite que prï¿½cisï¿½e, ou Gb_Exception
      *
      * @return boolean|integer
      * @throws Gb_Exception
@@ -77,6 +77,9 @@ abstract class Gb_Form_Elem
     protected $_maxValue=array();
     protected $_notValue=array();
     protected $_regexp;
+
+    protected $_javascriptRendered=false;
+    protected $_htmlRendered=false;
     
     protected function __construct($name, array $availableParams=array(), array $aParams=array())
     {
@@ -88,6 +91,7 @@ abstract class Gb_Form_Elem
             "classStatut",       "name",         "toBackendFunc",  "backendCol",    "errorContainer",
             "publicName",        "fromBackendFunc",   "preInput",  "value",    "errorMsgMissing",
             "errorMsgCustom",    "disabled",
+            "javascriptRendered","htmlRendered",
         ));
         
         foreach ($availableParams as $key) {
@@ -128,38 +132,43 @@ abstract class Gb_Form_Elem
      * Renders HTML
      * @return string
      */
-    public function renderHtml()
+    public final function renderHtml()
     {
-        $preInput=$this->_preInput;
-        $postInput=$this->_postInput;
-        $inInput=$this->_inInput;
-        $value=$this->value();
-        if ($this->disabled()) {$inInput.=" disabled='disabled' "; }
-        
-        $inputjs=$this->javascriptEnabled()?$this->getInputJavascript():"";
-        $htmlInput=$this->getInput($value, $inInput, $inputjs);
-        
-        $preElem=$this->preElem();
-        $postElem=$this->postElem();
-        $container1=$container2="";$container1;$container2; // l'editeur dit qu'ils ne sont pas utilisés !
-        $container=$this->container();
-        $errorContainer=$this->errorContainer();
-        $errorMsg=$this->errorMsg();
-        $elemid=$this->elemId();
-        if (strlen($container)) {
-            $classStatut=$this->classStatut();
-            if (strlen($classStatut)) { $classStatut="class='$classStatut'"; } else { $classStatut="class='OKNOK'"; }
-            $container1="<$container id='{$elemid}_div' $classStatut >";
-            $container2="</$container>";
+        $ret="";
+        if (!$this->HtmlRendered()) {
+            $preInput=$this->_preInput;
+            $postInput=$this->_postInput;
+            $inInput=$this->_inInput;
+            $value=$this->value();
+            if ($this->disabled()) {$inInput.=" disabled='disabled' "; }
+            
+            $inputjs=$this->javascriptEnabled()?$this->getInputJavascript():"";
+            $htmlInput=$this->getInput($value, $inInput, $inputjs);
+            
+            $preElem=$this->preElem();
+            $postElem=$this->postElem();
+            $container1=$container2="";$container1;$container2; // l'editeur dit qu'ils ne sont pas utilisï¿½s !
+            $container=$this->container();
+            $errorContainer=$this->errorContainer();
+            $errorMsg=$this->errorMsg();
+            $elemid=$this->elemId();
+            if (strlen($container)) {
+                $classStatut=$this->classStatut();
+                if (strlen($classStatut)) { $classStatut="class='$classStatut'"; } else { $classStatut="class='OKNOK'"; }
+                $container1="<$container id='{$elemid}_div' $classStatut >";
+                $container2="</$container>";
+            }
+            if (strlen($errorContainer)) {
+                $errorMsg="<$errorContainer class='ERROR'>$errorMsg</$errorContainer>";
+            }
+            if (strlen($preInput.$postInput)) {
+                $preInput="<label>".(strlen($preInput)?"<span class='PRE'>$preInput</span>":"");
+                $postInput=(strlen($postInput)?"<span class='POST'>$postInput</span>":"")."</label>";
+            }
+            $this->HtmlRendered(true);
+            $ret=$preElem.$container1.$preInput.$htmlInput.$postInput.$errorMsg.$container2.$postElem."\n";
         }
-        if (strlen($errorContainer)) {
-            $errorMsg="<$errorContainer class='ERROR'>$errorMsg</$errorContainer>";
-        }
-        if (strlen($preInput.$postInput)) {
-            $preInput="<label>".(strlen($preInput)?"<span class='PRE'>$preInput</span>":"");
-            $postInput=(strlen($postInput)?"<span class='POST'>$postInput</span>":"")."</label>";
-        }
-        return $preElem.$container1.$preInput.$htmlInput.$postInput.$errorMsg.$container2.$postElem."\n";
+        return $ret;
     }
 
     public function getAjaxArgs()
@@ -201,10 +210,17 @@ abstract class Gb_Form_Elem
      * Renders Javascript
      * @return string
      */
-    public function renderJavascript()
+    public final function renderJavascript()
     {
-        return "";
+        $ret="";
+        if (!$this->javascriptRendered()) {
+            $this->javascriptRendered(true);
+            $ret=$this->_renderjavascript();
+        }
+        return $ret;
     }
+    
+    abstract protected function _renderjavascript();
     
 //    abstract public function isValid();
     
@@ -214,36 +230,72 @@ abstract class Gb_Form_Elem
     {
         return $this->value($text);
     }
-        
+
+    
+    protected static function textSetter($newtext, $oldtext=null, $mode="append")
+    {
+        switch($mode) {
+            case "append": return $oldtext.$newtext;
+            case "prepend": return $newtext.$oldtext;
+            case "set": return $newtext;
+            default: throw new Gb_Exception("mode $mode unhandled");
+        }
+    }
+    
     /**
      * get/set inInput
      * @param string[optional] $text
+     * @param string[optional] "append" (default)/"prepend"/"set"
      * @return Gb_Form_Elem_Text_Abstract|String 
      */
-    final public function inInput($text=null)
+    final public function inInput($text=null, $mode="append")
     {   
         if ($text===null) {           return $this->_inInput; }
-        else { $this->_inInput=$text; return $this;}
+        else { $this->_inInput=self::textSetter($text, $this->_inInput, $mode); return $this;}
     }
     /**
      * get/set preInput
      * @param string[optional] $text
+     * @param string[optional] "append" (default)/"prepend"/"set"
      * @return Gb_Form_Elem_Text_Abstract|String 
      */
-    final public function preInput($text=null)
+    final public function preInput($text=null, $mode="append")
     {   
         if ($text===null) {             return $this->_preInput; }
-        else { $this->_preInput=$text; return $this;}
+        else { $this->_preInput=self::textSetter($text, $this->_preInput, $mode); return $this;}
     }
     /**
      * get/set postInput
      * @param string[optional] $text
+     * @param string[optional] "append" (default)/"prepend"/"set"
      * @return Gb_Form_Elem_Text_Abstract|String 
      */
-    final public function postInput($text=null)
+    final public function postInput($text=null, $mode="append")
     {   
         if ($text===null) {             return $this->_postInput; }
-        else { $this->_postInput=$text; return $this;}
+        else { $this->_postInput=self::textSetter($text, $this->_postInput, $mode); return $this;}
+    }
+    /**
+     * get/set preElem
+     * @param string[optional] $text
+     * @param string[optional] "append" (default)/"prepend"/"set"
+     * @return Gb_Form_Elem_Text_Abstract|String 
+     */
+    public function preElem($text=null, $mode="append")
+    {   
+        if ($text===null) {         return $this->_preElem; }
+        else { $this->_preElem=self::textSetter($text, $this->_preElem, $mode); return $this;}
+    }
+    /**
+     * get/set postElem
+     * @param string[optional] $text
+     * @param string[optional] "append" (default)/"prepend"/"set"
+     * @return Gb_Form_Elem_Text_Abstract|String 
+     */
+    public function postElem($text=null, $mode="append")
+    {   
+        if ($text===null) {         return $this->_postElem; }
+        else { $this->_postElem=self::textSetter($text, $this->_postElem, $mode); return $this;}
     }
     /**
      * get/set value
@@ -304,13 +356,33 @@ abstract class Gb_Form_Elem
     }
     /**
      * get/set fMandatory
-     * @param string[optional] $text
+     * @param boolean[optional] $text
      * @return Gb_Form_Elem_Text_Abstract|String 
      */
     final public function fMandatory($text=null)
     {   
         if ($text===null) {         return $this->_fMandatory; }
         else { $this->_fMandatory=$text; return $this;}
+    }
+    /**
+     * get/set javascriptRendered
+     * @param boolean[optional] $text
+     * @return Gb_Form_Elem_Text_Abstract|String 
+     */
+    final public function javascriptRendered($text=null)
+    {   
+        if ($text===null) {         return $this->_javascriptRendered; }
+        else { $this->_javascriptRendered=$text; return $this;}
+    }
+    /**
+     * get/set htmlRendered
+     * @param boolean[optional] $text
+     * @return Gb_Form_Elem_Text_Abstract|String 
+     */
+    final public function htmlRendered($text=null)
+    {   
+        if ($text===null) {         return $this->_htmlRendered; }
+        else { $this->_htmlRendered=$text; return $this;}
     }
     /**
      * get/set disabled
@@ -403,16 +475,6 @@ abstract class Gb_Form_Elem
         else { $this->_publicName=$text; return $this;}
     }
     /**
-     * get/set preElem
-     * @param string[optional] $text
-     * @return Gb_Form_Elem_Text_Abstract|String 
-     */
-    public function preElem($text=null)
-    {   
-        if ($text===null) {         return $this->_preElem; }
-        else { $this->_preElem=$text; return $this;}
-    }
-    /**
      * get/set container
      * @param string[optional] $text
      * @return Gb_Form_Elem_Text_Abstract|String 
@@ -434,16 +496,6 @@ abstract class Gb_Form_Elem
          else 
          { return $this->_container; } }
         else { $this->_errorContainer=$text; return $this;}
-    }
-    /**
-     * get/set postElem
-     * @param string[optional] $text
-     * @return Gb_Form_Elem_Text_Abstract|String 
-     */
-    public function postElem($text=null)
-    {   
-        if ($text===null) {         return $this->_postElem; }
-        else { $this->_postElem=$text; return $this;}
     }
     /**
      * get/set classStatut

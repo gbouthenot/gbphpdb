@@ -67,7 +67,7 @@ class Gb_Form_Elem_Selectmultiple extends Gb_Form_Elem
         $elemid=$this->elemId();
         return "onchange='javascript:validate_{$elemid}();' onkeyup='javascript:validate_{$elemid}();'";
     }
-    public function renderJavascript()
+    protected function _renderJavascript()
     {
         if (!$this->javascriptEnabled()) {
             return "";
@@ -76,9 +76,9 @@ class Gb_Form_Elem_Selectmultiple extends Gb_Form_Elem
         $ret="";
         $elemid=$this->elemId();
         
-        // par défaut, met en classOK, si erreur, repasse en classNOK
+        // par dï¿½faut, met en classOK, si erreur, repasse en classNOK
         $ret.=" \$('{$elemid}_div').className='OK';\n";
-        // enlève le message d'erreur
+        // enlï¿½ve le message d'erreur
         $ret.=" var e=\$('{$elemid}_div').select('div[class=\"ERROR\"]').first(); if (e!=undefined){e.innerHTML='';}\n";
         $ret.=" var e=\$('{$elemid}_div').select('span[class=\"ERROR\"]').first(); if (e!=undefined){e.innerHTML='';}\n";
         
@@ -163,9 +163,9 @@ class Gb_Form_Elem_Selectmultiple extends Gb_Form_Elem
         $value=$values;
         $validateFunc=$this->validateFunc();
         if (strlen($validateFunc)  && strlen($value)) {
-            // 1er argument: fonction à appeler
+            // 1er argument: fonction ï¿½ appeler
             $callback=$validateFunc[0];
-            // 2eme: éventuel parametres
+            // 2eme: ï¿½ventuel parametres
             $params=array();
             if (isset($validateFunc[1])) {
               $params=$validateFunc[1];

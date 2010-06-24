@@ -63,19 +63,22 @@ class Gb_Form_Database extends Gb_Form2
      * Remplit les valeurs depuis la base
      *
      * @param array $moreData array("col1", "col2")
-     * @return boolean true si donn�es trouv�es
+     * @return boolean true, null si non applicable, false si pas d'info
      */
     public function getFromDb(array $moreData=array())
     {
+        if (count($this->where)==0) {
+            // no WHERE, we cannot find the line in the database
+            return null;
+        }
+        
         $moreData=array_merge($moreData, array_keys($this->moreData()));
         $aDbCols=$moreData;
         
-        //todo: checkbox
         // obient le nom des colonnes
         $aCols=$this->getDataAsArray();
         
-        $fData=false;
-        // non ! on doit r�cup�rer le nom de l'element et non dbcol /** @TODO **/
+        $fHasData=false;
         foreach (array_keys($aCols) as $nom) {
             $elem=$this->getElem($nom);
             $dbcol=$elem->backendCol();
@@ -97,10 +100,10 @@ class Gb_Form_Database extends Gb_Form2
             }
             $this->_moreDataRead=$moreDataRead;
             $this->hasData(true);
-            $fData=true;
+            $fHasData=true;
         }    
         
-        return $fData;
+        return $fHasData;
     }
 
 
@@ -120,7 +123,7 @@ class Gb_Form_Database extends Gb_Form2
             return false;
         }
 
-        // non ! on doit r�cup�rer le nom de l'element et non dbcol /** @TODO **/
+        // find db column name and db column value
         foreach (array_keys($aCols) as $nom) {
             $elem=$this->getElem($nom);
             $dbcol=$elem->backendCol();

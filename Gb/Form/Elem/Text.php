@@ -19,5 +19,4 @@ class Gb_Form_Elem_Text  extends Gb_Form_Elem_Text_Abstract
     {
         return "type='text' class='text'";
     }
-
 }

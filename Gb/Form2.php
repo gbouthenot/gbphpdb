@@ -37,6 +37,9 @@ Class Gb_Form2 implements IteratorAggregate
     protected $_renderFormTags=true;
     protected $_toStringRendersAs="HTML";
     
+    protected $_formTagOpened=false;
+    protected $_formPostTagIssued=false;
+    protected $_formTagClosed=false;
 
     /**
      * Renvoie la revision de la classe ou un boolean si la version est plus petite que pr�cis�e, ou Gb_Exception
@@ -65,7 +68,8 @@ Class Gb_Form2 implements IteratorAggregate
         $availableParams=array(
             "action", "enctype", "errors", "formHash", "hasData",
             "isLoaded", "isPost", "isValid",
-            "method", "moreData", "moreDataRead", "renderFormTags", "toStringRendersAs", 
+            "method", "moreData", "moreDataRead", "renderFormTags", "toStringRendersAs",
+            "formTagOpened", "formPostTagIssued", "formTagClosed" ,
         );
         
         foreach ($availableParams as $key) {
@@ -138,50 +142,111 @@ Class Gb_Form2 implements IteratorAggregate
     {
         return $this->render();
     }
-    final public function renderHtml()
+    final public function renderHtml($aElemNames=null)
     {
         $ret="";
-        if ($this->renderFormTags()) {
-            $ret.=$this->renderFormOpenTag()."\n";
+
+        // the <FORM> tag
+        if ($this->renderFormTags() && !$this->formTagOpened()) {
+            $ret.=$this->_renderFormOpenTag()."\n";
+            $this->formTagOpened(true);
         }
-        $ret.=$this->renderFormPostTag()."\n";
-        foreach ($this as $elem) {
-            if ($elem instanceof Gb_Form_Elem || $elem instanceOf Gb_Form_Group) {
-                $ret.=$elem->renderHtml();
+
+        // the <INPUT TYPE="HIDDEN"> used to identified if the form has POST data
+        if (!$this->formPostTagIssued()) {
+            $ret.=$this->renderFormPostTag()."\n";
+            $this->formPostTagIssued(true);
+        }
+
+        if ($aElemNames===null) {
+            foreach ($this as $elemOrGroup) {
+                if ($elemOrGroup instanceof Gb_Form_Elem || $elemOrGroup instanceOf Gb_Form_Group) {
+                    $ret.=$elemOrGroup->renderHtml();
+                }
+            }
+        } else {
+            if (is_string($aElemNames)) {
+                $aElemNames=array($aElemNames);
+            }
+            foreach ($aElemNames as $elemname) {
+                $elemOrGroup=$this->getElem($elemname);
+                if ($elemOrGroup instanceof Gb_Form_Elem || $elemOrGroup instanceOf Gb_Form_Group) {
+                    $ret.=$elemOrGroup->renderHtml();
+                }
             }
         }
-        if ($this->renderFormTags()) {
+
+        // the </FORM> tag
+        if ($this->renderFormTags() && $aElemNames===null && !$this->formTagClosed()) {
+            // if the </form> should be rendered, renders it only if RenderHtml() was called without element name to render
             $ret.=$this->renderFormCloseTag()."\n";
+            $this->formTagClosed(true);
         }
         return $ret;
     }
+
+    // when publically called, assume that renderFormCloseTag() will be issued
     final public function renderFormOpenTag()
     {
+        $this->renderFormTags(false);
+        return $this->_renderFormOpenTag();
+    }
+    final protected function _renderFormOpenTag()
+    {
         $ret="";
-        $method=$this->method();   if (strlen($method))  {$method="method='$method'";}
-        $action=$this->action();   if (strlen($action))  {$action="action='$action'";}
-        $enctype=$this->enctype(); if (strlen($enctype)) {$enctype="enctype='$enctype'";}
-        $ret="<form $method $action $enctype>";
+        if (!$this->formTagOpened()) {
+            $method=$this->method();   if (strlen($method))  {$method="method='$method'";}
+            $action=$this->action();   if (strlen($action))  {$action="action='$action'";}
+            $enctype=$this->enctype(); if (strlen($enctype)) {$enctype="enctype='$enctype'";}
+            $ret="<form $method $action $enctype>";
+            $this->formTagOpened(true);
+        }
         return $ret;
     }
     final public function renderFormPostTag()
     {
-        $hash=$this->formHash();
-        $ret="<input type='hidden' name='GBFORMPOST' value='$hash' />";
+        $ret="";
+        if (!$this->formPostTagIssued()) {
+            $hash=$this->formHash();
+            $ret="<input type='hidden' name='GBFORMPOST' value='$hash' />";
+            $this->formPostTagIssued(true);
+        }
         return $ret;
     }
     final public function renderFormCloseTag()
     {
-        return "</form>";
-    }
-    final public function renderJavascript($fRenderScriptTag=false)
-    {
         $ret="";
-        foreach ($this as $elem) {
-            if ($elem instanceof Gb_Form_Elem || $elem instanceOf Gb_Form_Group) {
-                $ret.=$elem->renderJavascript();
+        if (!$this->formTagClosed()) {
+            $ret="</form>";
+            $this->formTagClosed(true);
+        }        
+        return $ret;
+    }
+    final public function renderJavascript($aElemNames=null, $fRenderScriptTag=null)
+    {
+        if ( ($aElemNames!==null) || ($fRenderScriptTag===null) ) {
+            $fRenderScriptTag=false;
+        }
+        $ret="";
+
+        if ($aElemNames===null) {
+            foreach ($this as $elemOrGroup) {
+                if ($elemOrGroup instanceof Gb_Form_Elem || $elemOrGroup instanceOf Gb_Form_Group) {
+                    $ret.=$elemOrGroup->renderJavascript();
+                }
+            }
+        } else {
+            if (is_string($aElemNames)) {
+                $aElemNames=array($aElemNames);
+            }
+            foreach ($aElemNames as $elemname) {
+                $elemOrGroup=$this->getElem($elemname);
+                if ($elemOrGroup instanceof Gb_Form_Elem || $elemOrGroup instanceOf Gb_Form_Group) {
+                    $ret.=$elemOrGroup->renderJavascript();
+                }
             }
         }
+        
         if ($fRenderScriptTag && strlen($ret)) {
             $head= "<script type='text/javascript'>\n";
             $head.="/* <![CDATA[ */\n";
@@ -191,15 +256,15 @@ Class Gb_Form2 implements IteratorAggregate
         }
         return $ret;
     }
-    final public function render()
+    final public function render($aElemNames=null)
     {   $ret="";
         if ($this->_toStringRendersAs=="HTML") {
-            $ret=$this->renderHtml();
+            $ret=$this->renderHtml($aElemNames);
         } elseif ($this->_toStringRendersAs=="JS") {
-            $ret=$this->renderJavascript();
+            $ret=$this->renderJavascript($aElemNames);
         } elseif ($this->_toStringRendersAs=="BOTH") {
-            $ret=$this->renderHtml();
-            $ret=$this->renderJavascript();
+            $ret=$this->renderHtml($aElemNames);
+            $ret=$this->renderJavascript($aElemNames, true);
         }
         return $ret;
     }
@@ -393,6 +458,36 @@ Class Gb_Form2 implements IteratorAggregate
         else { $this->_renderFormTags=$text; return $this;}
     }
     /**
+     * get/set formTagOpened
+     * @param boolean[optional] $text
+     * @return Gb_Form2|Boolean 
+     */
+    final public function formTagOpened($text=null)
+    {   
+        if ($text===null) {         return $this->_formTagOpened; }
+        else { $this->_formTagOpened=$text; return $this;}
+    }
+    /**
+     * get/set formPostTagIssued
+     * @param boolean[optional] $text
+     * @return Gb_Form2|Boolean 
+     */
+    final public function formPostTagIssued($text=null)
+    {   
+        if ($text===null) {         return $this->_formPostTagIssued; }
+        else { $this->_formPostTagIssued=$text; return $this;}
+    }
+    /**
+     * get/set formTagClosed
+     * @param boolean[optional] $text
+     * @return Gb_Form2|Boolean 
+     */
+    final public function formTagClosed($text=null)
+    {   
+        if ($text===null) {         return $this->_formTagClosed; }
+        else { $this->_formTagClosed=$text; return $this;}
+    }
+    /**
      * Set the type of data returned by __toString()
      *
      * @param string $type "HTML" or "JS"
@@ -444,7 +539,7 @@ Class Gb_Form2 implements IteratorAggregate
     public function getDataAsArray()
     {
         //@todo: radio, selectmultiple
-        // obient le nom des colonnes
+        // obtient le nom des colonnes
         $aCols=array();
         foreach (new RecursiveIteratorIterator($this->getIterator()) as $elem) {
             $class=get_class($elem);
@@ -580,6 +675,18 @@ Class Gb_Form2 implements IteratorAggregate
 
     /**
      * Lit les données, les valide et les écrit dans la bdd si elles sont ok
+     * Exemple d'utilisation:
+     * 		 $res=$myForm->process();
+     *       if ($res===true) {
+     *           $view->res="OK"; $view->message="Les informations ont bien été enregistrées.";
+     *       } elseif ($res===false) {
+     *           $view->res="NOK"; $view->message="ERREUR LORS DE L'ENREGISTREMENT. VEUILLEZ NOUS CONTACTER !";
+     *       } elseif (is_array($res)) {
+     *           $view->res="NOK"; $view->message="Erreur: merci de corriger les informations suivantes:<br />\n";
+     *           foreach ($res as $key=>$msg) {
+     *               $view->message.="$key: $msg<br />\n";
+     *           }
+     *       }
      *
      * @return mixed null si formulaire non soumis, true si formulaire soumis et valide, array si soumis et non valide. false si autre erreur
      */
@@ -593,7 +700,7 @@ Class Gb_Form2 implements IteratorAggregate
             if ($validate !== true) {
                 return $validate;
             }
-            if ($this->putInDb()===true && $this->getFromDb()===true) {
+            if ($this->putInDb()===true && $this->getFromDb()!==false) {
                 return true;
             }
             return false;

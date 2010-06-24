@@ -22,6 +22,7 @@ require_once("Elem/Hidden.php");
 class Gb_Form_Group implements IteratorAggregate
 {
     protected $_elems;
+    protected $_name;
     protected $_modifiers;
 
     protected $_toStringRendersAs="HTML";
@@ -32,10 +33,11 @@ class Gb_Form_Group implements IteratorAggregate
      * Constructeur de Gb_Form_Group
      *
      * @param array[optional] $aParams
-     * @param array[optional] $modifiers : arguments qui modifiront les paramètres des enfants de ce groupe
+     * @param array[optional] $modifiers : arguments qui modifiront les paramï¿½tres des enfants de ce groupe
      */
-    public function __construct($aParams=array(), $modifiers=array())
+    public function __construct($name, $aParams=array(), $modifiers=array())
     {
+       $this->_name=$name;
        $this->_elems=array();
        $this->_modifiers=$modifiers;
        
@@ -138,34 +140,64 @@ class Gb_Form_Group implements IteratorAggregate
     {
         return $this->render();
     }
-    final public function renderHtml()
+    final public function renderHtml($aElemNames=null)
     {
         $ret=$this->preGroup();
-        foreach ($this as $elem) {
-            if ($elem instanceof Gb_Form_Elem || $elem instanceof Gb_Form_Group) {
-                $ret.=$elem->renderHtml();
+        if ($aElemNames===null) {
+            foreach ($this as $elemOrGroup) {
+                if ($elemOrGroup instanceof Gb_Form_Elem || $elemOrGroup instanceOf Gb_Form_Group) {
+                    $ret.=$elemOrGroup->renderHtml();
+                }
+            }
+        } else {
+            if (is_string($aElemNames)) {
+                $aElemNames=array($aElemNames);
+            }
+            foreach ($aElemNames as $elemname) {
+                $elemOrGroup=$this->getElem($elemname);
+                if ($elemOrGroup instanceof Gb_Form_Elem || $elemOrGroup instanceOf Gb_Form_Group) {
+                    $ret.=$elemOrGroup->renderHtml();
+                }
             }
         }
+
         $ret.=$this->postGroup();
         $ret.="\n";
         return $ret;
     }
-    final public function renderJavascript()
+    final public function renderJavascript($aElemNames=null)
     {
         $ret="";
-        foreach ($this as $elem) {
-            if ($elem instanceof Gb_Form_Elem || $elem instanceOf Gb_Form_Group) {
-                $ret.=$elem->renderJavascript();
+        
+        if ($aElemNames===null) {
+            foreach ($this as $elemOrGroup) {
+                if ($elemOrGroup instanceof Gb_Form_Elem || $elemOrGroup instanceOf Gb_Form_Group) {
+                    $ret.=$elemOrGroup->renderJavascript();
+                }
+            }
+        } else {
+            if (is_string($aElemNames)) {
+                $aElemNames=array($aElemNames);
+            }
+            foreach ($aElemNames as $elemname) {
+                $elemOrGroup=$this->getElem($elemname);
+                if ($elemOrGroup instanceof Gb_Form_Elem || $elemOrGroup instanceOf Gb_Form_Group) {
+                    $ret.=$elemOrGroup->renderJavascript();
+                }
             }
         }
+
         return $ret;
     }
-    final public function render()
+    final public function render($aElemNames=null)
     {   $ret="";
         if ($this->_toStringRendersAs=="HTML") {
-            $ret=$this->renderHtml();
+            $ret=$this->renderHtml($aElemNames);
         } elseif ($this->_toStringRendersAs=="JS") {
-            $ret=$this->renderJavascript();
+            $ret=$this->renderJavascript($aElemNames);
+        } elseif ($this->_toStringRendersAs=="BOTH") {
+            $ret=$this->renderHtml($aElemNames);
+            $ret=$this->renderJavascript($aElemNames, true);
         }
         return $ret;
     }
@@ -182,26 +214,39 @@ class Gb_Form_Group implements IteratorAggregate
         }
         return $ret;
     }
+
+    protected static function textSetter($newtext, $oldtext=null, $mode="append")
+    {
+        switch($mode) {
+            case "append": return $oldtext.$newtext;
+            case "prepend": return $newtext.$oldtext;
+            case "set": return $newtext;
+            default: throw new Gb_Exception("mode $mode unhandled");
+        }
+    }
+    
     
     /**
      * get/set preGroup
      * @param string[optional] $text
+     * @param string[optional] "append" (default)/"prepend"/"set"
      * @return Gb_Form_Elem_Text_Abstract|String 
      */
-    final public function preGroup($text=null)
+    final public function preGroup($text=null, $mode="append")
     {   
         if ($text===null) {         return $this->_preGroup; }
-        else { $this->_preGroup=$text; return $this;}
+        else { $this->_preGroup=self::textSetter($text, $this->_preGroup, $mode); return $this;}
     }
     /**
      * get/set postGroup
      * @param string[optional] $text
+     * @param string[optional] "append" (default)/"prepend"/"set"
      * @return Gb_Form_Elem_Text_Abstract|String 
      */
-    final public function postGroup($text=null)
+    final public function postGroup($text=null, $mode="append")
     {   
         if ($text===null) {         return $this->_postGroup; }
-        else { $this->_postGroup=$text; return $this;}
+        else { $this->_postGroup=self::textSetter($text, $this->_postGroup, $mode); return $this;}
     }
     /**
      * Set the type of data returned by __toString()
@@ -219,6 +264,16 @@ class Gb_Form_Group implements IteratorAggregate
         else { throw new Gb_Exception("type $type unhandled"); }
         return $this;
     }
+    /**
+     * get/set name
+     * @param string[optional] $text
+     * @return Gb_Form_Elem_Text_Abstract|String 
+     */
+    final public function name($text=null)
+    {   
+        if ($text===null) {         return $this->_name; }
+        else { $this->_name=$text; return $this;}
+    }
     
     
 }
@@ -227,7 +282,7 @@ class Gb_Form_Group implements IteratorAggregate
 error_reporting(E_ALL | E_WARNING);
 echo "<pre>";
 $ab="ab";
-$group=new Gb_Form_Group();
+$group=new Gb_Form_Group("GRP1");
 $group->dd="";
 $group->$ab="abval";
 $group
@@ -236,13 +291,13 @@ $group
 ->__set("gh", new Gb_Form_Elem_Password("ghnom", array("gharg1", "gharg2")))
 ;
 
-$group2=new Gb_Form_Group();
+$group2=new Gb_Form_Group("GRP2");
 $group2
 ->__set("ab2", "ab2val")
 ->__set("ef2", new Gb_Form_Elem_Hidden("ef2nom", array("ef2args")))
 ;
 
-$group3=new Gb_Form_Group();
+$group3=new Gb_Form_Group("GRP3");
 $group3
 ->__set("xx3", "xx3val")
 ;

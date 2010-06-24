@@ -27,7 +27,12 @@ class Gb_Form_Elem_Print extends Gb_Form_Elem
         return $value;
     }
 
-    // post value interdit sur cet élément
+    protected function _renderJavascript()
+    {
+        return "";
+    }
+        
+    // post value interdit sur cet ï¿½lï¿½ment
     public function rawValue($text=null)
     {
         $text;

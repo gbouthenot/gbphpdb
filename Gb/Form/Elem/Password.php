@@ -20,4 +20,8 @@ class Gb_Form_Elem_Password extends Gb_Form_Elem_Text_Abstract
         return "type='password' class='password'";
     }
 
+    protected function _renderJavascript()
+    {
+        return "";
+    }
 }

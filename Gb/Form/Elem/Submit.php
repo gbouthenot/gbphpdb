@@ -39,6 +39,12 @@ class Gb_Form_Elem_Submit extends Gb_Form_Elem
         return $onclick;
     }
 
+    protected function _renderJavascript()
+    {
+        return "";
+    }
+    
+    
     /**
      * get/set onclick
      * @param string[optional] $text

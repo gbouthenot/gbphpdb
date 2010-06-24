@@ -28,4 +28,8 @@ class Gb_Form_Elem_Hidden extends Gb_Form_Elem
         return "<input type='hidden' id='{$elemid}' name='{$elemid}' value='$sValue' $inInput $inputJs />";
     }
 
+    protected function _renderJavascript()
+    {
+        return "";
+    }    
 }

@@ -24,7 +24,7 @@ abstract class Gb_Form_Elem_Text_Abstract extends Gb_Form_Elem
     abstract protected function getHtmlInInput();
 
 
-    public function renderJavascript()
+    protected function _renderJavascript()
     {
         if (!$this->javascriptEnabled()) {
             return "";
@@ -33,9 +33,9 @@ abstract class Gb_Form_Elem_Text_Abstract extends Gb_Form_Elem
         $ret="";
         $elemid=$this->elemId();
         
-        // par défaut, met en classOK, si erreur, repasse en classNOK
+        // par dï¿½faut, met en classOK, si erreur, repasse en classNOK
         $ret.=" \$('{$elemid}_div').className='OK';\n";
-        // enlève le message d'erreur
+        // enlï¿½ve le message d'erreur
         $ret.=" var e=\$('{$elemid}_div').select('div[class=\"ERROR\"]').first(); if (e!=undefined){e.innerHTML='';}\n";
         $ret.=" var e=\$('{$elemid}_div').select('span[class=\"ERROR\"]').first(); if (e!=undefined){e.innerHTML='';}\n";
         
@@ -79,6 +79,7 @@ abstract class Gb_Form_Elem_Text_Abstract extends Gb_Form_Elem
             $ret2.=$ret;
             $ret2.="}\n";
         }
+        $ret2=parent::renderJavascript().$ret2;
         return $ret2;
     }
 
@@ -184,9 +185,9 @@ abstract class Gb_Form_Elem_Text_Abstract extends Gb_Form_Elem
 
         $validateFunc=$this->validateFunc();
         if (is_array($validateFunc)  && strlen($value)) {
-            // 1er argument: fonction à appeler
+            // 1er argument: fonction ï¿½ appeler
             $callback=$validateFunc[0];
-            // 2eme: éventuel parametres
+            // 2eme: ï¿½ventuel parametres
             $params=array();
             if (isset($validateFunc[1])) {
               $params=$validateFunc[1];

@@ -51,7 +51,7 @@ class Gb_Form_Elem_Select extends Gb_Form_Elem
         return $ret;
     }
     
-    public function renderJavascript()
+    protected function _renderJavascript()
     {
         if (!$this->javascriptEnabled()) {
             return "";
@@ -61,9 +61,9 @@ class Gb_Form_Elem_Select extends Gb_Form_Elem
         $ret="";
         $elemid=$this->elemId();
         
-        // par défaut, met en classOK, si erreur, repasse en classNOK
+        // par dï¿½faut, met en classOK, si erreur, repasse en classNOK
         $ret.=" \$('{$elemid}_div').className='OK';\n";
-        // enlève le message d'erreur
+        // enlï¿½ve le message d'erreur
         $ret.=" var e=\$('{$elemid}_div').select('div[class=\"ERROR\"]').first(); if (e!=undefined){e.innerHTML='';}\n";
         $ret.=" var e=\$('{$elemid}_div').select('span[class=\"ERROR\"]').first(); if (e!=undefined){e.innerHTML='';}\n";
         
@@ -117,7 +117,11 @@ class Gb_Form_Elem_Select extends Gb_Form_Elem
         return "onchange='javascript:validate_{$elemid}();' onkeyup='javascript:validate_{$elemid}();'";
     }
     
-    
+    /*
+     * Exemple d'appel: $form->append(new Gb_Form_Elem_Select( "CHOIXFORM", array("backendCol"=>"aca_choixform","fMandatory"=>true,
+                                                                      "args"=>array(array('false',"choisissez"), "PE", "CPE"))    ))
+
+     */
     public function __construct($name, array $aParams=array())
     {
         $availableParams=array("args", "notValue");
@@ -162,6 +166,7 @@ class Gb_Form_Elem_Select extends Gb_Form_Elem
                 break;
             }
         }
+
         if (!$found) {
             return "Choix invalide";
         }                
@@ -174,9 +179,9 @@ class Gb_Form_Elem_Select extends Gb_Form_Elem
         
         $validateFunc=$this->validateFunc();
         if (strlen($validateFunc)  && strlen($value)) {
-            // 1er argument: fonction à appeler
+            // 1er argument: fonction Ã  appeler
             $callback=$validateFunc[0];
-            // 2eme: éventuel parametres
+            // 2eme: Ã©ventuel parametres
             $params=array();
             if (isset($validateFunc[1])) {
               $params=$validateFunc[1];
