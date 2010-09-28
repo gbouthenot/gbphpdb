@@ -111,7 +111,7 @@ class Gb_Form_Database extends Gb_Form2
    * Ins�re/update les valeurs dans la bdd
    *
    * @param array $moreData
-   * @return boolean true si tout s'est bien pass�
+   * @return boolean true si tout s'est bien passé
    */
     public function putInDb(array $moreData=array())
     {
