@@ -28,7 +28,7 @@ class Gb_Form_Database extends Gb_Form2
     protected $where;
     
     /**
-     * Renvoie la revision de la classe ou un boolean si la version est plus petite que pr�cis�e, ou Gb_Exception
+     * Renvoie la révision de la classe ou un boolean si la version est plus petite que précisée, ou Gb_Exception
      *
      * @return boolean|integer
      * @throws Gb_Exception
@@ -47,9 +47,9 @@ class Gb_Form_Database extends Gb_Form2
      * constructeur
      *
      * @param Gb_Db[optional] $db
-     * @param string[optional] $tableName par d�faut
+     * @param string[optional] $tableName par défaut
      * @param array[optional] $where array($dbGE->quoteInto("vaf_usa_login=?", Auth::getLogin()))
-     * @param array[optional] $aOptions options pass�es � Gb_Form2
+     * @param array[optional] $aOptions options passées à Gb_Form2
      */
     public function __construct(Gb_Db $db=null, $tableName="", array $where=array(), $aParams=null)
     {
@@ -108,7 +108,7 @@ class Gb_Form_Database extends Gb_Form2
 
 
   /**
-   * Ins�re/update les valeurs dans la bdd
+   * Insère/update les valeurs dans la bdd
    *
    * @param array $moreData
    * @return boolean true si tout s'est bien passé

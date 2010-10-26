@@ -76,9 +76,9 @@ class Gb_Form_Elem_Selectmultiple extends Gb_Form_Elem
         $ret="";
         $elemid=$this->elemId();
         
-        // par d�faut, met en classOK, si erreur, repasse en classNOK
+        // par défaut, met en classOK, si erreur, repasse en classNOK
         $ret.=" \$('{$elemid}_div').className='OK';\n";
-        // enl�ve le message d'erreur
+        // enlève le message d'erreur
         $ret.=" var e=\$('{$elemid}_div').select('div[class=\"ERROR\"]').first(); if (e!=undefined){e.innerHTML='';}\n";
         $ret.=" var e=\$('{$elemid}_div').select('span[class=\"ERROR\"]').first(); if (e!=undefined){e.innerHTML='';}\n";
         
@@ -163,9 +163,9 @@ class Gb_Form_Elem_Selectmultiple extends Gb_Form_Elem
         $value=$values;
         $validateFunc=$this->validateFunc();
         if (strlen($validateFunc)  && strlen($value)) {
-            // 1er argument: fonction � appeler
+            // 1er argument: fonction à appeler
             $callback=$validateFunc[0];
-            // 2eme: �ventuel parametres
+            // 2eme: éventuel parametres
             $params=array();
             if (isset($validateFunc[1])) {
               $params=$validateFunc[1];

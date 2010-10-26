@@ -23,20 +23,20 @@ require_once(_GB_PATH."String.php");
  *
  * @author Gilles Bouthenot
  * @version 1.01
- *  function str_readfile($filename) : � remplacer par file_get_contents($filename)
+ *  function str_readfile($filename) : à remplacer par file_get_contents($filename)
  *
  */
 Class Gb_Util
 {
   // ***********************
-  // variables statiques accessibles depuis l'ext�rieur avec Gb_Util::$head et depuis la classe avec self::$head
+  // variables statiques accessibles depuis l'extérieur avec Gb_Util::$head et depuis la classe avec self::$head
   // ************************
 
-  public static $debug=0;                 // par d�faut, pas de mode d�bug
-  public static $forbidDebug=0;           // ne pas interdire de passer en d�bug par $_GET["debug"]
+  public static $debug=0;                 // par défaut, pas de mode debug
+  public static $forbidDebug=0;           // ne pas interdire de passer en debug par $_GET["debug"]
 
     /**
-     * Renvoie la revision de la classe ou un boolean si la version est plus petite que pr�cis�e, ou Gb_Exception
+     * Renvoie la revision de la classe ou un boolean si la version est plus petite que précisée, ou Gb_Exception
      *
      * @return boolean|integer
      * @throws Gb_Exception
@@ -53,7 +53,7 @@ Class Gb_Util
     
 
   /**
-   * Cette classe ne doit pas �tre instanc�e !
+   * Cette classe ne doit pas être instancée
    */
   private function __construct()
   {
@@ -65,9 +65,9 @@ Class Gb_Util
    *
    * Met error_reporting si debug, ou bien si _GET["debug"] (sauf si forbidDebug)
    * Appelle main()
-   * Si d�bug (ou showFooter), affiche le footer
+   * Si debug (ou showFooter), affiche le footer
    *
-   * @param string[optional] $function fonction � appeler (main si non pr�cis�)
+   * @param string[optional] $function fonction à appeler (main si non précisé)
    */
   public static function startup($function="main", $param=array())
   {
@@ -103,7 +103,7 @@ Class Gb_Util
 
   /**
    * Combine deux arrays
-   * Idem que array_merge, mais sans renum�roter les cl�s si cl� num�rique (�vite de concat�ner)
+   * Idem que array_merge, mais sans renuméroter les clés si clé numérique (évite de concaténer)
    *
    * @param array $arr1
    * @param array $arr2
@@ -111,7 +111,7 @@ Class Gb_Util
    */
   public static function array_merge(array $arr1, array $arr2)
   {
-    // si arr2 est plus grand, �change arr1 et arr2 pour it�rer sur le plus petit
+    // si arr2 est plus grand, échange arr1 et arr2 pour itérer sur le plus petit
     if (count($arr2)>count($arr1)) {
         foreach ($arr1 as $k=>$v)
           $arr2[$k]=$v;
@@ -151,15 +151,15 @@ Class Gb_Util
   
     
   /**
-   * Inclut et execute un fichier et retourne le r�sultat dans une chaine
+   * Inclut et execute un fichier et retourne le résultat dans une chaine
    *
-   * @param string $file fichier � include
+   * @param string $file fichier à include
    * @return string le fichier
    * @throws Gb_Exception
    */
   public static function include_file($file)
-  { // fait include d'un fichier, mais retourne le r�sultat dans une chaine
-    // cela permet d'inclure un fichier et de l'�xecuter en m�me temps
+  { // fait include d'un fichier, mais retourne le résultat dans une chaine
+    // cela permet d'inclure un fichier et de l'exécuter en même temps
     if (file_exists($file) && is_readable($file)) {
       ob_start();
       include($file);
@@ -170,9 +170,9 @@ Class Gb_Util
   }
 
   /**
-   * renvoie ?debug=1 ou &debug=1 si debug activ�
+   * renvoie ?debug=1 ou &debug=1 si debug activé
    *
-   * @param string $c caract�re � renvoyer ("&" (par d�faut) ou "?")
+   * @param string $c caractère à renvoyer ("&" (par défaut) ou "?")
    * @return string
    */
   public static function url_debug($c="&")

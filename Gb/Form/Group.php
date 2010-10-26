@@ -33,7 +33,7 @@ class Gb_Form_Group implements IteratorAggregate
      * Constructeur de Gb_Form_Group
      *
      * @param array[optional] $aParams
-     * @param array[optional] $modifiers : arguments qui modifiront les param�tres des enfants de ce groupe
+     * @param array[optional] $modifiers : arguments qui modifiront les paramètres des enfants de ce groupe
      */
     public function __construct($name, $aParams=array(), $modifiers=array())
     {

@@ -19,7 +19,7 @@ Class Gb_Db_Engine
     protected $_aliases;
 
     /**
-     * Renvoie la revision de la classe ou un boolean si la version est plus petite que pr�cis�e, ou Gb_Exception
+     * Renvoie la révision de la classe ou un boolean si la version est plus petite que précisée, ou Gb_Exception
      *
      * @return boolean|integer
      * @throws Gb_Exception
@@ -38,7 +38,7 @@ Class Gb_Db_Engine
      * constructeur
      *
      * @param string[optional] $sessionprefix
-     * @param array[optional] $aOptions options pass�es � Gb_Form2
+     * @param array[optional] $aOptions options passées à Gb_Form2
      */
     public function __construct()
     {
@@ -135,7 +135,7 @@ Class Gb_Db_Engine
         $data=array();
         $first=true;
         foreach ($array as $key=>$subarray) {
-            if ($first) { // ignore la premi�re valeur
+            if ($first) { // ignore la première valeur
                 $first=false;
             } else {
                 $this->_aTmpData[$key]=$this->_exec_array($subarray, $params);
@@ -146,7 +146,7 @@ Class Gb_Db_Engine
     }
 
     /**
-     * Ex�cute la requete Gauche, et pour chaque ligne, ex�cute la requete droite, en remplacant les parametres
+     * Exécute la requete Gauche, et pour chaque ligne, exécute la requete droite, en remplacant les parametres
      * Si la requete droite renvoit plusieurs lignes, la fonction renvoit autant de lignes.
      * Si la requete droite renvoit 0 ligne, et qu'on effectue une requete "LEFT JOIN", inclus la ligne gauche seule.
      *
@@ -196,7 +196,7 @@ Class Gb_Db_Engine
     }
 
     /**
-     * Ex�cute la requete Gauche, puis la requ�te droite et pour chaque ligne de la requete gauche, recherche dans la requ�te droite
+     * Exécute la requete Gauche, puis la requête droite et pour chaque ligne de la requete gauche, recherche dans la requête droite
      * Si la requete droite renvoit plusieurs lignes, la fonction renvoit autant de lignes.
      * Si la requete droite renvoit 0 ligne, et qu'on effectue une requete "LEFT JOIN", inclus la ligne gauche seule.
      *

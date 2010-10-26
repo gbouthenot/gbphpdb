@@ -34,7 +34,7 @@ abstract class Gb_Form_Elem
     );
     
     /**
-     * Renvoie la revision de la classe ou un boolean si la version est plus petite que pr�cis�e, ou Gb_Exception
+     * Renvoie la révision de la classe ou un boolean si la version est plus petite que précisée, ou Gb_Exception
      *
      * @return boolean|integer
      * @throws Gb_Exception
@@ -147,7 +147,7 @@ abstract class Gb_Form_Elem
             
             $preElem=$this->preElem();
             $postElem=$this->postElem();
-            $container1=$container2="";$container1;$container2; // l'editeur dit qu'ils ne sont pas utilis�s !
+            $container1=$container2="";$container1;$container2; // l'editeur dit qu'ils ne sont pas utilisés !
             $container=$this->container();
             $errorContainer=$this->errorContainer();
             $errorMsg=$this->errorMsg();

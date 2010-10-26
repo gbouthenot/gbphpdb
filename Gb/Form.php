@@ -60,7 +60,7 @@ Class Gb_Form
 
 
     /**
-     * Renvoie la revision de la classe ou un boolean si la version est plus petite que pr�cis�e, ou Gb_Exception
+     * Renvoie la révision de la classe ou un boolean si la version est plus petite que précisée, ou Gb_Exception
      *
      * @return boolean|integer
      * @throws Gb_Exception
@@ -88,7 +88,7 @@ Class Gb_Form
     $this->db=$db;
     $this->tableName=$tableName;
     
-/*    // transforme la condition avec quoteInto, si n�c�ssaire
+/*    // transforme la condition avec quoteInto, si nécéssaire
     $where2=array();
     foreach ($where as $cond) {
       if (is_array($cond)) {
@@ -106,9 +106,9 @@ Class Gb_Form
   }
 
   /**
-   * Ajoute un �l�ment (fluent interface)
+   * Ajoute un élément (fluent interface)
    *
-   * @param string $nom Nom unique, d�fini le NAME de l'�l�ment doit commencer par une lettre et ne comporter que des caract�res alphanum�riques
+   * @param string $nom Nom unique, défini le NAME de l'élément doit commencer par une lettre et ne comporter que des caractères alphanumériques
    * @param array $aParams
    * @throws Gb_Exception
    * 
@@ -120,38 +120,38 @@ Class Gb_Form
         // $aParams["args"]:
         //            SELECT: liste des valeurs disponibles sous la forme
         //                    array(array(value[,libelle]), "default"=>array(value[,libelle]), ...)
-        //                    (value est recod� dans le html mais renvoie la bonne valeur)
+        //                    (value est recodé dans le html mais renvoie la bonne valeur)
         //                    (si value==='false', la valeur est interdite par fMandatory)
-        //                    (si value==='optgroup', la valeur d�finit un optgroup
-        //    SELECTMULTIPLE: idem SELECT mais sans la possibilit� d'avoir un default 
-        //              TEXT: array("value"=>valeur par d�faut, "regexp"=>"/.*/" ou "Year" pour pr�d�fini) 
+        //                    (si value==='optgroup', la valeur définit un optgroup
+        //    SELECTMULTIPLE: idem SELECT mais sans la possibilité d'avoir un default 
+        //              TEXT: array("value"=>valeur par défaut, "regexp"=>"/.*/" ou "Year" pour prédéfini) 
         //          TEXTAREA: idem TEXT
         //            HIDDEN:
         //          CHECKBOX:
         //             RADIO:
         //             PRINT: message dans $aParams["value"]
         // $aParams["dbCol"]       : nom de la colonne bdd
-        // $aParams["fMandatory"]  : doit �tre rempli ? d�faut: false
+        // $aParams["fMandatory"]  : doit être rempli ? défaut: false
         // $aParams["toDbFunc"]    : array( "fonction" ou array("classe", "methode") , array("%s", ENT_QUOTES)[optional] ) 
         // $aParams["fromDbFunc"]  : array( "fonction" ou array("classe", "methode") , array("%s", ENT_QUOTES)[optional] ) 
         // $aParams["validateFunc"]: array( callback, params=null ): appelle une fonction avec pour 1er parametre, la valeur a checker. Doit retourner true, false ou message d'erreur. 
         // $aParams["invalidMsg"]  : texte qui s'affiche en cas de saisie invalide
-        // $aParams["class"]       : nom de la classe pour l'�l�ment
+        // $aParams["class"]       : nom de la classe pour l'élément
         // $aParams["preInput"]    :
         // $aParams["inInput"]     : pour TEXT: size et maxlength
         // $aParams["postInput"]   :
-        // renseign�s automatiquement (accessible uniquement en lecture):
+        // renseignés automatiquement (accessible uniquement en lecture):
         // $aParams["classSTATUT"] : nom de la classe en cours
-        // $aParams["message"]     : message d'erreur �ventuel
+        // $aParams["message"]     : message d'erreur éventuel
       
     if (!preg_match("/^[a-zA-Z][a-zA-Z0-9]*/", $nom))
       throw new Gb_Exception("Nom de variable de formulaire invalide");
 
     if (isset($this->formElement[$nom]))
-      throw new Gb_Exception("Nom de variable de formulaire d�j� d�fini");
+      throw new Gb_Exception("Nom de variable de formulaire déjà défini");
 
     if (!isset($aParams["type"]))
-      throw new Gb_Exception("Type de variable de formulaire non pr�cis�");
+      throw new Gb_Exception("Type de variable de formulaire non précisé");
 
     if (!isset($aParams["fMandatory"]))
       $aParams["fMandatory"]=false;
@@ -181,12 +181,12 @@ Class Gb_Form
     {
       case "SELECT":
         if (!isset($aParams["args"]) || !is_array($aParams["args"]))
-          throw new Gb_Exception("Param�tres de $nom incorrects");
+          throw new Gb_Exception("Paramètres de $nom incorrects");
         if (isset($aParams["value"])) {
             $this->formElements[$nom]=$aParams;
             $this->set($nom, $aParams["value"]);
         } else {
-            //remplit value avec le num�ro s�lectionn�.
+            //remplit value avec le numéro sélectionné.
             $num=0;
             $args=array();
             foreach($aParams["args"] as $ordre=>$val) {
@@ -198,7 +198,7 @@ Class Gb_Form
             }
             $aParams["args"]=$args;
             if (!isset($aParams["value"])) {
-                $aParams["value"]="0";    // par d�faut, 1er �l�ment de la liste
+                $aParams["value"]="0";    // par défaut, 1er élément de la liste
             }
             $this->formElements[$nom]=$aParams;
         }
@@ -206,9 +206,9 @@ Class Gb_Form
 
       case "SELECTMULTIPLE":
         if (!isset($aParams["args"]) || !is_array($aParams["args"]))
-          throw new Gb_Exception("Param�tres de $nom incorrects");
+          throw new Gb_Exception("Paramètres de $nom incorrects");
         if (!isset($aParams["value"]))
-          $aParams["value"]=array();    // par d�faut, aucune selection
+          $aParams["value"]=array();    // par défaut, aucune selection
         $this->formElements[$nom]=$aParams;
         break;
 
@@ -221,7 +221,7 @@ Class Gb_Form
           }
         }
         if (!isset($aParams["value"]))
-          $aParams["value"]="";   // par d�faut, chaine vide
+          $aParams["value"]="";   // par défaut, chaine vide
         $this->formElements[$nom]=$aParams;
         break;
 
@@ -235,18 +235,18 @@ Class Gb_Form
 
       case "RADIO": case "HIDDEN":
         if (!isset($aParams["value"]))
-          $aParams["value"]="";   // par d�faut, chaine vide
+          $aParams["value"]="";   // par défaut, chaine vide
         $this->formElements[$nom]=$aParams;
         break;
 
       case "AUTOCOMPLETEKEY":
         if (!isset($aParams["value"]))
-          $aParams["value"]="";   // par d�faut, chaine vide
+          $aParams["value"]="";   // par défaut, chaine vide
         if (!isset($aParams["args"]["valuelib"]) || !isset($aParams["args"]["valueToLibFunc"]) || !isset($aParams["args"]["autocompleteURL"])) {
             throw new Gb_Exception("Il manque des arguments AUTOCOMPLETEKEY pour $nom");
         }
         $this->formElements[$nom]=$aParams;
-        /* @todo remplir libelle � partir de value si non pr�cis� */
+        /* @todo remplir libelle à partir de value si non précisé */
         break;
 
       case "PRINT": case "VAR":
@@ -264,7 +264,7 @@ Class Gb_Form
   public function getElementParam($nom, $paramName)
   {
     if (!isset($this->formElements[$nom]))
-      throw new Gb_Exception("Get elementParam: nom=$nom non d�fini");
+      throw new Gb_Exception("Get elementParam: nom=$nom non défini");
     $aElement=$this->formElements[$nom];
     if (isset($aElement[$paramName]))
       return $aElement[$paramName];
@@ -273,12 +273,12 @@ Class Gb_Form
   }
 
     /**
-     * Modifie la valeur d'un param�tre (fluent interface)
+     * Modifie la valeur d'un paramètre (fluent interface)
      *
-     * @param string $nom nom de l'�l�ment
-     * @param string $paramName nom du param�tre
+     * @param string $nom nom de l'élément
+     * @param string $paramName nom du paramètre
      * @param string $value valeur
-     * @param string[optional] $action APPEND (d�faut)/SET/PREPEND
+     * @param string[optional] $action APPEND (défaut)/SET/PREPEND
      * @throws Gb_Exception
      * 
      * @return Gb_Form (fluent interface)
@@ -286,7 +286,7 @@ Class Gb_Form
     public function setElementParam($nom, $paramName, $value, $action="APPEND")
     {
         if (!isset($this->formElements[$nom])) {
-            throw new Gb_Exception("Set elementParam: nom=$nom non d�fini");
+            throw new Gb_Exception("Set elementParam: nom=$nom non défini");
         }
         $action=strtoupper($action);
         $oldvalue="";
@@ -303,7 +303,7 @@ Class Gb_Form
     }
 
     /**
-     * Renvoie bool�an si element existe
+     * Renvoie booléan si element existe
      *
      * @param string $nom
      * @return boolean
@@ -316,16 +316,16 @@ Class Gb_Form
     }    
 
     /**
-     * Positionne la valeur d'un �l�ment (fluent interface)
+     * Positionne la valeur d'un élément (fluent interface)
      *
-     * @param string $nom nom de l'�l�ment
+     * @param string $nom nom de l'élément
      * @param string $value valeur
      * @return Gb_Form (fluent interface)
      */
     public function set($nom, $value)
     {
         if (!isset($this->formElements[$nom]))
-            throw new Gb_Exception("Set impossible: nom=$nom non d�fini");
+            throw new Gb_Exception("Set impossible: nom=$nom non défini");
 
         $type=$this->formElements[$nom]["type"];
         if ($type=="SELECT") {
@@ -349,7 +349,7 @@ Class Gb_Form
   public function get($nom)
   {
     if (!isset($this->formElements[$nom]))
-      throw new Gb_Exception("Set impossible: nom=$nom non d�fini");
+      throw new Gb_Exception("Set impossible: nom=$nom non défini");
 
     $value=$this->formElements[$nom]["value"];
 
@@ -366,7 +366,7 @@ Class Gb_Form
   
   
   /**
-   * Renvoit le code HTML appropri� (valeur par d�faut, pr�selectionn�, etc)
+   * Renvoit le code HTML approprié (valeur par défaut, préselectionné, etc)
    *
    * @param string[optional] $nom
    * @param string[optional] $radioValue
@@ -376,7 +376,7 @@ Class Gb_Form
   {
     $ret="";
 
-    // si nom vide, rappelle la fonction pour tous les �l�ments
+    // si nom vide, rappelle la fonction pour tous les éléments
     if ($nom==="") {
       foreach ($this->formElements as $nom=>$aElement) {
         $ret.=$this->getHtml($nom);
@@ -389,7 +389,7 @@ Class Gb_Form
     }
 
     if ($this->fPostIndicator===null) {
-      // positionnement de la variable indiquant que l'indicateur a �t� mis.
+      // positionnement de la variable indiquant que l'indicateur a été mis.
       $hash=$this->getFormHash();
       $ret.="<input type='hidden' name='GBFORMPOST' id='GBFORMPOST' value='$hash' />\n";
       $this->fPostIndicator=true;
@@ -516,7 +516,7 @@ Class Gb_Form
 
 
   /**
-   * Change le message d'erreur d'un el�ment (fluent interface)
+   * Change le message d'erreur d'un elément (fluent interface)
    *
    * @param string $nom
    * @param string[optional] $errorMsg
@@ -527,7 +527,7 @@ Class Gb_Form
   public function setErrorMsg($nom, $errorMsg="")
   {
     if (!isset($this->formElements[$nom]))
-      throw new Gb_Exception("Element de fomulaire non d�fini");
+      throw new Gb_Exception("Element de fomulaire non défini");
       $class="OK";
       if (strlen($errorMsg)) {
           $class="NOK";
@@ -542,14 +542,14 @@ Class Gb_Form
   /**
    * Renvoie le code javascript pour la validation dynamique
    *
-   * @param string[optinal] $nom �l�ment � r�cup�r�r ou vide pour tous
+   * @param string[optinal] $nom élément à récupérer ou vide pour tous
    * @return string
    */
   public function getJavascript($nom="")
   {
     $ret="";
 
-    // si nom vide, rappelle la fonction pour tous les �l�ments
+    // si nom vide, rappelle la fonction pour tous les éléments
     if ($nom==="") {
       foreach ($this->formElements as $nom=>$aElement) {
         $ret.=$this->getJavascript($nom);
@@ -568,9 +568,9 @@ Class Gb_Form
         break;
 
       case "SELECT":
-        // par d�faut, met en classOK, si erreur, repasse en classNOK
+        // par défaut, met en classOK, si erreur, repasse en classNOK
         $ret.=" \$('GBFORM_{$nom}_div').className='OK';\n";
-        // enl�ve le message d'erreur
+        // enlève le message d'erreur
         $ret.=" var e=\$('GBFORM_{$nom}_div').select('div[class=\"ERROR\"]').first(); if (e!=undefined){e.innerHTML='';}\n";
 
         // attention utilise prototype String.strip()
@@ -607,9 +607,9 @@ Class Gb_Form
         break;
 
       case "TEXT": case "PASSWORD": case "TEXTAREA":
-        // par d�faut, met en classOK, si erreur, repasse en classNOK
+        // par défaut, met en classOK, si erreur, repasse en classNOK
         $ret.=" \$('GBFORM_{$nom}_div').className='OK';\n";
-        // enl�ve le message d'erreur
+        // enlève le message d'erreur
         $ret.=" var e=\$('GBFORM_{$nom}_div').select('div[class=\"ERROR\"]').first(); if (e!=undefined){e.innerHTML='';}\n";
                 
         // attention utilise prototype String.strip()
@@ -706,9 +706,9 @@ Class Gb_Form
         break;
 
       case "CHECKBOX":
-          // par d�faut, met en classOK, si erreur, repasse en classNOK
+          // par défaut, met en classOK, si erreur, repasse en classNOK
           $ret.=" \$('GBFORM_{$nom}_div').className='OK';\n";
-          // enl�ve le message d'erreur
+          // enlève le message d'erreur
           $ret.=" var e=\$('GBFORM_{$nom}_div').select('div[class=\"ERROR\"]').first(); if (e!=undefined){e.innerHTML='';}\n";
                     
           if ($aElement["fMandatory"]) {
@@ -752,9 +752,9 @@ Class Gb_Form
     }
   
   /**
-   * Remplit les valeurs depuis la base de donn�es
+   * Remplit les valeurs depuis la base de données
    *
-   * @return boolean true si donn�es trouv�es
+   * @return boolean true si données trouvées
    */
   public function getFromDb()
   {
@@ -800,11 +800,11 @@ Class Gb_Form
     $db=$this->db;
     $aLigne=$db->retrieve_one($sql);
     if ($aLigne===false) {
-    // La requ�te n'a pas renvoy� de ligne
+    // La requête n'a pas renvoyé de ligne
       return false;
     }
 
-    // La requ�te a renvoy� une ligne
+    // La requête a renvoyé une ligne
     foreach ($aCols as $nom=>$dbcol) {
         $aElement=$this->formElements[$nom];
         $val=$aLigne[$dbcol];
@@ -824,7 +824,7 @@ Class Gb_Form
         $this->fHasData=true;
     }
 
-    // r�cup�re les informations moreData
+    // récupère les informations moreData
     if (count($this->moreData)) {
         foreach ($this->moreData as $dbcol=>$void) {
             $void;
@@ -839,7 +839,7 @@ Class Gb_Form
 
 
     /**
-     * Renvoie les donn�es stock�es sous forme de array
+     * Renvoie les données stockées sous forme de array
      *
      * @param array $moreData
      * @return array
@@ -880,10 +880,10 @@ Class Gb_Form
       
   
   /**
-   * Ins�re/update les valeurs dans la bdd
+   * Insère/update les valeurs dans la bdd
    *
    * @param array $moreData
-   * @return boolean true si tout s'est bien pass�
+   * @return boolean true si tout s'est bien passé
    */
     public function putInDb(array $moreData=array())
     {
@@ -927,7 +927,7 @@ Class Gb_Form
     {
         if (empty($this->formHash)) {
             $noms="";
-            // Trie les noms par ordre alphab�tiques si les �l�ments n'ont pas �t� d�finis dans le m�me ordre
+            // Trie les noms par ordre alphabétiques si les éléments n'ont pas été définis dans le même ordre
             $keys=array_keys($this->formElements);
             sort($keys, SORT_STRING);
             foreach ($keys as $nom) {
@@ -941,14 +941,14 @@ Class Gb_Form
 
    /**
     * Remplit les valeurs depuis $_POST
-    * @return true si donn�es trouv�es
+    * @return true si données trouvées
     */
     public function getFromPost()
     {
         if ($this->fPost===null) {
             $fPost=false;
             if (isset($_POST["GBFORMPOST"]) && $_POST["GBFORMPOST"]==$this->getFormHash()) {
-                // detecte que le formulaire a �t� soumis. Utile pour les checkbox et selectmultiple
+                // detecte que le formulaire a été soumis. Utile pour les checkbox et selectmultiple
                 $fPost=true;
             }
             $this->fPost=$fPost;
@@ -958,10 +958,10 @@ Class Gb_Form
             foreach ($this->formElements as $nom=>$aElement) {
                 $type=$aElement["type"];
                 if ($type=="CHECKBOX") {
-                    // met les checkbox � false
+                    // met les checkbox à false
                     $this->formElements[$nom]["value"]=false;
                 } elseif ($type=="SELECTMULTIPLE") {
-                    // met les checkbox � false
+                    // met les checkbox à false
                     $this->formElements[$nom]["value"]=array();
                 }
                 if (isset($_POST["GBFORM_".$nom])) {
@@ -987,7 +987,7 @@ Class Gb_Form
   {
     $aErrs=array();
     foreach ($this->formElements as $nom=>$aElement) {
-        //pour tous les �l�ments:
+        //pour tous les éléments:
       $type=$aElement["type"];
 
       switch ($type)
@@ -995,7 +995,7 @@ Class Gb_Form
 
         case "SELECT":
           $value=strtolower(Gb_String::mystrtoupper(trim($aElement["value"])));
-          // V�rifie que la valeur est bien dans la liste et maj $value
+          // Vérifie que la valeur est bien dans la liste et maj $value
           if (isset($aElement["args"][$value])) {
             $value=$aElement["args"][$value][0];
           } else {
@@ -1062,7 +1062,7 @@ Class Gb_Form
                 $sBorne.=" ($borne)";
               }
               if ($bornevalue < $borne) {
-                $aErrs[$nom]="Doit etre superieur ou egal � $sBorne";
+                $aErrs[$nom]="Doit etre superieur ou egal à $sBorne";
                 continue;
               }
             }
@@ -1085,7 +1085,7 @@ Class Gb_Form
                 $sBorne.=" ($borne)";
               }
               if ($bornevalue > $borne) {
-                $aErrs[$nom]="Doit etre inferieur ou egal � $sBorne";
+                $aErrs[$nom]="Doit etre inferieur ou egal à $sBorne";
                 continue;
               }
             }
@@ -1117,7 +1117,7 @@ Class Gb_Form
       } //switch ($type)
 
       if ($aElement["fMandatory"]) {
-        // V�rifie que le champ et bien rempli
+        // Vérifie que le champ et bien rempli
         if ($type=="SELECT") {
         } elseif ($type=="SELECTMULTIPLE") {
             if (count($value)==0) {
@@ -1127,7 +1127,7 @@ Class Gb_Form
             if ($type=="TEXT")            $aErrs[$nom]="Valeur non saisie";
             elseif ($type=="HIDDEN")    $aErrs[$nom]="Valeur inexistante";
             elseif ($type=="TEXTAREA")  $aErrs[$nom]="Texte non saisi";
-            elseif ($type=="CHECKBOX")  $aErrs[$nom]="Case non coch�e";
+            elseif ($type=="CHECKBOX")  $aErrs[$nom]="Case non cochée";
             elseif ($type=="RADIO")     $aErrs[$nom]="?";
             elseif ($type=="PASSWORD")  $aErrs[$nom]="Mot de passe vide";
             else                       $aErrs[$nom]="Champ non rempli";
@@ -1137,9 +1137,9 @@ Class Gb_Form
       }
       
       if (isset($aElement["validateFunc"]) && strlen($value)) {
-          // 1er argument: fonction � appeler
+          // 1er argument: fonction à appeler
           $callback=$aElement["validateFunc"][0];
-          // 2eme: �ventuel parametres
+          // 2eme: éventuel parametres
           $params=array();
           if (isset($aElement["validateFunc"][1])) {
             $params=$aElement["validateFunc"][1];
@@ -1220,7 +1220,7 @@ Class Gb_Form
 
 
     /**
-     * Lit les donn�es, les valide et les �crit dans la bdd si elles sont ok
+     * Lit les données, les valide et les écrit dans la bdd si elles sont ok
      *
      * @return boolean true si formulaire soumis et valide, false si soumis et non valide. Sinon null.
      */
@@ -1242,9 +1242,9 @@ Class Gb_Form
     
     
     /**
-     * Lit les donn�es de la db et de post
+     * Lit les données de la db et de post
      * 
-     * @return boolean si des donn�es ont �t� lues
+     * @return boolean si des données ont été lues
      *
      */
     public function load()

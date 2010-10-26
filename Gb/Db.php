@@ -28,7 +28,7 @@ Class Gb_Db extends Zend_Db
      * @var Zend_Db_Adapter_Abstract
      */
     protected $conn;
-    protected $connArray;                                     // array utilis� par Zend_Db::factory()
+    protected $connArray;                                     // array utilisé par Zend_Db::factory()
     protected $driver;                                        // Pdo_Mysql ou Pdo_Oci
     protected $dbname;
     protected $fTransaction=false;
@@ -38,14 +38,14 @@ Class Gb_Db extends Zend_Db
   
     protected static $sqlTime=0;
     protected static $nbInstance_total=0;                    // Nombre de classes gbdb ouvertes au total
-    protected static $nbInstance_peak=0;                     // maximum ouvertes simultan�ment
+    protected static $nbInstance_peak=0;                     // maximum ouvertes simultanément
     protected static $nbInstance_current=0;                  // nom d'instances ouvertes en ce moment
-    protected static $nbRequest=0;                           // Nombre de requetes effectu�es
+    protected static $nbRequest=0;                           // Nombre de requetes effectuées
 
     protected static $fPluginRegistred=false;
     
     /**
-     * Renvoie la revision de la classe ou un boolean si la version est plus petite que pr�cis�e, ou Gb_Exception
+     * Renvoie la revision de la classe ou un boolean si la version est plus petite que précisée, ou Gb_Exception
      *
      * @return boolean|integer
      * @throws Gb_Exception
@@ -73,7 +73,7 @@ Class Gb_Db extends Zend_Db
     /**
      * Renvoie une nouvelle connexion
      *
-     * type est le driver � utiliser (MYSQL, OCI8)
+     * type est le driver à utiliser (MYSQL, OCI8)
      *
      * @param array("type"=>"Pdo_Mysql/Pdo_Oci/Pdo_Sqlite", "host"=>"localhost", "user/username"=>"", "pass/password"=>"", "name/dbname"=>"", "port"=>"") $aIn
      * @return GbDb
@@ -196,7 +196,7 @@ Class Gb_Db extends Zend_Db
         $sqlTime=self::$sqlTime;
         $time=microtime(true);
         
-        // d�termine towner et tname
+        // détermine towner et tname
         $pos=strpos($table, ".");
         if ($pos!==false) {
             // la table est au format owner.tablename
@@ -208,7 +208,7 @@ Class Gb_Db extends Zend_Db
             $tname=$table;
         }
 
-        // renvoie le array cach� si dispo
+        // renvoie le array caché si dispo
         if (isset($this->tablesDesc[$towner.".".$tname])) {
             return $this->tablesDesc[$towner.".".$tname];
         }
@@ -296,7 +296,7 @@ Class Gb_Db extends Zend_Db
             }
         }
         
-        // cache le r�sultat
+        // cache le résultat
         $this->tablesDesc[$towner.".".$tname]=$desc;
         
         self::$sqlTime=$sqlTime+microtime(true)-$time;
@@ -345,8 +345,8 @@ Class Gb_Db extends Zend_Db
  *
  * @param string $sql exemple "SELECT COUNT(*) FROM tusager WHERE usa_statut='?'
  * @param array[optional] $bindargurment exemple array("PE2")
- * @param string[optional] $index Si sp�cifi�, utilise la colonne comme cl�
- * @param string[optional] $col Si sp�cifi�, ne renvoie que cette colonne
+ * @param string[optional] $index Si spécifié, utilise la colonne comme clé
+ * @param string[optional] $col Si spécifié, ne renvoie que cette colonne
  *
  * @return array|string
  * @throws Gb_Exception
@@ -433,11 +433,11 @@ Class Gb_Db extends Zend_Db
     }
 
     /**
-     * Renvoie la premi�re ligne d'un select
+     * Renvoie la première ligne d'un select
      *
      * @param string $sql exemple "SELECT COUNT(*) FROM tusager WHERE usa_statut='?'
      * @param array[optional] $bindargurment exemple array("PE2")
-     * @param string[optional] $col Si sp�cifi�, renvoie directement la valeur
+     * @param string[optional] $col Si spécifié, renvoie directement la valeur
      *
      * @return array|string|false
      * @throws Gb_Exception
@@ -481,11 +481,11 @@ Class Gb_Db extends Zend_Db
     }
 
     /**
-     * Renvoie la premi�re ligne d'un select et s'assure qu'il n'y a qu'une seule ligne
+     * Renvoie la première ligne d'un select et s'assure qu'il n'y a qu'une seule ligne
      *
      * @param string $sql exemple "SELECT COUNT(*) FROM tusager WHERE usa_statut='?'
      * @param array[optional] $bindargurment exemple array("PE2")
-     * @param string[optional] $col Si sp�cifi�, renvoie directement la valeur
+     * @param string[optional] $col Si spécifié, renvoie directement la valeur
      *
      * @return array|string|false
      * @throws Gb_Exception
@@ -503,7 +503,7 @@ Class Gb_Db extends Zend_Db
     {
         $time=microtime(true);
         if ($this->fTransaction==true) {
-            throw new Gb_Exception("Transaction d�j� en cours, impossible d'en d�marrer une nouvelle !");
+            throw new Gb_Exception("Transaction déjà en cours, impossible d'en démarrer une nouvelle !");
         }
         $this->fTransaction=true;
         $ret=$this->conn->beginTransaction();
@@ -536,7 +536,7 @@ Class Gb_Db extends Zend_Db
      * @param string $table
      * @param array $data array("col"=>"val", "col2"=>new Zend_Db_Expr("NOW()"), ...)
      * @param string|array[optional] $where array("col='val'", $db->quoteInto("usr_id=?", $usr_id), ...)
-     * @return int nombre de lignes modifi�es
+     * @return int nombre de lignes modifiées
      * @throws Gb_Exception
      */
     public function update($table, array $data, $where=array())
@@ -559,7 +559,7 @@ Class Gb_Db extends Zend_Db
      *
      * @param string $table
      * @param string|array[optional] $where array($db->quoteInto("col=?", "val"), ...)
-     * @return int nombre de lignes modifi�es
+     * @return int nombre de lignes modifiées
      * @throws Gb_Exception
      */
     public function delete($table, $where=array())
@@ -581,7 +581,7 @@ Class Gb_Db extends Zend_Db
      *
      * @param string $table
      * @param array $data array("col"=>"val", "col2"=>new Zend_Db_Expr("NOW()"), ...)
-     * @return int nombre de lignes modifi�es
+     * @return int nombre de lignes modifiées
      * @throws Gb_Exception
      */
     public function insert($table, array $data)
@@ -600,10 +600,10 @@ Class Gb_Db extends Zend_Db
     }
 
    /**
-     * Regarde Combien de lignes correspondant � $where existe dans la table $data
+     * Regarde Combien de lignes correspondant à $where existe dans la table $data
      * 0?: INSERT. 1?: UPDATE. 2+: Throws exception
      *
-     * @param string $table Table � mettre � jour
+     * @param string $table Table à mettre à jour
      * @param array $data array("col"=>"val", "col2"=>new Zend_Db_Expr("NOW()"), ...)
      * @param string|array[optional] $where array("col='val'", $db->quoteInto("usr_id=?", $usr_id), ...)
      * @throws Gb_Exception
@@ -632,18 +632,18 @@ Class Gb_Db extends Zend_Db
                     if ($pos===false) { throw new Gb_Exception("= introuvable dans clause where !"); }
                     $col=substr($w, 0, $pos);
                     $val=substr($w, $pos+1);
-                    //enl�ve les quote autour de $val
+                    //enlève les quote autour de $val
                     if     (substr($val,0,1)=="'" && substr($val,-1)=="'") { $val=substr($val, 1, -1); }
                     elseif (substr($val,0,1)=='"' && substr($val,-1)=='"') { $val=substr($val, 1, -1); }
-                    else { throw new Gb_Exception("Pas de guillements trouv�s dans la clause where !");  }
+                    else { throw new Gb_Exception("Pas de guillements trouvés dans la clause where !");  }
                     $data[$col]=$val;
                 }
                 $ret=$this->conn->insert($table, $data);
             } elseif ($nb==1) {
-                // Une ligne existe d�j�: mettre � jour
+                // Une ligne existe déjà: mettre à jour
                 $ret=$this->conn->update($table, $data, $where);
             } else {
-                // Plus d'une ligne correspond: erreur de cl� ?
+                // Plus d'une ligne correspond: erreur de clé ?
                 throw new Gb_Exception("replace impossible: plus d'une ligne correspond !");
             }
         } catch (Gb_Exception $e) {
@@ -664,9 +664,9 @@ Class Gb_Db extends Zend_Db
     
 
    /**
-     * Insertion. Si l'insertion est impossible, supprime la ligne et la r�insere.
+     * Insertion. Si l'insertion est impossible, supprime la ligne et la réinsere.
      *
-     * @param string $table Table � mettre � jour
+     * @param string $table Table à mettre à jour
      * @param array $data array("col"=>"val", "col2"=>new Zend_Db_Expr("NOW()"), ...)
      * @throws Gb_Exception
      */
@@ -683,7 +683,7 @@ Class Gb_Db extends Zend_Db
 //        print_r($where);
 //        print_r($newdata);
         
-        // @todo NON NON et NON !!! Essayer d'ins�rer la ligne plut�t !!!
+        // @todo NON NON et NON !!! Essayer d'insérer la ligne plutôt !!!
         try {
             // compte le nombre de lignes correspondantes
             $select=$this->conn->select();
@@ -699,7 +699,7 @@ Class Gb_Db extends Zend_Db
                 $ret=$this->insert($table, $data);
                 $ret;
             } elseif ($nb==1) {
-                // Une ligne existe d�j�: delete puis insert
+                // Une ligne existe déjà: delete puis insert
                 // @todo: transaction !
                 $newdb=new Gb_Db(array_merge( array("driver"=>$this->driver), $this->connArray));
                 try {
@@ -715,7 +715,7 @@ Class Gb_Db extends Zend_Db
                     throw new Gb_Exception($e->getMessage());
                 }
             } else {
-                // Plus d'une ligne correspond: erreur de cl� ?
+                // Plus d'une ligne correspond: erreur de clé ?
                 throw new Gb_Exception("replace impossible: plus d'une ligne correspond !");
             }
         } catch (Gb_Exception $e) {
@@ -737,13 +737,13 @@ Class Gb_Db extends Zend_Db
 
         $tableDesc=$this->getTableDesc($table);
         $aPk=array();
-        $aPk1=$tableDesc["pk"];   // r�cup�re array(0=>array("COLUMN_NAME"=>xxx), ...)
+        $aPk1=$tableDesc["pk"];   // récupère array(0=>array("COLUMN_NAME"=>xxx), ...)
         foreach ($aPk1 as $aPk2) {
             $aPk[]=$aPk2["COLUMN_NAME"];    // transforme en array(xxx, ...)
         }
         
         $newdata=$data;
-        // extrait les donn�es de cl� primaires contenues dans $data, et les d�place dans $where
+        // extrait les données de clé primaires contenues dans $data, et les déplace dans $where
         $where=array();
         foreach ($aPk as $key) {
             $val=$data[$key];
@@ -757,7 +757,7 @@ Class Gb_Db extends Zend_Db
    /**
      * @todo: commentaire
      *
-     * @param string $table Table � mettre � jour
+     * @param string $table Table à mettre à jour
      * @param array $data array("col"=>"val", "col2"=>new Zend_Db_Expr("NOW()"), ...)
      * @throws Gb_Exception
      */
@@ -772,7 +772,7 @@ Class Gb_Db extends Zend_Db
         $newdata=array();
         $this->developpeData($table, $data, $newdata, $where);
 
-        // @todo NON NON et NON !!! Essayer d'ins�rer la ligne plut�t !!!
+        // @todo NON NON et NON !!! Essayer d'insérer la ligne plutôt !!!
         try {
             // compte le nombre de lignes correspondantes
             $select=$this->conn->select();
@@ -787,10 +787,10 @@ Class Gb_Db extends Zend_Db
                 // Aucune ligne existe: insertion nouvelle ligne
                 $ret=$this->insert($table, $data);
             } elseif ($nb==1) {
-                // Une ligne existe d�j�: update
+                // Une ligne existe déjà: update
                 $ret=$this->update($table, $newdata, $where);
             } else {
-                // Plus d'une ligne correspond: erreur de cl� ?
+                // Plus d'une ligne correspond: erreur de clé ?
                 throw new Gb_Exception("replace impossible: plus d'une ligne correspond !");
             }
         } catch (Gb_Exception $e) {
@@ -815,7 +815,7 @@ Class Gb_Db extends Zend_Db
         $newdata=array();
         $this->developpeData($table, $data, $newdata, $where);
 
-        // @todo NON NON et NON !!! Essayer d'ins�rer la ligne plut�t !!!
+        // @todo NON NON et NON !!! Essayer d'insérer la ligne plutôt !!!
         try {
             // compte le nombre de lignes correspondantes
             $select=$this->conn->select();
@@ -830,10 +830,10 @@ Class Gb_Db extends Zend_Db
                 // Aucune ligne existe: insertion nouvelle ligne
                 $ret=$this->insert($table, $data);
             } elseif ($nb==1) {
-                // Une ligne existe d�j�: update
+                // Une ligne existe déjà: update
                 $ret=$this->update($table, $newdata, $where);
             } else {
-                // Plus d'une ligne correspond: erreur de cl� ?
+                // Plus d'une ligne correspond: erreur de clé ?
                 throw new Gb_Exception("replace impossible: plus d'une ligne correspond !");
             }
         } catch (Gb_Exception $e) {
@@ -861,10 +861,10 @@ Class Gb_Db extends Zend_Db
     
     
     /**
-     * Quote une cha�ne
+     * Quote une chaîne
      *
-     * @param string $var Chaine � quoter
-     * @return string Chaine quot�e
+     * @param string $var Chaine à quoter
+     * @return string Chaine quotée
      */
     public function quote($var)
     {
@@ -883,7 +883,7 @@ Class Gb_Db extends Zend_Db
      *
      * @param string $text ex SELECT * WHERE uid=?
      * @param  string/array $value ex login (pas de quote !)
-     * @return string chaine quot�e
+     * @return string chaine quotée
      */
     public function quoteInto($text, $value)
     {
@@ -936,7 +936,7 @@ Class Gb_Db extends Zend_Db
     }
 
     /**
-     * Renvoie la valeur suivante d'une s�quence
+     * Renvoie la valeur suivante d'une séquence
      *
      *  la table doit etre de la forme::
      *  create table seq_sise_numero (id int not null) ENGINE = 'MyIsam';
@@ -962,7 +962,7 @@ Class Gb_Db extends Zend_Db
     }
 
     /**
-     * Renvoie la valeur courante d'une s�quence
+     * Renvoie la valeur courante d'une séquence
      *
      * @param string $tableName
      * @param string[optionel] $colName

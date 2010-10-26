@@ -32,7 +32,7 @@ class Gb_Form_Elem_Print extends Gb_Form_Elem
         return "";
     }
         
-    // post value interdit sur cet �l�ment
+    // post value interdit sur cet élément
     public function rawValue($text=null)
     {
         $text;

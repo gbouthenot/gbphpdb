@@ -16,12 +16,12 @@ require_once(_GB_PATH."Exception.php");
 
 class Gb_String
 {
-  // " et $ ignor�s
-  const STR_SRC=  "' !#%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~�?�����������?�??������������?�������������������������������������������������������������������������������������������������";
-  const STR_UPPER="' !#%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`ABCDEFGHIJKLMNOPQRSTUVWXYZ{|}~�?,F,_���%S�O?Z??''��.--�TS�O?ZY�IC���|��C2<��R���23'UQ.�10>���?AAAAAAACEEEEIIIIDNOOOOOXOUUUUY�BAAAAAAACEEEEIIIIONOOOOO/OUUUUY�";
+  // " et $ ignorés
+    const STR_SRC=  "' !#%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~€?‚ƒ„…†‡ˆ‰Š‹Œ?Ž??‘’“”•–—˜™š›œ?žŸ ¡¢£¤¥¦§¨©ª«¬­®¯°±²³´µ¶·¸¹º»¼½¾¿ÀÁÂÃÄÅÆÇÈÉÊËÌÍÎÏÐÑÒÓÔÕÖ×ØÙÚÛÜÝÞßàáâãäåæçèéêëìíîïðñòóôõö÷øùúûüýþ";
+    const STR_UPPER="' !#%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`ABCDEFGHIJKLMNOPQRSTUVWXYZ{|}~€?,F,_†‡ˆ%S‹O?Z??''“”.--˜TS›O?ZY IC£¤¥|§¨C2<¬­R¯°±23'UQ.¸10>¼½¾?AAAAAAACEEEEIIIIDNOOOOOXOUUUUYþBAAAAAAACEEEEIIIIONOOOOO/OUUUUYþ";
 
     /**
-     * Renvoie la revision de la classe ou un boolean si la version est plus petite que pr�cis�e, ou Gb_Exception
+     * Renvoie la revision de la classe ou un boolean si la version est plus petite que précisée, ou Gb_Exception
      *
      * @return boolean|integer
      * @throws Gb_Exception
@@ -37,7 +37,7 @@ class Gb_String
     }
     
     /**
-     * Cette classe ne doit pas �tre instanc�e !
+     * Cette classe ne doit pas être instancée !
      */
     private function __construct()
     {
@@ -46,7 +46,7 @@ class Gb_String
 
     /**
      * renvoie dans outTime l'heure (nombre de secondes depuis 01/01/1970)
-     * $sTime doit �tre format� en "jj/mm/aaaa hh:mm:ss[.xxx]" ou "aaaa-mm-jj hh:mm:ss[.xxxxxx]"
+     * $sTime doit être formaté en "jj/mm/aaaa hh:mm:ss[.xxx]" ou "aaaa-mm-jj hh:mm:ss[.xxxxxx]"
      *
      * @param string[optional] $sTime
      * @return integer
@@ -73,7 +73,7 @@ class Gb_String
 
 
     /**
-     * Renvoie les premiers mots de la chaine jusqu'� un minimum de lettres
+     * Renvoie les premiers mots de la chaine jusqu'à un minimum de lettres
      *
      * @param string $prenoms
      * @param integer $lmin
@@ -94,7 +94,7 @@ class Gb_String
     }
     
     /**
-     * conversion en majuscule, charset ASCII, enl�ve les accents
+     * conversion en majuscule, charset ASCII, enlève les accents
      *
      * @param string $s
      * @return string
@@ -109,9 +109,9 @@ class Gb_String
     }
 
   /**
-   * converti, si n�cessaire une date au format YYYY-MM-DD en DD/MM/YYYY
+   * converti, si nécessaire une date au format YYYY-MM-DD en DD/MM/YYYY
    *
-   * @param string|integer[optional] $d date � convertir ou "" si date courante
+   * @param string|integer[optional] $d date à convertir ou "" si date courante
    * @return string
    */
     public static function date_fr($d="")
@@ -132,9 +132,9 @@ class Gb_String
     }
 
   /**
-   * converti, si n�cessaire une date au format DD/MM/YYYY en YYYY-MM-DD
+   * converti, si nécessaire une date au format DD/MM/YYYY en YYYY-MM-DD
    *
-   * @param string|int[optional] $d date � convertir ou "" si date courante
+   * @param string|int[optional] $d date à convertir ou "" si date courante
    * @return string
    */
     public static function date_iso($d="")
@@ -154,7 +154,7 @@ class Gb_String
     }
 
     /**
-     * comme explode mais renvoie array() au lieu de array("") si l'�l�ment n'a pas �t� trouv�
+     * comme explode mais renvoie array() au lieu de array("") si l'élément n'a pas été trouvé
      *
      * @param string $delimiter
      * @param string $string
@@ -178,7 +178,7 @@ class Gb_String
     /**
      * Transforme un array en format CSV
      *
-     * @param array $data donn�es au m�me format que 
+     * @param array $data données au même format que 
      * @return string la chaine en csv
      */
     public static function arrayToCsv(array $data)
@@ -188,7 +188,7 @@ class Gb_String
         }
         $ret="";
         
-        // 1�re ligne du csv: les ent�tes
+        // 1ère ligne du csv: les entêtes
         $firstligne=$data[0];
         foreach(array_keys($firstligne) as $ind) {
             $ret.=$ind.";";

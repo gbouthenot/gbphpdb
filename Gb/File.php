@@ -34,8 +34,8 @@ Class Gb_File
      * @param string $fileroot "/var/lib/php5/files"
      * @param Gb_Db $db
      * @param string $tableName
-     * @param string $category "c2i" si null, tous fichiers autoris�s et upload d�sactiv�
-     * @param string[optional] $tmpdir "/var/lib/php5/files/tmp" si null alors upload d�sactiv�
+     * @param string $category "c2i" si null, tous fichiers autorisés et upload désactivé
+     * @param string[optional] $tmpdir "/var/lib/php5/files/tmp" si null alors upload désactivé
      * 
      * @throws Gb_Exception
      */
@@ -48,7 +48,7 @@ Class Gb_File
         }
         $this->_tableName=$tableName;
 
-        // v�rifie que les r�pertoires existent
+        // vérifie que les répertoires existent
         if (!is_dir($fileroot)) {
             throw new Gb_Exception("root $fileroot is not a dir !");
         }
@@ -105,15 +105,15 @@ Class Gb_File
     
     public function purgeTempDir()
     {
-        /** @todo a impl�menter*/
+        /** @todo à implémenter*/
     }
     
 
     /**
-     * D�place un fichier upload� dans dans tmpdir
+     * Déplace un fichier uploadé dans dans tmpdir
      *
-     * @param string $fname nom temporaire du fichier upload� (source, donn� par $_FILES[n]["tmp_name"])
-     * @param string $prefix[optional] pr�fixe du nom de fichier utilist�
+     * @param string $fname nom temporaire du fichier uploadé (source, donné par $_FILES[n]["tmp_name"])
+     * @param string $prefix[optional] préfixe du nom de fichier utilisté
      * 
      * @return string nom complet du fichier
      * @throws Gb_Exception
@@ -125,7 +125,7 @@ Class Gb_File
 
         $res=move_uploaded_file($fname, $tmpfname);
         if ($res===false) {
-            throw new Gb_Exception("impossible de d�placer le fichier");
+            throw new Gb_Exception("impossible de déplacer le fichier");
         }
      
         return $tmpfname;
@@ -153,13 +153,13 @@ Class Gb_File
             throw new Gb_Exception("Erreur fichier introuvable ($fname)");
         }
         
-        // cr�e le r�pertoire destination
+        // crée le répertoire destination
         $fsfolder=$this->_fileroot;
         foreach (explode("/", $targetFolder) as $folder) {
             $fsfolder.=DIRECTORY_SEPARATOR.$folder;
             if (!is_dir($fsfolder)) {
                 if ( mkdir($fsfolder, 0770)!==true || !is_dir($fsfolder) || !is_writable($fsfolder)) {
-                    throw new Gb_Exception("Impossible de cr�er $fsfolder");
+                    throw new Gb_Exception("Impossible de créer $fsfolder");
                 }
             }
         }
@@ -172,12 +172,12 @@ Class Gb_File
 
         list($nonExt, $ext)=$this->_sanitize($sourceFname);
         
-        // obtient le num�ro du fichier
+        // obtient le numéro du fichier
         $fileid=$this->_db->sequenceNext($this->_tableName."_seq");
         
         $newfName=$targetPrefix."{".$fileid."}".$nonExt.$ext;
         
-        // insertion du fichier dans la base de donn�e --> r�cup�re $fileid
+        // insertion du fichier dans la base de donnée --> récupère $fileid
         $this->_db->insert(
             $this->_tableName,
             array(
@@ -257,7 +257,7 @@ Class Gb_File
     
     
     /**
-     * Renvoie la revision de la classe ou un boolean si la version est plus petite que pr�cis�e, ou Gb_Exception
+     * Renvoie la revision de la classe ou un boolean si la version est plus petite que précisée, ou Gb_Exception
      *
      * @return boolean|integer
      * @throws Gb_Exception

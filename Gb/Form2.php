@@ -42,7 +42,7 @@ Class Gb_Form2 implements IteratorAggregate
     protected $_formTagClosed=false;
 
     /**
-     * Renvoie la revision de la classe ou un boolean si la version est plus petite que pr�cis�e, ou Gb_Exception
+     * Renvoie la révision de la classe ou un boolean si la version est plus petite que précisée, ou Gb_Exception
      *
      * @return boolean|integer
      * @throws Gb_Exception
@@ -314,7 +314,7 @@ Class Gb_Form2 implements IteratorAggregate
     {
         if ($param===null) {
             if ($this->_errors===null) {
-                // Si le formulaire a des donn�es, le valider
+                // Si le formulaire a des données, le valider
                 if ($this->hasData()) {
                     $this->validate(false);
                 }
@@ -335,7 +335,7 @@ Class Gb_Form2 implements IteratorAggregate
     {
         if ($hash===null) {
             if ($this->_formHash===null) {
-                // Trie les noms par ordre alphab�tiques si les �l�ments n'ont pas �t� d�finis dans le m�me ordre
+                // Trie les noms par ordre alphabétiques si les éléments n'ont pas été définis dans le même ordre
                 $keys=array();
                 foreach (new RecursiveIteratorIterator($this->getIterator()) as $name=>$elem) {
                     $c=get_class($elem);
@@ -406,7 +406,7 @@ Class Gb_Form2 implements IteratorAggregate
     {
         if ($param===null) {
             if ($this->_isValid===null) {
-                // Si le formulaire a des donn�es, le valider
+                // Si le formulaire a des données, le valider
                 if ($this->hasData()) {
                     $this->_isValid=$this->validate(false);
                 }
@@ -532,7 +532,7 @@ Class Gb_Form2 implements IteratorAggregate
 
 
     /**
-     * Renvoie les donn�es stock�es sous forme de array
+     * Renvoie les données stockées sous forme de array
      *
      * @return array array("nom_element"=>"value")
      */
@@ -558,10 +558,10 @@ Class Gb_Form2 implements IteratorAggregate
 
 
   /**
-   * Ins�re/update les valeurs dans la bdd
+   * Insère/update les valeurs dans la bdd
    *
    * @param array $moreData
-   * @return boolean true si tout s'est bien pass�
+   * @return boolean true si tout s'est bien passé
    */
     public function putInDb(array $moreData=array())
     {
@@ -627,9 +627,9 @@ Class Gb_Form2 implements IteratorAggregate
     
     /**
      * Valide le formulaire
-     * En cas d'erreur, $this->setErrorMsg pour chaque $nom incorrect. Met � jour isValid() et errors()
+     * En cas d'erreur, $this->setErrorMsg pour chaque $nom incorrect. Met à jour isValid() et errors()
      *
-     * @param boolean $fWrite Affiche les messages d'erreur dans les �l�ments
+     * @param boolean $fWrite Affiche les messages d'erreur dans les éléments
      * @return array("nom" => "erreur") ou true si aucune erreur (attention utiliser ===)
      */
     public function validate($fWrite=true)

@@ -15,7 +15,7 @@ class Gb_Mail
 {
 
     /**
-     * Renvoie la revision de la classe ou un boolean si la version est plus petite que pr�cis�e, ou Gb_Exception
+     * Renvoie la révision de la classe ou un boolean si la version est plus petite que précisée, ou Gb_Exception
      *
      * @return boolean|integer
      * @throws Gb_Exception
@@ -33,12 +33,12 @@ class Gb_Mail
     /**
      * Envoie un mail en utilisant le smtp local
      *
-     * @param string|array $to destinataires, s�par�s par virgule
+     * @param string|array $to destinataires, séparés par virgule
      * @param string $sujet
      * @param string $bodytext
      * @param string $from
-     * @param string|array[optional] $bcc destinataires, s�par�s par virgule
-     * @param string|array[optional] $cc destinataires, s�par�s par virgule
+     * @param string|array[optional] $bcc destinataires, séparés par virgule
+     * @param string|array[optional] $cc destinataires, séparés par virgule
      * @param string[optional] $charset charset
      * @param string[optional] $bodyhtml charset
      * 

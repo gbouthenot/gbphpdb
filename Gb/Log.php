@@ -22,9 +22,9 @@ class Gb_Log
     const LOG_ALERT=10;
     const LOG_CRIT=9;
     const LOG_ERROR=8;           // Ecriture bdd NOK
-    const LOG_EXCEPTION=7;       // Ne devrait pas �tre atteint
+    const LOG_EXCEPTION=7;       // Ne devrait pas être atteint
     const LOG_WARNING=6;
-    const LOG_NOTICE=5;          // G�n�ration INE
+    const LOG_NOTICE=5;          // Génération d'un identifiant
     const LOG_INFO=4;            // Ecriture bdd OK
     const LOG_DEBUG=3;
     const LOG_DUMP=2;            // comme debug mais verbeux
@@ -33,7 +33,7 @@ class Gb_Log
     const LOG_NONE=99;
     const LOG_ALL=0;
 
-    public static $logFilename="";                  // Fichier de log, par d�faut error_log/PROJECTNAME.log
+    public static $logFilename="";                  // Fichier de log, par défaut error_log/PROJECTNAME.log
     public static $loglevel_firebug=self::LOG_NONE;
     public static $loglevel_footer=self::LOG_DEBUG;
     public static $loglevel_file=self::LOG_WARNING;
@@ -69,7 +69,7 @@ class Gb_Log
     );
     
     /**
-     * Renvoie la revision de la classe ou un boolean si la version est plus petite que pr�cis�e, ou Gb_Exception
+     * Renvoie la revision de la classe ou un boolean si la version est plus petite que précisée, ou Gb_Exception
      *
      * @return boolean|integer
      * @throws Gb_Exception
@@ -86,7 +86,7 @@ class Gb_Log
         
 
    /**
-    * Cette classe ne doit pas �tre instanc�e !
+    * Cette classe ne doit pas être instancée
     */
     private function __construct()
     {
@@ -111,7 +111,7 @@ class Gb_Log
             if (isset($matches[1])) { 
                 self::$logFilename=$matches[1].Gb_Glue::getProjectName().".log";
             } else {
-                // pas de r�pertoire: utilise session_save_path
+                // pas de répertoire: utilise session_save_path
                 $updir=Gb_Glue::getOldSessionDir();
                 self::$logFilename=$updir.DIRECTORY_SEPARATOR.Gb_Glue::getProjectName().".log";
             }
@@ -122,7 +122,7 @@ class Gb_Log
   /**
    * Loggue dans un fichier
    *
-   * @param string $sText Message � ecrire
+   * @param string $sText Message à ecrire
    * @param string[optional] $sFName Fichier dans lequel ecrire, sinon self::getLogFilename
    */
   public static function log_file($sText, $sFName="")
@@ -194,8 +194,8 @@ class Gb_Log
      *
      * @param integer $level Gb_Log::LOG_DEBUG,INFO,NOTICE,WARNING,ERROR,CRIT,ALERT,EMERG
      * @param string  $text message
-     * @param mixed   $o object � dumper
-     * @param integer[optional] $red offset backtrace (0 par d�faut: met la ligne de l'appel de la fonction)
+     * @param mixed   $o object à dumper
+     * @param integer[optional] $red offset backtrace (0 par défaut: met la ligne de l'appel de la fonction)
      */
   public static function log($level=self::LOG_DEBUG, $text="", $o=null, $red=0)
   {
@@ -216,14 +216,14 @@ class Gb_Log
      * @param integer $level Gb_Log::LOG_DEBUG,INFO,NOTICE,WARNING,ERROR,CRIT,ALERT,EMERG
      * @param string $text message
      * @param string|array $fName fonction ou array(classe,methode)
-     * @param array[optional] $aParam param�tres
+     * @param array[optional] $aParam paramètres
      * @return unknown
      */
   public static function log_function($level, $text, $fName, array $aParam=array())
   {
     $prevtime=microtime(true);
 
-// r�cup�re les arguments : NON: ca ne marche pas avec les r�f�rences !
+// récupère les arguments : NON: ca ne marche pas avec les références !
 //    $aParam=array();
 //    for ($i=1; $i<func_num_args(); $i++)
 //      $aParam[]=func_get_arg($i);
@@ -231,7 +231,7 @@ class Gb_Log
 //    array_shift($aParam);
 
     $sCallName=null;
-    if (is_callable($fName, false, $sCallName)) // $sCallName re�oit le nom imprimable de la fonction, utile pour les objets
+    if (is_callable($fName, false, $sCallName)) // $sCallName reçoit le nom imprimable de la fonction, utile pour les objets
       $ret=call_user_func_array($fName, $aParam);
     else
       throw(new Gb_Exception("Fonction inexistante"));
@@ -255,7 +255,7 @@ class Gb_Log
   
 
     /**
-     * Fonction priv�e, appel�e par Gb_Log et Gb_Timer
+     * Fonction privée, appelée par Gb_Log et Gb_Timer
      *
      * @param integer $level
      * @param string $text
@@ -307,14 +307,14 @@ class Gb_Log
     }
     
     if ($level>=self::$loglevel_file && strlen($logFilename)) {
-        // �crit dans fichier de log
+        // écrit dans fichier de log
       $sLog=$date;
       $sLog.=$REMOTE_ADDR;
 
       if (strlen($HTTP_X_FORWARDED_FOR))          $sLog.="/".$HTTP_X_FORWARDED_FOR;
       $sLog.=" ";
 
-      // padding et limite � 40 caract�res
+      // padding et limite à 40 caractères
       $sLog=substr(str_pad($sLog, 40),0, 40);
 
       $sLog.=$sLevel." ";
@@ -346,7 +346,7 @@ class Gb_Log
     }
 
     if ($level>=self::$loglevel_footer) {
-         // �crit dans le footer
+         // écrit dans le footer
       $sLog="$sLevel t+$timecode: ";
       $sLog.=$text.$texto." (";
       if (strlen($file))
@@ -363,10 +363,10 @@ class Gb_Log
   
   /**
    * Renvoie une description sur une ligne d'une variable (comme print_r, mais sur une ligne)
-   * pr�f�rer dump
+   * préférer dump
    *
-   * @param mixed $var Variable � dumper
-   * @pram string[optional] $sFormat mettre "%s" au lieu de "array(%s)" par d�faut
+   * @param mixed $var Variable à dumper
+   * @pram string[optional] $sFormat mettre "%s" au lieu de "array(%s)" par défaut
    * @return string
    */
   public static function dump_array(array $var, $sFormat="array(%s)")
@@ -382,11 +382,11 @@ class Gb_Log
       else
       {
         $pr=var_export($arg, true);
-        $pr=preg_replace("/^ +/m", "", $pr);                // enl�ve les espaces en d�but de ligne
-        $pr=preg_replace("/,\n\\)/m", ")", $pr);             // remplace les ,) par )
+        $pr=preg_replace("/^ +/m", "", $pr);                // enlève les espaces en début de ligne
+        $pr=preg_replace("/,\n\\)/m", ")", $pr);            // remplace les ,) par )
         $pr=preg_replace("/,$/m", ", ", $pr);               // remplace "," par ", " en fin de ligne
         $pr=str_replace("\n", "", $pr);                     // met tout sur une ligne
-        $pr=str_replace(" => ", "=>", $pr);                 // enl�ve les espaces avant et apr�s "=>"
+        $pr=str_replace(" => ", "=>", $pr);                 // enlève les espaces avant et après "=>"
         $pr=str_replace("array (", "array( ", $pr);         // formate array (
       }
       if ($fShowKey || $curnum!==$num)
@@ -403,7 +403,7 @@ class Gb_Log
   /**
    * Renvoie une description sur une ligne d'une variable (comme print_r, mais sur une ligne)
    *
-   * @param mixed $var Variable � dumper
+   * @param mixed $var Variable à dumper
    * @return string
    */
   public static function dump($var)
@@ -411,11 +411,11 @@ class Gb_Log
         if (is_array($var))
             return self::dump_array($var);
         $pr=var_export($var, true);
-        $pr=preg_replace("/^ +/m", "", $pr);                // enl�ve les espaces en d�but de ligne
-        $pr=preg_replace("/,\n\\)/m", ")", $pr);             // remplace les ,) par )
+        $pr=preg_replace("/^ +/m", "", $pr);                // enlève les espaces en début de ligne
+        $pr=preg_replace("/,\n\\)/m", ")", $pr);            // remplace les ,) par )
         $pr=preg_replace("/,$/m", ", ", $pr);               // remplace "," par ", " en fin de ligne
         $pr=str_replace("\n", "", $pr);                     // met tout sur une ligne
-        $pr=str_replace(" => ", "=>", $pr);                 // enl�ve les espaces avant et apr�s "=>"
+        $pr=str_replace(" => ", "=>", $pr);                 // enlève les espaces avant et après "=>"
         $pr=str_replace("array (", "array( ", $pr);         // formate array (
     return $pr;
   }

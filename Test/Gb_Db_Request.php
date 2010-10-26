@@ -28,11 +28,11 @@ function testJoin(Gb_Db_Engine $req)
                               "),
                         array("SELECT", "prot", "
                                SELECT COUNT(*) FROM PROTSCOL.CANDIDATURE
-                               WHERE DOSSIER_RECEVABLE='O' and (AVIS_COMMISSION='1' or AVIS_COMMISSION='C') AND NO_DOSSIER=##usa_idprothee## AND ANNEE=**Ann�e**
+                               WHERE DOSSIER_RECEVABLE='O' and (AVIS_COMMISSION='1' or AVIS_COMMISSION='C') AND NO_DOSSIER=##usa_idprothee## AND ANNEE=**Année**
                               "),
                    );
 
-    $res=$req->execute($code, array("Ann�e"=>2009));
+    $res=$req->execute($code, array("Année"=>2009));
     return $res;
 }
 
@@ -45,11 +45,11 @@ function testMemJoin(Gb_Db_Engine $req)
                               "),
                         array("SELECT", "prot", "
                                SELECT NO_DOSSIER, COUNT(*) FROM PROTSCOL.CANDIDATURE
-                               WHERE DOSSIER_RECEVABLE='O' and (AVIS_COMMISSION='1' or AVIS_COMMISSION='C') AND ANNEE=**Ann�e**
+                               WHERE DOSSIER_RECEVABLE='O' and (AVIS_COMMISSION='1' or AVIS_COMMISSION='C') AND ANNEE=**Année**
                                GROUP BY NO_DOSSIER
                               "),
                         array("usa_idprothee"=>"NO_DOSSIER")
                    );
-    $res=$req->execute($code, array("Ann�e"=>2009));
+    $res=$req->execute($code, array("Année"=>2009));
     return $res;
 }
