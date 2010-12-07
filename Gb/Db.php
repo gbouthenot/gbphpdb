@@ -31,6 +31,7 @@ Class Gb_Db extends Zend_Db
     protected $connArray;                                     // array utilisé par Zend_Db::factory()
     protected $driver;                                        // Pdo_Mysql ou Pdo_Oci
     protected $dbname;
+    protected $charset;
     protected $fTransaction=false;
     protected $fInitialized=false;
     
@@ -78,13 +79,13 @@ Class Gb_Db extends Zend_Db
      *
      * type est le driver à utiliser (MYSQL, OCI8)
      *
-     * @param array("type"=>"Pdo_Mysql/Pdo_Oci/Pdo_Sqlite", "host"=>"localhost", "user/username"=>"", "pass/password"=>"", "name/dbname"=>"", "port"=>"") $aIn
+     * @param array("type"=>"Pdo_Mysql/Pdo_Oci/Pdo_Sqlite", "host"=>"localhost", "user/username"=>"", "pass/password"=>"", "name/dbname"=>"", "port"=>"", "charset"=>"utf8") $aIn
      * @return GbDb
      */
     function __construct(array $aIn)
     {
         $time=microtime(true);
-        $user=$pass=$name=$port="";
+        $user=$pass=$name=$port=$charset="";
         $host="";
         $driver="Pdo_Mysql";
         if (isset($aIn["type"]))                    $driver=$aIn["type"];
@@ -96,6 +97,7 @@ Class Gb_Db extends Zend_Db
         if (isset($aIn["name"]))                    $name=$aIn["name"];
         if (isset($aIn["dbname"]))                  $name=$aIn["dbname"];
         if (isset($aIn["port"]))                    $port=$aIn["port"];
+        if (isset($aIn["charset"]))                 $charset=$aIn["charset"];
         if     (strtoupper($driver)=="MYSQL")       $driver="Pdo_Mysql";
         elseif (strtoupper($driver)=="OCI8")        $driver="Pdo_Oci";
         elseif (strtoupper($driver)=="OCI")         $driver="Pdo_Oci";
@@ -136,6 +138,7 @@ Class Gb_Db extends Zend_Db
         $this->driver=$driver;
         $this->dbname=$name;
         $this->connArray=$array;
+        $this->charset=$charset;
     }
 
     function __destruct()
@@ -157,6 +160,11 @@ Class Gb_Db extends Zend_Db
             if ($this->driver=="Pdo_Oci") {
                 $conn=$this->_adapter->getConnection();  // dont use $this->getConnection(); it causes infinite recursion
                 $conn->exec("ALTER SESSION SET NLS_DATE_FORMAT = 'YYYY-MM-DD HH24:MI:SS'");
+            } elseif ($this->driver=="Pdo_Mysql") {
+                if (strlen($this->charset)) {
+                    $conn=$this->_adapter->getConnection();  // dont use $this->getConnection(); it causes infinite recursion
+                    $conn->exec("set names ".$this->quote($this->charset));
+                }
             }
         } catch (Exception $e) {
             throw new Gb_Exception($e->getMessage());
