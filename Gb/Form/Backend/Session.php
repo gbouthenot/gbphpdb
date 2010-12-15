@@ -51,7 +51,7 @@ class Gb_Form_Backend_Session extends Gb_Form_Backend_Abstract
 
   
     /**
-     * Remplit les valeurs depuis la session
+     * Remplit les valeurs depuis la session. Remplit hasData
      *
      * @param array $moreData array("col1", "col2")
      * @return boolean true, null si non applicable, false si pas d'info
@@ -68,7 +68,7 @@ class Gb_Form_Backend_Session extends Gb_Form_Backend_Abstract
             $elem=$this->_parent->getElem($nom);
             $dbcol=$elem->backendCol();
             if (Gb_Session::_isset($this->_sessionprefix.$dbcol)) {
-                // trouv� 
+                // trouvé
                 $fData=true;
                 $val=Gb_Session::get($this->_sessionprefix.$dbcol);
                 $elem->backendValue($val);
@@ -88,7 +88,10 @@ class Gb_Form_Backend_Session extends Gb_Form_Backend_Abstract
      */
     public function putInDb(array $moreData=array())
     {
-        $aCols=$this->_parent->getDataAsArray($moreData);
+        $aCols=$this->_parent->getDataAsArray();
+
+        $aCols=array_merge($aCols, $moreData);
+        $aCols=array_merge($aCols, $this->moreDataInsert());
     
         foreach ($aCols as $dbcol=>$val) {
             Gb_Session::set($this->_sessionprefix.$dbcol, $val);

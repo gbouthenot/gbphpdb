@@ -27,33 +27,48 @@ abstract class Gb_Form_Backend_Abstract
     /**
      * @var array
      */
-    protected $_aParams;
+    protected $_aModifiers;
+
+    protected $_moreData=array();
+    protected $_moreDataInsert=array();
+    protected $_moreDataUpdate=array();
     
     /**
-     * Link parent to Gb_Form2. Applies modificators specified with $aParams in the constructor.
+     * Link parent to Gb_Form2. Applies modificators specified with $aModifiers in the constructor.
      * @param Gb_Form2 $parent
      * @return Gb_Form_Backend_Abstract
      */
     public function setParent(Gb_Form2 $parent)
     {
         $this->_parent=$parent;
-        foreach ($this->_aParams as $key=>$val) {
+        foreach ($this->_aModifiers as $key=>$val) {
             call_user_func(array($this->_parent, $key), $val);
         }
         return $this;
     }
     
 
-    public function __construct(array $aParams=null)
+    public function __construct(array $aParams=null, array $aModifiers=null)
     {
-        if (null === $aParams) {
-            $aParams=array();
+        if (null === $aModifiers) { $aModifiers=array(); }
+        if (null === $aParams)    { $aParams=array(); }
+        $this->_aModifiers=$aModifiers;
+
+        $availableParams=array(
+            "moreData", "moreDataInsert", "moreDataUpdate",
+        );
+
+        foreach ($availableParams as $key) {
+            if (isset($aParams[$key])) {
+                $val=$aParams[$key];
+                call_user_func(array($this, $key), $val);
+            }
         }
-        $this->_aParams=$aParams;
+
     }
     
     /**
-     * Remplit les valeurs depuis la base
+     * Remplit les valeurs depuis la base. Remplit hasData
      *
      * @param array $moreData array("col1", "col2")
      * @return boolean true, null si non applicable, false si pas d'info
@@ -69,6 +84,41 @@ abstract class Gb_Form_Backend_Abstract
    */
     public abstract function putInDb(array $moreData=array());
 
-    
-    
+
+
+
+
+
+    /**
+     * get/set moreData
+     * @param array[optional] $text
+     * @return Gb_Form_Backend_Abstract|array
+     */
+    final public function moreData(array $text=null)
+    {
+        if ($text===null) {         return $this->_moreData; }
+        else { $this->_moreData=$text; return $this;}
+    }
+    /**
+     * get/set moreDataInsert
+     * @param array[optional] $text
+     * @return Gb_Form_Backend_Abstract|array
+     */
+    final public function moreDataInsert(array $text=null)
+    {
+        if ($text===null) {         return $this->_moreDataInsert; }
+        else { $this->_moreDataInsert=$text; return $this;}
+    }
+    /**
+     * get/set moreDataUpdate
+     * @param array[optional] $text
+     * @return Gb_Form_Backend_Abstract|array
+     */
+    final public function moreDataUpdate(array $text=null)
+    {
+        if ($text===null) {         return $this->_moreDataUpdate; }
+        else { $this->_moreDataUpdate=$text; return $this;}
+    }
+
+
 }

@@ -32,7 +32,6 @@ Class Gb_Form2 implements IteratorAggregate
     protected $_isPost;
     protected $_isValid;
     protected $_method="post";
-    protected $_moreData=array();
     protected $_moreDataRead=array();
     protected $_renderFormTags=true;
     protected $_toStringRendersAs="HTML";
@@ -73,7 +72,7 @@ Class Gb_Form2 implements IteratorAggregate
         $availableParams=array(
             "action", "enctype", "errors", "formHash", "hasData",
             "isLoaded", "isPost", "isValid", "backend",
-            "method", "moreData", "moreDataRead", "renderFormTags", "toStringRendersAs",
+            "method", "moreDataRead", "renderFormTags", "toStringRendersAs",
             "formTagOpened", "formPostTagIssued", "formTagClosed" ,
         );
         
@@ -432,23 +431,13 @@ Class Gb_Form2 implements IteratorAggregate
         else { $this->_method=$text; return $this;}
     }
     /**
-     * get/set moreData
-     * @param array[optional] $text
-     * @return Gb_Form2|array 
-     */
-    final public function moreData(array $text=null)
-    {   
-        if ($text===null) {         return $this->_moreData; }
-        else { $this->_moreData=$text; return $this;}
-    }
-    /**
      * get/set moreDataRead
      * @param array[optional] $text
      * @return Gb_Form2|array 
      */
     final public function moreDataRead(array $text=null)
     {   
-        if ($text===null) {         return $this->_moreData; }
+        if ($text===null) {         return $this->_moreDataRead; }
         else { $this->_moreDataRead=$text; return $this;}
     }
     /**
@@ -541,7 +530,7 @@ Class Gb_Form2 implements IteratorAggregate
   
   
   /**
-   * Remplit les valeurs depuis la base de données
+   * Remplit les valeurs depuis le backend. Remplit hasData
    * 
    * @param array $moreData array("col1", "col2")
    * @return boolean true si données trouvées
@@ -549,7 +538,7 @@ Class Gb_Form2 implements IteratorAggregate
     public function getFromDb(array $moreData=array())
     {
         if (null === $this->_backend) {
-            return true;
+            return false;
         } else {
             return $this->_backend->getFromDb($moreData);
         }
@@ -583,15 +572,18 @@ Class Gb_Form2 implements IteratorAggregate
 
 
   /**
-   * Insère/update les valeurs dans la bdd
+   * Insère/update les valeurs dans le backend
    *
    * @param array $moreData
    * @return boolean true si tout s'est bien passé
    */
     public function putInDb(array $moreData=array())
     {
-        $moreData;
-        return true;
+        if (null === $this->_backend) {
+            return true;
+        } else {
+            return $this->_backend->putInDb($moreData);
+        }
     }
     
     
@@ -623,11 +615,12 @@ Class Gb_Form2 implements IteratorAggregate
     
 
    /**
-    * Remplit les valeurs depuis $_POST
-    * @return Gb_Form
+    * Remplit les valeurs depuis $_POST. Remplit hasData
+    * @return boolean données trouvées
     */
     public function getFromPost()
     {
+        $hasData=false;
         if ($this->isPost()) {
             foreach (new RecursiveIteratorIterator($this->getIterator()) as $elem) {
                 $class=get_class($elem);
@@ -636,6 +629,7 @@ Class Gb_Form2 implements IteratorAggregate
                         $name=$elem->elemId();
                         if (isset($_POST[$name])) {
                             $elem->rawValue($_POST[$name]);
+                            $hasData=true;
                             $this->hasData(true);
                         } else {
                             $elem->rawValue(false);
@@ -644,7 +638,7 @@ Class Gb_Form2 implements IteratorAggregate
                 }
             }
         }
-        return $this;
+        return $hasData;
     }
     
     
@@ -685,16 +679,7 @@ Class Gb_Form2 implements IteratorAggregate
             return true;
         }
     }
-    
-    
-    
-    
-    
-    
-    public function getMoreDataRead()
-    {
-        return $this->_moreDataRead;
-    }
+
 
 
 
@@ -738,9 +723,8 @@ Class Gb_Form2 implements IteratorAggregate
     
     /**
      * Lit les données de la db et de post
-     * 
+     * remplit hasData et isLoaded
      * @return boolean si des données ont été lues
-     *
      */
     public function load()
     {

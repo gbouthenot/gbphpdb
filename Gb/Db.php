@@ -61,13 +61,20 @@ Class Gb_Db extends Zend_Db
         if ($throw) { throw new Gb_Exception(__CLASS__." r".$revision."<r".$mini); }
         return false;
     }
-        
+
+    /**
+     * @return Zend_Db_Adapter_Abstract
+     */
     public function getAdapter()
     {
         $this->initialize();
         return $this->_adapter;
     }
 
+    /**
+     * Returns the underlying database connection object or resource.
+     * @return object|resource|null
+     */
     public function getConnection()
     {
         $this->initialize();
@@ -641,11 +648,18 @@ Class Gb_Db extends Zend_Db
      * @param string $table Table à mettre à jour
      * @param array $data array("col"=>"val", "col2"=>new Zend_Db_Expr("NOW()"), ...)
      * @param string|array[optional] $where array("col='val'", $db->quoteInto("usr_id=?", $usr_id), ...)
+     * @param array $moreDataInsert[optional] array("col"=>"val", "col2"=>new Zend_Db_Expr("NOW()"), ...)
+     * @param array $moreDataUpdate[optional] array("col"=>"val", "col2"=>new Zend_Db_Expr("NOW()"), ...)
+     * @return nombre delignes modifiées
      * @throws Gb_Exception
      */
-    public function replace($table, array $data, $where=array())
+    public function replace($table, array $data, $where=null, $moreDataInsert=null, array $moreDataUpdate=null)
     {
         if (count($data)==0) { return 0; }
+        if (null === $where) { $where=array(); }
+        if (null === $moreDataInsert) { $moreDataInsert=array(); }
+        if (null === $moreDataUpdate) { $moreDataUpdate=array(); }
+
         if (is_string($where)) {$where=array($where);}
         $sqlTime=self::$sqlTime;
         $time=microtime(true);
@@ -671,13 +685,15 @@ Class Gb_Db extends Zend_Db
                     //enlève les quote autour de $val
                     if     (substr($val,0,1)=="'" && substr($val,-1)=="'") { $val=substr($val, 1, -1); }
                     elseif (substr($val,0,1)=='"' && substr($val,-1)=='"') { $val=substr($val, 1, -1); }
-                    else { throw new Gb_Exception("Pas de guillements trouvés dans la clause where !");  }
+                    else { throw new Gb_Exception("Pas de guillemets trouvés dans la clause where !");  }
                     $data[$col]=$val;
                 }
-                $ret=$this->_adapter->insert($table, $data);
+                $data2=array_merge($data, $moreDataInsert);
+                $ret=$this->_adapter->insert($table, $data2);
             } elseif ($nb==1) {
                 // Une ligne existe déjà: mettre à jour
-                $ret=$this->_adapter->update($table, $data, $where);
+                $data2=array_merge($data, $moreDataUpdate);
+                $ret=$this->_adapter->update($table, $data2, $where);
             } else {
                 // Plus d'une ligne correspond: erreur de clé ?
                 throw new Gb_Exception("replace impossible: plus d'une ligne correspond !");

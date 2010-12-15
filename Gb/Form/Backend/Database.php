@@ -60,7 +60,7 @@ class Gb_Form_Backend_Database extends Gb_Form_Backend_Abstract
     }
   
     /**
-     * Remplit les valeurs depuis la base
+     * Remplit les valeurs depuis la base. Remplit hasData
      *
      * @param array $moreData array("col1", "col2")
      * @return boolean true, null si non applicable, false si pas d'info
@@ -72,7 +72,7 @@ class Gb_Form_Backend_Database extends Gb_Form_Backend_Abstract
             return null;
         }
         
-        $moreData=array_merge($moreData, array_keys($this->_parent->moreData()));
+        $moreData=array_merge(array_keys($this->moreData()), $moreData);
         $aDbCols=$moreData;
         
         // obient le nom des colonnes
@@ -115,7 +115,7 @@ class Gb_Form_Backend_Database extends Gb_Form_Backend_Abstract
    */
     public function putInDb(array $moreData=array())
     {
-        $aDbCols=array_merge($moreData, $this->_parent->moreData());
+        $aDbCols=array_merge($this->moreData(), $moreData);
 
         $aCols=$this->_parent->getDataAsArray();
 
@@ -135,10 +135,10 @@ class Gb_Form_Backend_Database extends Gb_Form_Backend_Abstract
         try {
             if (count($this->where)) {
                 // il y a une condition where: fait un replace
-                $db->replace($this->tableName, $aDbCols, $this->where);
+                $db->replace($this->tableName, $aDbCols, $this->where, $this->moreDataInsert(), $this->moreDataUpdate());
             } else {
                 // pas de where: fait insert
-                $db->insert($this->tableName, $aDbCols);
+                $db->insert($this->tableName, array_merge($aDbCols, $this->moreDataInsert()));
             }
         } catch (Exception $e) {
             $e;
