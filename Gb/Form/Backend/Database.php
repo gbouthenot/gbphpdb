@@ -10,14 +10,14 @@ require_once(_GB_PATH."Log.php");
 require_once(_GB_PATH."Session.php");
 
 /**
- * Gb_Form_Database
+ * Gb_Form_Backend_Database
  * 
  * @author Gilles Bouthenot
  * @version $Revision$
  * @Id $Id$
  */
 
-class Gb_Form_Database extends Gb_Form2
+class Gb_Form_Backend_Database extends Gb_Form_Backend_Abstract
 {
 
     /**
@@ -72,15 +72,15 @@ class Gb_Form_Database extends Gb_Form2
             return null;
         }
         
-        $moreData=array_merge($moreData, array_keys($this->moreData()));
+        $moreData=array_merge($moreData, array_keys($this->_parent->moreData()));
         $aDbCols=$moreData;
         
         // obient le nom des colonnes
-        $aCols=$this->getDataAsArray();
+        $aCols=$this->_parent->getDataAsArray();
         
         $fHasData=false;
         foreach (array_keys($aCols) as $nom) {
-            $elem=$this->getElem($nom);
+            $elem=$this->_parent->getElem($nom);
             $dbcol=$elem->backendCol();
             $aDbCols[]=$dbcol;
         }
@@ -89,7 +89,7 @@ class Gb_Form_Database extends Gb_Form2
         
         if (is_array($aRes)) {
             foreach (array_keys($aCols) as $nom) {
-                $elem=$this->getElem($nom);
+                $elem=$this->_parent->getElem($nom);
                 $dbcol=$elem->backendCol();
                 $value=$aRes[$dbcol];
                 $elem->backendValue($value);
@@ -98,8 +98,8 @@ class Gb_Form_Database extends Gb_Form2
             foreach ($moreData as $nom) {
                 $moreDataRead[$nom]=$aRes[$nom]; 
             }
-            $this->_moreDataRead=$moreDataRead;
-            $this->hasData(true);
+            $this->_parent->moreDataRead($moreDataRead);
+            $this->_parent->hasData(true);
             $fHasData=true;
         }    
         
@@ -115,9 +115,9 @@ class Gb_Form_Database extends Gb_Form2
    */
     public function putInDb(array $moreData=array())
     {
-        $aDbCols=array_merge($moreData, $this->moreData());
+        $aDbCols=array_merge($moreData, $this->_parent->moreData());
 
-        $aCols=$this->getDataAsArray();
+        $aCols=$this->_parent->getDataAsArray();
 
         if (strlen($this->tableName)==0 || count($aCols)==0) {
             return false;
@@ -125,7 +125,7 @@ class Gb_Form_Database extends Gb_Form2
 
         // find db column name and db column value
         foreach (array_keys($aCols) as $nom) {
-            $elem=$this->getElem($nom);
+            $elem=$this->_parent->getElem($nom);
             $dbcol=$elem->backendCol();
             $aDbCols[$dbcol]=$elem->backendValue();
         }

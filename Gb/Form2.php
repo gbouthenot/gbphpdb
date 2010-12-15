@@ -42,6 +42,11 @@ Class Gb_Form2 implements IteratorAggregate
     protected $_formTagClosed=false;
 
     /**
+     * @var Gb_Form_Backend_Abstract
+     */
+    protected $_backend=null;
+    
+    /**
      * Renvoie la révision de la classe ou un boolean si la version est plus petite que précisée, ou Gb_Exception
      *
      * @return boolean|integer
@@ -67,7 +72,7 @@ Class Gb_Form2 implements IteratorAggregate
         $this->_elems=array();
         $availableParams=array(
             "action", "enctype", "errors", "formHash", "hasData",
-            "isLoaded", "isPost", "isValid",
+            "isLoaded", "isPost", "isValid", "backend",
             "method", "moreData", "moreDataRead", "renderFormTags", "toStringRendersAs",
             "formTagOpened", "formPostTagIssued", "formTagClosed" ,
         );
@@ -77,7 +82,6 @@ Class Gb_Form2 implements IteratorAggregate
                 $val=$aParams[$key];
                 call_user_func(array($this, $key), $val);
             }
-            
         }
         
     }
@@ -504,6 +508,22 @@ Class Gb_Form2 implements IteratorAggregate
         else { throw new Gb_Exception("type $type unhandled"); }
         return $this;
     }
+    /**
+     * Get/Set the backend
+     *
+     * @param Gb_Form_Backend_Abstract $p
+     * @return Gb_Form2|Gb_Form_Backend_Abstract
+     */
+    final public function backend(Gb_Form_Backend_Abstract $p=null)
+    {
+        if ($p===null) {    
+            return $this->_backend;
+        } else {
+            $this->_backend=$p;
+            $p->setParent($this);
+            return $this;
+        }
+    }
     
     
     
@@ -522,12 +542,17 @@ Class Gb_Form2 implements IteratorAggregate
   
   /**
    * Remplit les valeurs depuis la base de données
-   *
+   * 
+   * @param array $moreData array("col1", "col2")
    * @return boolean true si données trouvées
    */
-    public function getFromDb()
+    public function getFromDb(array $moreData=array())
     {
-        return true;
+        if (null === $this->_backend) {
+            return true;
+        } else {
+            return $this->_backend->getFromDb($moreData);
+        }
     }
 
 
