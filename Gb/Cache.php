@@ -199,7 +199,27 @@ Class Gb_Cache
         $this->fExpired=true;
     }
 
-
+    /**
+     * Attempt to recover the old cache data
+     * @param boolean $fThrowException if set and the cache data cannot be recovered, throw a Gb_Exception
+     * @return boolean success
+     * @throws Gb_Exception
+     */    
+    public function recover($fThrowException=null)
+    {
+        $ret=$this->cacheEngine->load($this->cacheID, true);
+        if (false === $ret) {
+            if ($fThrowException) {
+                throw new Gb_Exception("Cannot reload cache data for id ".$this->cacheID);
+            }
+            return false;
+        } else {
+            $this->values=$ret;
+            return true;
+        }
+    }
+    
+    
     public static function cacheHit()
     {
         return self::$cacheHit;

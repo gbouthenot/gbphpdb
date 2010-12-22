@@ -19,6 +19,7 @@ require_once(_GB_PATH."Exception.php");
 Class Gb_Form2 implements IteratorAggregate
 {
     protected $_elems;
+    protected $_modifiers;
 
     //
     // Properties -> these functions are handled by functions named after the properties name i.e. action() sets the _action
@@ -65,10 +66,13 @@ Class Gb_Form2 implements IteratorAggregate
      * constructeur
      *
      * @param array[optional] $aParams
+     * @param array[optional] $modifiers : arguments qui modifiront les paramètres des enfants
      */
-    public function __construct($aParams=array())
+    public function __construct($aParams=array(), $modifiers=array())
     {
         $this->_elems=array();
+        $this->_modifiers=$modifiers;
+        
         $availableParams=array(
             "action", "enctype", "errors", "formHash", "hasData",
             "isLoaded", "isPost", "isValid", "backend",
@@ -91,11 +95,37 @@ Class Gb_Form2 implements IteratorAggregate
         return (new Gb_Form_Iterator($this));
     }
 // implements InteratorAggregate END
-
-// implements standard OOP START
-    final public function __set($key, $val)
+    
+    final private function _applyModifiers($obj)
     {
-        $this->_elems[$key]=$val;
+        $c=get_class($obj);
+        if ($c=="Gb_Form_Group") {
+            foreach ($obj as $objchild) {
+                $this->_applyModifiers($objchild);
+            }
+        } else {
+            foreach ($this->_modifiers as $key=>$str) {
+                if (method_exists($obj, $key)) {
+                    // lit la valeur actuelle
+                    if (is_string($str)) {
+                        $arg=call_user_func(array($obj, $key));
+                        $arg=sprintf($str, $arg);
+                    } else {
+                        $arg=$str;
+                    }
+                    // ecrit la nouvelle valeur
+                    call_user_func(array($obj, $key), $arg);
+                }
+            }
+        }
+        return $obj;
+    }
+    
+// implements standard OOP START
+    final public function __set($key, $obj)
+    {
+        $obj=$this->_applyModifiers($obj);
+        $this->_elems[$key]=$obj;
         return $this;
     }
     final public function __get($key)
@@ -131,7 +161,7 @@ Class Gb_Form2 implements IteratorAggregate
     {
         $args=func_get_args();
         foreach ($args as $arg) {
-            $this->_elems[]=$arg;
+            $this->_elems[]=$this->_applyModifiers($arg);
         }
         return $this;
     }
@@ -145,6 +175,12 @@ Class Gb_Form2 implements IteratorAggregate
     {
         return $this->render();
     }
+    
+    /**
+     * Renvoie la partie HTML du formulaire
+     * @param array[optional] $aElemNames
+     * @return string
+     */
     final public function renderHtml($aElemNames=null)
     {
         $ret="";
@@ -290,7 +326,7 @@ Class Gb_Form2 implements IteratorAggregate
     /**
      * get/set action
      * @param string[optional] $text
-     * @return Gb_Form2|String 
+     * @return Gb_Form2|String
      */
     final public function action($text=null)
     {   
@@ -300,7 +336,7 @@ Class Gb_Form2 implements IteratorAggregate
     /**
      * get/set enctype
      * @param string[optional] $text
-     * @return Gb_Form2|String 
+     * @return Gb_Form2|String
      */
     final public function enctype($text=null)
     {   
@@ -359,7 +395,7 @@ Class Gb_Form2 implements IteratorAggregate
     /**
      * get/set hasData
      * @param boolean[optional] $text
-     * @return Gb_Form2|boolean 
+     * @return Gb_Form2|boolean
      */
     final public function hasData($text=null)
     {   
@@ -423,7 +459,7 @@ Class Gb_Form2 implements IteratorAggregate
     /**
      * get/set method
      * @param string[optional] $text
-     * @return Gb_Form2|String 
+     * @return Gb_Form2|String
      */
     final public function method($text=null)
     {   
@@ -433,7 +469,7 @@ Class Gb_Form2 implements IteratorAggregate
     /**
      * get/set moreDataRead
      * @param array[optional] $text
-     * @return Gb_Form2|array 
+     * @return Gb_Form2|array
      */
     final public function moreDataRead(array $text=null)
     {   
@@ -443,7 +479,7 @@ Class Gb_Form2 implements IteratorAggregate
     /**
      * get/set renderFormTags
      * @param boolean[optional] $text
-     * @return Gb_Form2|Boolean 
+     * @return Gb_Form2|Boolean
      */
     final public function renderFormTags($text=null)
     {   
@@ -453,7 +489,7 @@ Class Gb_Form2 implements IteratorAggregate
     /**
      * get/set formTagOpened
      * @param boolean[optional] $text
-     * @return Gb_Form2|Boolean 
+     * @return Gb_Form2|Boolean
      */
     final public function formTagOpened($text=null)
     {   
@@ -463,7 +499,7 @@ Class Gb_Form2 implements IteratorAggregate
     /**
      * get/set formPostTagIssued
      * @param boolean[optional] $text
-     * @return Gb_Form2|Boolean 
+     * @return Gb_Form2|Boolean
      */
     final public function formPostTagIssued($text=null)
     {   
@@ -473,7 +509,7 @@ Class Gb_Form2 implements IteratorAggregate
     /**
      * get/set formTagClosed
      * @param boolean[optional] $text
-     * @return Gb_Form2|Boolean 
+     * @return Gb_Form2|Boolean
      */
     final public function formTagClosed($text=null)
     {   

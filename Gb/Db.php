@@ -381,7 +381,7 @@ Class Gb_Db extends Zend_Db
  * Renvoie toutes les lignes d'un select
  *
  * @param string $sql exemple "SELECT COUNT(*) FROM tusager WHERE usa_statut='?'
- * @param array[optional] $bindargurment exemple array("PE2")
+ * @param mixed|array[optional] $bindargurment exemple array("PE2") ou "PE2"
  * @param string[optional] $index Si spécifié, utilise la colonne comme clé
  * @param string[optional] $col Si spécifié, ne renvoie que cette colonne
  *
@@ -413,16 +413,18 @@ Class Gb_Db extends Zend_Db
  *  renvoie array[0]=123
  *  renvoie array[1]=456
  */
-    public function retrieve_all($sql, $bindargurment=array(), $index="", $col="")
+    public function retrieve_all($sql, $bindargurment=null, $index=null, $col=null)
     {
         $time=microtime(true);
         $this->initialize();
         self::$nbRequest++;
-
-        if ($bindargurment===False) {
+        
+        if ( (false === $bindargurment) || (null === $bindargurment)) {
             $bindargurment=array();
+        } elseif (!is_array($bindargurment))
+            $bindargurment = array($bindargurment);
         }
-
+        
         try
         {
             /**
@@ -474,20 +476,24 @@ Class Gb_Db extends Zend_Db
      * Renvoie la première ligne d'un select
      *
      * @param string $sql exemple "SELECT COUNT(*) FROM tusager WHERE usa_statut='?'
-     * @param array[optional] $bindargurment exemple array("PE2")
+     * @param mixed|array[optional] $bindargurment exemple array("PE2") ou "PE2"
      * @param string[optional] $col Si spécifié, renvoie directement la valeur
      *
      * @return array|string|false
      * @throws Gb_Exception
      */
-    public function retrieve_one($sql, $bindargurment=array(), $col="")
+    public function retrieve_one($sql, $bindargurment=null, $col=null)
     {
         $time=microtime(true);
         $this->initialize();
         self::$nbRequest++;
-
-        if ($bindargurment===False)
+        
+        if ( (false === $bindargurment) || (null === $bindargurment)) {
             $bindargurment=array();
+        } elseif (!is_array($bindargurment))
+            $bindargurment = array($bindargurment);
+        }
+        
         try {
             $stmt=$this->_adapter->query($sql, $bindargurment);
 
