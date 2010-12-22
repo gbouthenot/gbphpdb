@@ -12,7 +12,7 @@ if (!defined("_GB_PATH")) {
  * @Id $Id$
  */
 
-class Gb_Form_Elem_Submit extends Gb_Form_Elem
+class Gb_Form_Elem_Submit extends Gb_Form_Elem_Abstract
 {
     protected $_onclick;
     
@@ -48,7 +48,7 @@ class Gb_Form_Elem_Submit extends Gb_Form_Elem
     /**
      * get/set onclick
      * @param string[optional] $text
-     * @return Gb_Form_Elem_Text_Abstract|String 
+     * @return Gb_Form_Elem_Submit|String 
      */
     public final function onclick($text=null)
     {   

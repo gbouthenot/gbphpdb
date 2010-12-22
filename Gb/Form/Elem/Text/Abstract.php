@@ -8,7 +8,7 @@
  * @Id $Id$
  */
 
-abstract class Gb_Form_Elem_Text_Abstract extends Gb_Form_Elem
+abstract class Gb_Form_Elem_Text_Abstract extends Gb_Form_Elem_Abstract
 {
     
     

@@ -5,14 +5,14 @@ if (!defined("_GB_PATH")) {
 }
 
 /**
- * Gb_Form_Elem
+ * Gb_Form_Elem_Abstract
  * 
  * @author Gilles Bouthenot
  * @version $Revision$
  * @Id $Id$
  */
 
-abstract class Gb_Form_Elem
+abstract class Gb_Form_Elem_Abstract
 {
     protected static $_commonRegex = array(
         'Name'            => '/^[ a-z\-\']{2,25}$/',
@@ -248,7 +248,7 @@ abstract class Gb_Form_Elem
      * get/set inInput
      * @param string[optional] $text
      * @param string[optional] "append" (default)/"prepend"/"set"
-     * @return Gb_Form_Elem|String 
+     * @return Gb_Form_Elem_Abstract|String 
      */
     final public function inInput($text=null, $mode="append")
     {   
@@ -259,7 +259,7 @@ abstract class Gb_Form_Elem
      * get/set preInput
      * @param string[optional] $text
      * @param string[optional] "append" (default)/"prepend"/"set"
-     * @return Gb_Form_Elem|String 
+     * @return Gb_Form_Elem_Abstract|String 
      */
     final public function preInput($text=null, $mode="append")
     {   
@@ -270,7 +270,7 @@ abstract class Gb_Form_Elem
      * get/set postInput
      * @param string[optional] $text
      * @param string[optional] "append" (default)/"prepend"/"set"
-     * @return Gb_Form_Elem|String 
+     * @return Gb_Form_Elem_Abstract|String 
      */
     final public function postInput($text=null, $mode="append")
     {   
@@ -281,7 +281,7 @@ abstract class Gb_Form_Elem
      * get/set preElem
      * @param string[optional] $text
      * @param string[optional] "append" (default)/"prepend"/"set"
-     * @return Gb_Form_Elem|String 
+     * @return Gb_Form_Elem_Abstract|String 
      */
     public function preElem($text=null, $mode="append")
     {   
@@ -292,7 +292,7 @@ abstract class Gb_Form_Elem
      * get/set postElem
      * @param string[optional] $text
      * @param string[optional] "append" (default)/"prepend"/"set"
-     * @return Gb_Form_Elem|String 
+     * @return Gb_Form_Elem_Abstract|String 
      */
     public function postElem($text=null, $mode="append")
     {   
@@ -302,7 +302,7 @@ abstract class Gb_Form_Elem
     /**
      * get/set value
      * @param string[optional] $text
-     * @return Gb_Form_Elem|String 
+     * @return Gb_Form_Elem_Abstract|String 
      */
     public function value($text=null)
     {   
@@ -312,7 +312,7 @@ abstract class Gb_Form_Elem
     /**
      * get/set backendValue
      * @param string[optional] $text
-     * @return Gb_Form_Elem|String 
+     * @return Gb_Form_Elem_Abstract|String 
      */
     final public function backendValue($text=null)
     {   
@@ -349,7 +349,7 @@ abstract class Gb_Form_Elem
     /**
      * get/set backendCol si pas un string, unset
      * @param string[optional] $text
-     * @return Gb_Form_Elem|String
+     * @return Gb_Form_Elem_Abstract|String
      */
     final public function backendCol($text=null)
     {   
@@ -359,7 +359,7 @@ abstract class Gb_Form_Elem
     /**
      * get/set fMandatory
      * @param boolean[optional] $flag
-     * @return Gb_Form_Elem|Boolean
+     * @return Gb_Form_Elem_Abstract|Boolean
      */
     final public function fMandatory($flag=null)
     {   
@@ -370,7 +370,7 @@ abstract class Gb_Form_Elem
     /**
      * get/set fReadOnly
      * @param boolean[optional] $text
-     * @return Gb_Form_Elem|Boolean
+     * @return Gb_Form_Elem_Abstract|Boolean
      */
     final public function fReadOnly($flag=null)
     {   
@@ -381,7 +381,7 @@ abstract class Gb_Form_Elem
     /**
      * get/set javascriptRendered
      * @param boolean[optional] $text
-     * @return Gb_Form_Elem|Boolean
+     * @return Gb_Form_Elem_Abstract|Boolean
      */
     final public function javascriptRendered($flag=null)
     {   
@@ -392,7 +392,7 @@ abstract class Gb_Form_Elem
     /**
      * get/set htmlRendered
      * @param boolean[optional] $text
-     * @return Gb_Form_Elem|Boolean
+     * @return Gb_Form_Elem_Abstract|Boolean
      */
     final public function htmlRendered($flag=null)
     {   
@@ -403,7 +403,7 @@ abstract class Gb_Form_Elem
     /**
      * get/set disabled
      * @param string[optional] $text
-     * @return Gb_Form_Elem|String
+     * @return Gb_Form_Elem_Abstract|String
      */
     final public function disabled($text=null)
     {   
@@ -413,7 +413,7 @@ abstract class Gb_Form_Elem
     /**
      * get/set toBackendFunc
      * @param string[optional] $text
-     * @return Gb_Form_Elem|String
+     * @return Gb_Form_Elem_Abstract|String
      */
     final public function toBackendFunc(array $text=null)
     {   
@@ -423,7 +423,7 @@ abstract class Gb_Form_Elem
     /**
      * get/set fromBackendFunc
      * @param string[optional] $text
-     * @return Gb_Form_Elem|String
+     * @return Gb_Form_Elem_Abstract|String
      */
     final public function fromBackendFunc(array $text=null)
     {   
@@ -433,7 +433,7 @@ abstract class Gb_Form_Elem
     /**
      * get/set validateFunc
      * @param string[optional] $text
-     * @return Gb_Form_Elem|String
+     * @return Gb_Form_Elem_Abstract|String
      */
     final public function validateFunc($text=null)
     {   
@@ -443,7 +443,7 @@ abstract class Gb_Form_Elem
     /**
      * get/set errorMsgCustom
      * @param string[optional] $text
-     * @return Gb_Form_Elem|String
+     * @return Gb_Form_Elem_Abstract|String
      */
     final public function errorMsgCustom($text=null)
     {   
@@ -454,7 +454,7 @@ abstract class Gb_Form_Elem
      * Set the type of data returned by __toString()
      *
      * @param string $type "HTML" or "JS"
-     * @return Gb_Form_Elem
+     * @return Gb_Form_Elem_Abstract
      * @throws Gb_Exception
      */
     final public function toStringRendersAs($type=null)
@@ -470,7 +470,7 @@ abstract class Gb_Form_Elem
      * Enable / Disable javascript
      *
      * @param Boolean $flag
-     * @return Gb_Form_Elem
+     * @return Gb_Form_Elem_Abstract
      * @throws Gb_Exception
      */
     final public function javascriptEnabled($flag=null)
@@ -483,7 +483,7 @@ abstract class Gb_Form_Elem
     /**
      * get/set publicName
      * @param string[optional] $text
-     * @return Gb_Form_Elem|String
+     * @return Gb_Form_Elem_Abstract|String
      */
     public function publicName($text=null)
     {   
@@ -493,7 +493,7 @@ abstract class Gb_Form_Elem
     /**
      * get/set container
      * @param string[optional] $text
-     * @return Gb_Form_Elem|String
+     * @return Gb_Form_Elem_Abstract|String
      */
     public function container($text=null)
     {   
@@ -503,7 +503,7 @@ abstract class Gb_Form_Elem
     /**
      * get/set errorContainer
      * @param string[optional] $text
-     * @return Gb_Form_Elem|String
+     * @return Gb_Form_Elem_Abstract|String
      */
     public function errorContainer($text=null)
     {   
@@ -516,7 +516,7 @@ abstract class Gb_Form_Elem
     /**
      * get/set classStatut
      * @param string[optional] $text
-     * @return Gb_Form_Elem|String
+     * @return Gb_Form_Elem_Abstract|String
      */
     public function classStatut($text=null)
     {   
@@ -526,7 +526,7 @@ abstract class Gb_Form_Elem
     /**
      * get/set minValue
      * @param string|array[optional] $text
-     * @return Gb_Form_Elem|array
+     * @return Gb_Form_Elem_Abstract|array
      */
     final public function minValue($text=null)
     {   
@@ -536,7 +536,7 @@ abstract class Gb_Form_Elem
     /**
      * get/set maxValue
      * @param string|array[optional] $text
-     * @return Gb_Form_Elem|array
+     * @return Gb_Form_Elem_Abstract|array
      */
     final public function maxValue($text=null)
     {   
@@ -546,7 +546,7 @@ abstract class Gb_Form_Elem
     /**
      * get/set notValue
      * @param string|array[optional] $text
-     * @return Gb_Form_Elem|array
+     * @return Gb_Form_Elem_Abstract|array
      */
     final public function notValue($text=null)
     {   
@@ -556,7 +556,7 @@ abstract class Gb_Form_Elem
     /**
      * get/set regexp
      * @param string[optional] $text
-     * @return Gb_Form_Elem|String
+     * @return Gb_Form_Elem_Abstract|String
      */
     final public function regexp($text=null)
     {   
@@ -566,7 +566,7 @@ abstract class Gb_Form_Elem
     /**
      * get/set errorMsg and sets classStatut
      * @param string[optional] $text
-     * @return Gb_Form_Elem|String
+     * @return Gb_Form_Elem_Abstract|String
      */
     final public function errorMsg($text=null)
     {   
@@ -576,7 +576,7 @@ abstract class Gb_Form_Elem
     /**
      * get/set errorMsgMissing
      * @param string[optional] $text
-     * @return Gb_Form_Elem|String
+     * @return Gb_Form_Elem_Abstract|String
      */
     final public function errorMsgMissing($text=null)
     {   
@@ -586,7 +586,7 @@ abstract class Gb_Form_Elem
     /**
      * get/set name
      * @param string[optional] $text
-     * @return Gb_Form_Elem|String 
+     * @return Gb_Form_Elem_Abstract|String 
      */
     final public function name($text=null)
     {   

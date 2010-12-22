@@ -12,7 +12,7 @@ if (!defined("_GB_PATH")) {
  * @Id $Id$
  */
 
-class Gb_Form_Elem_Textarea extends Gb_Form_Elem
+class Gb_Form_Elem_Textarea extends Gb_Form_Elem_Abstract
 {
     
     public function getInput($value, $inInput, $inputJs)

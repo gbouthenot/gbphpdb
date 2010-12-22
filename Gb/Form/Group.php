@@ -5,11 +5,7 @@ if (!defined("_GB_PATH")) {
 }
 
 require_once("Iterator.php");
-require_once("Elem.php");
-require_once("Elem/Text/Abstract.php");
-require_once("Elem/Text.php");
-require_once("Elem/Password.php");
-require_once("Elem/Hidden.php");
+require_once("Elem/Abstract.php");
 
 /**
  * Gb_Form_Group
@@ -145,7 +141,7 @@ class Gb_Form_Group implements IteratorAggregate
         $ret=$this->preGroup();
         if ($aElemNames===null) {
             foreach ($this as $elemOrGroup) {
-                if ($elemOrGroup instanceof Gb_Form_Elem || $elemOrGroup instanceOf Gb_Form_Group) {
+                if ($elemOrGroup instanceof Gb_Form_Elem_Abstract || $elemOrGroup instanceOf Gb_Form_Group) {
                     $ret.=$elemOrGroup->renderHtml();
                 }
             }
@@ -155,7 +151,7 @@ class Gb_Form_Group implements IteratorAggregate
             }
             foreach ($aElemNames as $elemname) {
                 $elemOrGroup=$this->getElem($elemname);
-                if ($elemOrGroup instanceof Gb_Form_Elem || $elemOrGroup instanceOf Gb_Form_Group) {
+                if ($elemOrGroup instanceof Gb_Form_Elem_Abstract || $elemOrGroup instanceOf Gb_Form_Group) {
                     $ret.=$elemOrGroup->renderHtml();
                 }
             }
@@ -171,7 +167,7 @@ class Gb_Form_Group implements IteratorAggregate
         
         if ($aElemNames===null) {
             foreach ($this as $elemOrGroup) {
-                if ($elemOrGroup instanceof Gb_Form_Elem || $elemOrGroup instanceOf Gb_Form_Group) {
+                if ($elemOrGroup instanceof Gb_Form_Elem_Abstract || $elemOrGroup instanceOf Gb_Form_Group) {
                     $ret.=$elemOrGroup->renderJavascript();
                 }
             }
@@ -181,7 +177,7 @@ class Gb_Form_Group implements IteratorAggregate
             }
             foreach ($aElemNames as $elemname) {
                 $elemOrGroup=$this->getElem($elemname);
-                if ($elemOrGroup instanceof Gb_Form_Elem || $elemOrGroup instanceOf Gb_Form_Group) {
+                if ($elemOrGroup instanceof Gb_Form_Elem_Abstract || $elemOrGroup instanceOf Gb_Form_Group) {
                     $ret.=$elemOrGroup->renderJavascript();
                 }
             }
@@ -205,7 +201,7 @@ class Gb_Form_Group implements IteratorAggregate
     {
         $ret="";
         foreach ($this as $elem) {
-            if ($elem instanceof Gb_Form_Elem || $elem instanceof Gb_Form_Group) {
+            if ($elem instanceof Gb_Form_Elem_Abstract || $elem instanceof Gb_Form_Group) {
                 $arg=$elem->getAjaxArgs();
                 if (strlen($arg)) {
                     $ret.=(strlen($ret)?",":"").$arg;
@@ -230,7 +226,7 @@ class Gb_Form_Group implements IteratorAggregate
      * get/set preGroup
      * @param string[optional] $text
      * @param string[optional] "append" (default)/"prepend"/"set"
-     * @return Gb_Form_Elem_Text_Abstract|String 
+     * @return Gb_Form_Group|String
      */
     final public function preGroup($text=null, $mode="append")
     {   
@@ -241,7 +237,7 @@ class Gb_Form_Group implements IteratorAggregate
      * get/set postGroup
      * @param string[optional] $text
      * @param string[optional] "append" (default)/"prepend"/"set"
-     * @return Gb_Form_Elem_Text_Abstract|String 
+     * @return Gb_Form_Group|String
      */
     final public function postGroup($text=null, $mode="append")
     {   
@@ -252,7 +248,7 @@ class Gb_Form_Group implements IteratorAggregate
      * Set the type of data returned by __toString()
      *
      * @param string $type "HTML" or "JS"
-     * @return Gb_Form_Elem_Abstract
+     * @return Gb_Form_Group
      * @throws Gb_Exception
      */
     final public function toStringRendersAs($type=null)
@@ -267,7 +263,7 @@ class Gb_Form_Group implements IteratorAggregate
     /**
      * get/set name
      * @param string[optional] $text
-     * @return Gb_Form_Elem_Text_Abstract|String 
+     * @return Gb_Form_Group|String 
      */
     final public function name($text=null)
     {   

@@ -5,14 +5,14 @@ if (!defined("_GB_PATH")) {
 }
 
 /**
- * Gb_Form_Elem_Select
+ * Gb_Form_Elem_Selectmultiple
  * 
  * @author Gilles Bouthenot
  * @version $Revision$
  * @Id $Id$
  */
 
-class Gb_Form_Elem_Selectmultiple extends Gb_Form_Elem
+class Gb_Form_Elem_Selectmultiple extends Gb_Form_Elem_Abstract
 {
     protected $_args;
     
@@ -193,7 +193,7 @@ class Gb_Form_Elem_Selectmultiple extends Gb_Form_Elem
     /**
      * get/set args
      * @param array[optional] $text
-     * @return Gb_Form_Elem_Select|String 
+     * @return Gb_Form_Elem_Selectmultiple|String 
      */
     public function args(array $text=null)
     {   

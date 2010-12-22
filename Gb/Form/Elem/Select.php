@@ -12,7 +12,7 @@ if (!defined("_GB_PATH")) {
  * @Id $Id$
  */
 
-class Gb_Form_Elem_Select extends Gb_Form_Elem
+class Gb_Form_Elem_Select extends Gb_Form_Elem_Abstract
 {
     protected $_args;
     

@@ -199,7 +199,7 @@ Class Gb_Form2 implements IteratorAggregate
 
         if ($aElemNames===null) {
             foreach ($this as $elemOrGroup) {
-                if ($elemOrGroup instanceof Gb_Form_Elem || $elemOrGroup instanceOf Gb_Form_Group) {
+                if ($elemOrGroup instanceof Gb_Form_Elem_Abstract || $elemOrGroup instanceOf Gb_Form_Group) {
                     $ret.=$elemOrGroup->renderHtml();
                 }
             }
@@ -209,7 +209,7 @@ Class Gb_Form2 implements IteratorAggregate
             }
             foreach ($aElemNames as $elemname) {
                 $elemOrGroup=$this->getElem($elemname);
-                if ($elemOrGroup instanceof Gb_Form_Elem || $elemOrGroup instanceOf Gb_Form_Group) {
+                if ($elemOrGroup instanceof Gb_Form_Elem_Abstract || $elemOrGroup instanceOf Gb_Form_Group) {
                     $ret.=$elemOrGroup->renderHtml();
                 }
             }
@@ -270,7 +270,7 @@ Class Gb_Form2 implements IteratorAggregate
 
         if ($aElemNames===null) {
             foreach ($this as $elemOrGroup) {
-                if ($elemOrGroup instanceof Gb_Form_Elem || $elemOrGroup instanceOf Gb_Form_Group) {
+                if ($elemOrGroup instanceof Gb_Form_Elem_Abstract || $elemOrGroup instanceOf Gb_Form_Group) {
                     $ret.=$elemOrGroup->renderJavascript();
                 }
             }
@@ -280,7 +280,7 @@ Class Gb_Form2 implements IteratorAggregate
             }
             foreach ($aElemNames as $elemname) {
                 $elemOrGroup=$this->getElem($elemname);
-                if ($elemOrGroup instanceof Gb_Form_Elem || $elemOrGroup instanceOf Gb_Form_Group) {
+                if ($elemOrGroup instanceof Gb_Form_Elem_Abstract || $elemOrGroup instanceOf Gb_Form_Group) {
                     $ret.=$elemOrGroup->renderJavascript();
                 }
             }
@@ -313,7 +313,7 @@ Class Gb_Form2 implements IteratorAggregate
         $ret="GBFORMPOST: '$hash'";
         
         foreach ($this as $elem) {
-            if ($elem instanceof Gb_Form_Elem || $elem instanceof Gb_Form_Group) {
+            if ($elem instanceof Gb_Form_Elem_Abstract || $elem instanceof Gb_Form_Group) {
                 $arg=$elem->getAjaxArgs();
                 if (strlen($arg)) {
                     $ret.=(strlen($ret)?",":"").$arg;
@@ -627,7 +627,7 @@ Class Gb_Form2 implements IteratorAggregate
      * get a elem by name
      *
      * @param string $name
-     * @return Gb_Form_Elem
+     * @return Gb_Form_Elem_Abstract
      * @throws Gb_Exception
      */
     public function getElem($name)

@@ -421,7 +421,7 @@ Class Gb_Db extends Zend_Db
         
         if ( (false === $bindargurment) || (null === $bindargurment)) {
             $bindargurment=array();
-        } elseif (!is_array($bindargurment))
+        } elseif (!is_array($bindargurment)) {
             $bindargurment = array($bindargurment);
         }
         
@@ -490,7 +490,7 @@ Class Gb_Db extends Zend_Db
         
         if ( (false === $bindargurment) || (null === $bindargurment)) {
             $bindargurment=array();
-        } elseif (!is_array($bindargurment))
+        } elseif (!is_array($bindargurment)) {
             $bindargurment = array($bindargurment);
         }
         

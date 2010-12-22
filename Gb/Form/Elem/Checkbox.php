@@ -5,14 +5,14 @@ if (!defined("_GB_PATH")) {
 }
 
 /**
- * Gb_Form_Elem_Select
+ * Gb_Form_Elem_Checkbox
  * 
  * @author Gilles Bouthenot
  * @version $Revision$
  * @Id $Id$
  */
 
-class Gb_Form_Elem_Checkbox extends Gb_Form_Elem
+class Gb_Form_Elem_Checkbox extends Gb_Form_Elem_Abstract
 {
     protected $_args;
     
@@ -135,7 +135,7 @@ class Gb_Form_Elem_Checkbox extends Gb_Form_Elem
     /**
      * get/set args
      * @param array[optional] $text
-     * @return Gb_Form_Elem_Select|String 
+     * @return Gb_Form_Elem_Checkbox|String 
      */
     public function args(array $text=null)
     {   
@@ -146,7 +146,7 @@ class Gb_Form_Elem_Checkbox extends Gb_Form_Elem
     /**
      * get/set value
      * @param string[optional] $text
-     * @return Gb_Form_Elem|String 
+     * @return Gb_Form_Elem_Checkbox|String 
      */
     public function value($text=null)
     {
