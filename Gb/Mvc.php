@@ -158,8 +158,10 @@ Class Gb_Mvc
         } else {
             // controller does not exist -> call error controller
             // we should not call again callController
+            $this->_args->prepend($mvcController);
             $mvcController="error";
             $this->_args->prepend("invalidcontroller");
+
             $file=$this->_pathControllers."$mvcController/$mvcController.php";
             if (is_file($file) && is_readable($file)) {
                 ob_start();

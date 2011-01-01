@@ -100,6 +100,9 @@ Class Gb_Args
             $args2[$name]=$value;
         }
         foreach ($this->_args as $k=>$v) {
+            if (is_integer($k)) {
+                $k++;
+            }
             $args2[$k]=$v;
         }
         $this->_args=$args2;
