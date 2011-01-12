@@ -215,14 +215,24 @@ abstract class Gb_Form_Elem_Abstract
     public final function renderJavascript()
     {
         $ret="";
-        if (!$this->javascriptRendered()) {
+        if ($this->javascriptEnabled() && !$this->javascriptRendered()) {
             $this->javascriptRendered(true);
             $ret=$this->_renderjavascript();
         }
         return $ret;
     }
     
-    abstract protected function _renderjavascript();
+    protected function _renderjavascript($js)
+    {
+        $ret = "";
+        if (strlen($js)) {
+            $elemid  = $this->elemId();
+            $ret     = "validate_$elemid=function() {\n";
+            $ret    .= "    $js\n";
+            $ret    .= "}\n";
+        }
+        return $ret;
+    }
     
 //    abstract public function isValid();
     
@@ -565,13 +575,13 @@ abstract class Gb_Form_Elem_Abstract
     }
     /**
      * get/set errorMsg and sets classStatut
-     * @param string[optional] $text
+     * @param false|string[optional] $text si false ou string, dévalide l'élément et écrit l'erreur
      * @return Gb_Form_Elem_Abstract|String
      */
     final public function errorMsg($text=null)
     {   
         if ($text===null) {         return $this->_errorMsg; }
-        else { $this->_errorMsg=$text; if (strlen($text)==0){$class="OK";}else{$class="NOK";}$this->classStatut($class);return $this;}
+        else { $this->_errorMsg=$text; if (strlen($text)==0 && $text!==false){$class="OK";}else{$class="NOK";}$this->classStatut($class);return $this;}
     }
     /**
      * get/set errorMsgMissing

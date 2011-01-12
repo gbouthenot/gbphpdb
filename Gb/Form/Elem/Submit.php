@@ -41,7 +41,8 @@ class Gb_Form_Elem_Submit extends Gb_Form_Elem_Abstract
 
     protected function _renderJavascript()
     {
-        return "";
+        $ret2=parent::_renderJavascript("");
+        return $ret2;
     }
     
     

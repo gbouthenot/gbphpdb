@@ -303,7 +303,7 @@ Class Gb_Form2 implements IteratorAggregate
             $ret=$this->renderJavascript($aElemNames);
         } elseif ($this->_toStringRendersAs=="BOTH") {
             $ret=$this->renderHtml($aElemNames);
-            $ret=$this->renderJavascript($aElemNames, true);
+            $ret.=$this->renderJavascript($aElemNames, true);
         }
         return $ret;
     }
@@ -569,12 +569,12 @@ Class Gb_Form2 implements IteratorAggregate
    * Remplit les valeurs depuis le backend. Remplit hasData
    * 
    * @param array $moreData array("col1", "col2")
-   * @return boolean true si données trouvées
+   * @return boolean true, null si non applicable, false si pas d'info
    */
     public function getFromDb(array $moreData=array())
     {
         if (null === $this->_backend) {
-            return false;
+            return null;
         } else {
             return $this->_backend->getFromDb($moreData);
         }
@@ -692,16 +692,20 @@ Class Gb_Form2 implements IteratorAggregate
         $aErrs=array();
         foreach (new RecursiveIteratorIterator($this->getIterator()) as $elem) {
             if (method_exists($elem, "validate")) {
-                $err=$elem->validate($this);
-                if ($err===true) {
+                $val = $elem->validate($this);
+                if (true === $val) {
+                    //pas d'erreur
                     if ($fWrite) {$elem->errorMsg("");}
-                } elseif ($err!==null) {
+                } elseif (null !== $val) {
+                    // erreur
                     $errorMsgCustom=$elem->errorMsgCustom();
+                    
                     if (strlen($errorMsgCustom)) {
                         $err=$errorMsgCustom;
                     }
-                    if ($fWrite) {$elem->errorMsg($err);}
-                    $aErrs[$elem->name()]=$elem->publicName()." : ".$err;
+                    if ($fWrite) {$elem->errorMsg($val);}
+                    else         {$elem->errorMsg(false);}
+                    $aErrs[$elem->name()]=$elem->publicName()." : ".$val;
                 }
             }
         }
@@ -733,16 +737,16 @@ Class Gb_Form2 implements IteratorAggregate
      *               $view->message.="$key: $msg<br />\n";
      *           }
      *       }
-     *
+     * @param boolean $fWrite Affiche les messages d'erreur dans les éléments
      * @return mixed null si formulaire non soumis, true si formulaire soumis et valide, array si soumis et non valide. false si autre erreur
      */
-    public function process()
+    public function process($fWrite=true)
     {
         if ($this->load()) {
             if (!$this->isPost()) {
                 return null;
             }
-            $validate=$this->validate();
+            $validate=$this->validate($fWrite);
             if ($validate !== true) {
                 return $validate;
             }

@@ -53,10 +53,6 @@ class Gb_Form_Elem_Select extends Gb_Form_Elem_Abstract
     
     protected function _renderJavascript()
     {
-        if (!$this->javascriptEnabled()) {
-            return "";
-        }
-        
         $args=$this->args();
         $ret="";
         $elemid=$this->elemId();
@@ -101,13 +97,7 @@ class Gb_Form_Elem_Select extends Gb_Form_Elem_Abstract
             }
         }
 
-        $ret2="";
-        if (strlen($ret)) {
-            $ret2="function validate_{$elemid}()\n";
-            $ret2.="{\n";
-            $ret2.=$ret;
-            $ret2.="}\n";
-        }
+        $ret2=parent::_renderJavascript($ret);
         return $ret2;
     }
 
@@ -136,10 +126,10 @@ class Gb_Form_Elem_Select extends Gb_Form_Elem_Abstract
 
 
     /**
-     * Valide le formulaire
+     * Valide l'élément
      * En cas d'erreur, $this->setErrorMsg pour chaque $nom incorrect
      *
-     * @return array("nom" => "erreur") ou true si aucune erreur (attention utiliser ===)
+     * @return string si erreur ou true si aucune erreur (attention utiliser ===)
      */
     public function validate(Gb_Form2 $form)
     {

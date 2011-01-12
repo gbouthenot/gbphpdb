@@ -29,7 +29,8 @@ class Gb_Form_Elem_Print extends Gb_Form_Elem_Abstract
 
     protected function _renderJavascript()
     {
-        return "";
+        $ret2=parent::_renderJavascript("");
+        return $ret2;
     }
         
     // post value interdit sur cet élément
