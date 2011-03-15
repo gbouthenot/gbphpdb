@@ -71,6 +71,23 @@ class Gb_String
         return $outTime;
     }
 
+    /**
+     * Génère une chaine aléatoire
+     * @param integer $nb
+     * @param string $alphabet
+     * @return string
+     */
+    public static function random($nb, $alphabet)
+    {
+        $ret="";
+        $alphalen=strlen($alphabet);
+        for ($i=0; $i<$nb; $i++) {
+            $rand = mt_rand(0, $alphalen-1);
+            $car  = substr($alphabet, $rand, 1);
+            $ret .= $car;
+        }
+        return $ret;
+    }
 
     /**
      * Renvoie les premiers mots de la chaine jusqu'à un minimum de lettres
