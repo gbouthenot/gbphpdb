@@ -35,7 +35,7 @@ Class Gb_Form2 implements IteratorAggregate
     protected $_method="post";
     protected $_moreDataRead=array();
     protected $_renderFormTags=true;
-    protected $_toStringRendersAs="HTML";
+    protected $_toStringRendersAs="BOTH";
     
     protected $_formTagOpened=false;
     protected $_formPostTagIssued=false;
