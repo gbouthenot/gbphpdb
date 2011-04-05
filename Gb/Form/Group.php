@@ -22,9 +22,15 @@ class Gb_Form_Group implements IteratorAggregate
     protected $_modifiers;
 
     protected $_toStringRendersAs="HTML";
+
     protected $_preGroup;
     protected $_postGroup;
 
+    protected $_fGrouped=false;
+    protected $_format;
+    protected $_labelFormat = "_LABEL_";
+    protected $_elemFormat = "_ELEM_";
+    
     /**
      * Constructeur de Gb_Form_Group
      *
@@ -38,7 +44,7 @@ class Gb_Form_Group implements IteratorAggregate
        $this->_modifiers=$modifiers;
        
        $availableParams=array(
-            "toStringRendersAs", "preGroup", "postGroup",
+            "toStringRendersAs", "preGroup", "postGroup", "fGrouped", "format", "labelFormat", "elemFormat",
         );
         
         foreach ($availableParams as $key) {
@@ -122,7 +128,13 @@ class Gb_Form_Group implements IteratorAggregate
     {
         $args=func_get_args();
         foreach ($args as $arg) {
-            $this->_elems[]=$this->_applyModifiers($arg);
+            $arg = $this->_applyModifiers($arg);
+            $name = $arg->name();
+            if (null !== $name) {
+                $this->$name = $arg;
+            } else {
+                $this->_elems[] = $arg;
+            }
         }
         return $this;
     }
@@ -139,11 +151,43 @@ class Gb_Form_Group implements IteratorAggregate
     final public function renderHtml($aElemNames=null)
     {
         $ret=$this->preGroup();
+        $format = $this->_format;
+        $labelFormat = $this->_labelFormat;
+        $elemFormat = $this->_elemFormat;
+        
         if ($aElemNames===null) {
-            foreach ($this as $elemOrGroup) {
-                if ($elemOrGroup instanceof Gb_Form_Elem_Abstract || $elemOrGroup instanceOf Gb_Form_Group) {
-                    $ret.=$elemOrGroup->renderHtml();
+            if (false == $this->fGrouped()) {
+                // not grouped
+                foreach ($this as $elemOrGroup) {
+                    if ($elemOrGroup instanceof Gb_Form_Elem_Abstract || $elemOrGroup instanceOf Gb_Form_Group) {
+                        $sLabel = str_replace("_LABEL_", $elemOrGroup->renderLabelHtml(), $labelFormat);
+                        $sElem  = str_replace("_ELEM_",  $elemOrGroup->renderHtml()     , $elemFormat);
+                        
+                        $sElem2 = $format;
+                        $sElem2 = str_replace("_LABELS_", $sLabel, $sElem2);
+                        $sElem2 = str_replace("_ELEMS_"  , $sElem,  $sElem2);
+                        
+                        $ret .= $sElem2;
+                    }
                 }
+            } else {
+                // grouped
+                
+                $aLabels = array();
+                $aElems = array();
+                
+                foreach ($this as $elemOrGroup) {
+                    if ($elemOrGroup instanceof Gb_Form_Elem_Abstract || $elemOrGroup instanceOf Gb_Form_Group) {
+                        $aLabels[] = str_replace("_LABEL_", $elemOrGroup->renderLabelHtml(), $labelFormat);
+                        $aElems[]  = str_replace("_ELEM_",  $elemOrGroup->renderHtml()     , $elemFormat);
+                    }
+                }
+                
+                $format = str_replace("_LABELS_", join("", $aLabels), $format);
+                $format = str_replace("_ELEMS_", join("", $aElems), $format);
+                
+                $ret .= $format;
+                
             }
         } else {
             if (is_string($aElemNames)) {
@@ -243,6 +287,46 @@ class Gb_Form_Group implements IteratorAggregate
     {   
         if ($text===null) {         return $this->_postGroup; }
         else { $this->_postGroup=self::textSetter($text, $this->_postGroup, $mode); return $this;}
+    }
+    /**
+     * get/set fGrouped
+     * @param boolean[optional] $text
+     * @return Gb_Form_Group|String
+     */
+    final public function fGrouped($text=null)
+    {   
+        if ($text===null) {         return $this->_fGrouped; }
+        else { $this->_fGrouped=$text; return $this;}
+    }
+    /**
+     * get/set format
+     * @param string[optional] $text
+     * @return Gb_Form_Group|String
+     */
+    final public function format($text=null)
+    {   
+        if ($text===null) {         return $this->_format; }
+        else { $this->_format=$text; return $this;}
+    }
+    /**
+     * get/set labelFormat
+     * @param string[optional] $text
+     * @return Gb_Form_Group|String
+     */
+    final public function labelFormat($text=null)
+    {   
+        if ($text===null) {         return $this->_labelFormat; }
+        else { $this->_labelFormat=$text; return $this;}
+    }
+    /**
+     * get/set elemFormat
+     * @param string[optional] $text
+     * @return Gb_Form_Group|String
+     */
+    final public function elemFormat($text=null)
+    {   
+        if ($text===null) {         return $this->_elemFormat; }
+        else { $this->_elemFormat=$text; return $this;}
     }
     /**
      * Set the type of data returned by __toString()

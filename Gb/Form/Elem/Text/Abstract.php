@@ -24,8 +24,9 @@ abstract class Gb_Form_Elem_Text_Abstract extends Gb_Form_Elem_Abstract
     abstract protected function getHtmlInInput();
 
 
-    protected function _renderJavascript()
+    protected function _renderJavascript($js=null)
     {
+        $js = null;
         $ret="";
         $elemid=$this->elemId();
         

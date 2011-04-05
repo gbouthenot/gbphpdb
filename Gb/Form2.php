@@ -161,7 +161,13 @@ Class Gb_Form2 implements IteratorAggregate
     {
         $args=func_get_args();
         foreach ($args as $arg) {
-            $this->_elems[]=$this->_applyModifiers($arg);
+            $arg = $this->_applyModifiers($arg);
+            $name = $arg->name();
+            if ($name !== null) {
+                $this->$name = $arg;
+            } else {
+                $this->_elems[] = $arg;
+            }
         }
         return $this;
     }
@@ -624,13 +630,14 @@ Class Gb_Form2 implements IteratorAggregate
     
     
     /**
-     * get a elem by name
+     * search a elem by name recursively. To get en elem without recursion, use object->elemName OOP function
      *
      * @param string $name
-     * @return Gb_Form_Elem_Abstract
+     * @param boolean $fDontThrow
+     * @return Gb_Form_Elem_Abstract|false
      * @throws Gb_Exception
      */
-    public function getElem($name)
+    public function getElem($name, $fDontThrow=null)
     {
         foreach (new RecursiveIteratorIterator($this->getIterator()) as $elem) {
             $c=get_class($elem);
@@ -639,6 +646,9 @@ Class Gb_Form2 implements IteratorAggregate
                     return $elem;
                 }
             }
+        }
+        if ($fDontThrow) {
+            return false;
         }
         throw new Gb_Exception("Element $name not found");
     }
@@ -664,7 +674,7 @@ Class Gb_Form2 implements IteratorAggregate
                     if (!$elem->disabled()) {
                         $name=$elem->elemId();
                         if (isset($_POST[$name])) {
-                            $elem->rawValue($_POST[$name]);
+                            $elem->rawvalue($_POST[$name]);
                             $hasData=true;
                             $this->hasData(true);
                         } else {

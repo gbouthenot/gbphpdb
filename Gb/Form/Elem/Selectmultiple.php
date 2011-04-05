@@ -21,11 +21,10 @@ class Gb_Form_Elem_Selectmultiple extends Gb_Form_Elem_Abstract
     {
         $value;
         $aValues=$this->args();
-        $value=parent::value();
+        $value=$this->rawvalue();
         $elemid=$this->elemId();
         $ret="";
         $ret.="<select multiple='multiple' id='{$elemid}' name='{$elemid}[]' class='multiple' $inInput $inputJs>\n";
-        $num=0;
         $fOptgroup=false;
         foreach ($aValues as $ordre=>$aOption){
           $sVal=htmlspecialchars(is_array($aOption)?$aOption[0]:$aOption, ENT_QUOTES);
@@ -38,11 +37,10 @@ class Gb_Form_Elem_Selectmultiple extends Gb_Form_Elem_Abstract
               $fOptgroup=true;
           } else {
               $sSelected="";
-              if (in_array($ordre,$value))
+              if (in_array($ordre, $value))
                 $sSelected="selected='selected'";
-              $ret.="<option value='$num' $sSelected>$sLib</option>\n";
+              $ret.="<option value='$ordre' $sSelected>$sLib</option>\n";
           }
-          $num++;
         }
         if ($fOptgroup) {
             $ret.="</optgroup>\n";
@@ -67,8 +65,9 @@ class Gb_Form_Elem_Selectmultiple extends Gb_Form_Elem_Abstract
         $elemid=$this->elemId();
         return "onchange='javascript:validate_{$elemid}();' onkeyup='javascript:validate_{$elemid}();'";
     }
-    protected function _renderJavascript()
+    protected function _renderJavascript($js=null)
     {
+        $js = null;
         $ret="";
         $elemid=$this->elemId();
         
@@ -228,7 +227,11 @@ class Gb_Form_Elem_Selectmultiple extends Gb_Form_Elem_Abstract
 
     public function rawValue($text=null)
     {
-        return parent::value($text);
+        $ret = parent::value($text);
+        if (!is_array($ret)) {
+            $ret = array();
+        }
+        return $ret;
     }
     
 

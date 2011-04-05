@@ -5,47 +5,59 @@ if (!defined("_GB_PATH")) {
 }
 
 /**
- * Gb_Form_Elem_Select
+ * Gb_Form_Elem_Radio
  * 
  * @author Gilles Bouthenot
- * @version $Revision$
- * @Id $Id$
+ * @version $Revision: 176 $
+ * @Id $Id: Select.php 176 2011-01-12 08:52:11Z gbouthen $
  */
 
-class Gb_Form_Elem_Select extends Gb_Form_Elem_Abstract
+class Gb_Form_Elem_Radio extends Gb_Form_Elem_Abstract
 {
     protected $_args;
+    protected $_buttonsFormat="_RADIOTEXT_: _RADIOINPUT_";
     
     
     public function getInput($value, $inInput, $inputJs)
     {
         $value;
-        $aValues  = $this->args();
-        $rawvalue = $this->rawvalue();
-        $elemid   = $this->elemId();
+        $aValues   = $this->args();
+        $rawvalue  = $this->rawvalue();
+        $elemid    = $this->elemId();
+        $elemidEsc = htmlspecialchars($elemid, ENT_QUOTES);
         $ret="";
-        $ret.="<select id='{$elemid}' name='{$elemid}' class='simple' $inInput $inputJs>\n";
-        $fOptgroup=false;
+        
+        //
+        // todo : $inInput, $inputJs
+        // 
+        
         foreach ($aValues as $ordre=>$aOption){
           $sVal=htmlspecialchars(is_array($aOption)?$aOption[0]:$aOption, ENT_QUOTES);
           $sLib=htmlspecialchars(is_array($aOption)?(isset($aOption[1])?$aOption[1]:$aOption[0]):$aOption, ENT_QUOTES);
+          $fOptgroup = false;
           if ($sVal=="optgroup") {
               if ($fOptgroup) {
-                  $ret.="</optgroup>\n";
+                  $ret.="</div>\n";
               }
-              $ret.="<optgroup label='$sLib'>\n";
+              $ret.="<div class='optgroup'>\n";
               $fOptgroup=true;
           } else {
               $sSelected="";
-              if ( (strlen($rawvalue)) && ($ordre == $rawvalue) )
-                $sSelected="selected='selected'";
-              $ret.="<option value='$ordre' $sSelected>$sLib</option>\n";
+              // $ordre is int, $rawvalue is int/string
+              if ((strlen($rawvalue)) && ($ordre == $rawvalue)) { $sSelected="checked='checked'"; }
+              $button = "<input type='radio' name='$elemidEsc' value='$ordre' $sSelected />";
+
+              $format = $this->_buttonsFormat;
+              $format = str_replace("_RADIOTEXT_", $sLib, $format);
+              $format = str_replace("_RADIOINPUT_", $button, $format);
+              
+              $ret.="<label>".$format."</label>\n";
           }
+          $ordre++;
         }
         if ($fOptgroup) {
-            $ret.="</optgroup>\n";
+            $ret.="<div/>\n";
         }
-        $ret.="</select>\n";
         return $ret;
     }
     
@@ -113,7 +125,7 @@ class Gb_Form_Elem_Select extends Gb_Form_Elem_Abstract
      */
     public function __construct($name, array $aParams=array())
     {
-        $availableParams=array("args", "notValue");
+        $availableParams=array("args", "notValue", "buttonsFormat");
         $aParams=array_merge(array("errorMsgMissing"=>"Veuillez faire un choix"), $aParams);
         return parent::__construct($name, $availableParams, $aParams);
     }
@@ -273,5 +285,16 @@ class Gb_Form_Elem_Select extends Gb_Form_Elem_Abstract
     {
         return parent::value($text);
     }
-
+    /**
+     * get/set buttonsFormat (default to "_RADIOTEXT_: _RADIOINPUT_")
+     * @param string[optional] $text
+     * @param string[optional] "append" (default)/"prepend"/"set"
+     * @return Gb_Form_Elem_Abstract|String 
+     */
+    public function buttonsFormat($text=null)
+    {   
+        if ($text===null) {         return $this->_buttonsFormat; }
+        else { $this->_buttonsFormat=$text; return $this;}
+    }
+    
 }

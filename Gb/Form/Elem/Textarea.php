@@ -22,8 +22,9 @@ class Gb_Form_Elem_Textarea extends Gb_Form_Elem_Abstract
     }
     
 
-    protected function _renderJavascript()
+    protected function _renderJavascript($js=null)
     {
+        $js = null;
         $ret="";
         $elemid=$this->elemId();
         

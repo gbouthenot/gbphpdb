@@ -29,22 +29,14 @@ class Gb_Form_Elem_Submit extends Gb_Form_Elem_Abstract
         $elemid=$this->elemId();
         $value=htmlspecialchars($value);
         if (strlen($value)) { $value="value='$value'"; }
-        return "<input type='submit' class='submit' name='{$elemid}' $value $inInput $inputJs />";
-    }
-    
-    public function getInputJavascript()
-    {
-        $onclick=$this->onclick();
-        if (strlen($onclick)) { $onclick="onclick='$onclick'"; }
-        return $onclick;
-    }
 
-    protected function _renderJavascript()
-    {
-        $ret2=parent::_renderJavascript("");
-        return $ret2;
+        $onclick=$this->onclick();
+        if (strlen($onclick)) { $onclick="onclick='".htmlspecialchars($onclick, ENT_QUOTES)."'"; }
+        
+        return "<input type='submit' class='submit' name='{$elemid}' $value $inInput $inputJs $onclick />";
     }
     
+
     
     /**
      * get/set onclick

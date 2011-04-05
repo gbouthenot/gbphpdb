@@ -53,6 +53,9 @@ abstract class Gb_Form_Elem_Abstract
     
     protected $_toStringRendersAs="HTML";
     protected $_javascriptEnabled=true;
+    protected $_beforeInput="";
+    protected $_afterInput="";
+    protected $_label="";
     protected $_preInput="";
     protected $_postInput="";
     protected $_inInput="";
@@ -92,7 +95,7 @@ abstract class Gb_Form_Elem_Abstract
             "classStatut",       "name",         "toBackendFunc",  "backendCol",    "errorContainer",
             "publicName",        "fromBackendFunc",   "preInput",  "value",    "errorMsgMissing",
             "errorMsgCustom",    "disabled",     "fReadOnly",
-            "javascriptRendered","htmlRendered",
+            "javascriptRendered","htmlRendered", "label",
         ));
         
         foreach ($availableParams as $key) {
@@ -164,8 +167,12 @@ abstract class Gb_Form_Elem_Abstract
                 $errorMsg="<$errorContainer class='ERROR'>$errorMsg</$errorContainer>";
             }
             if (strlen($preInput.$postInput)) {
-                $preInput="<label>".(strlen($preInput)?"<span class='PRE'>$preInput</span>":"");
-                $postInput=(strlen($postInput)?"<span class='POST'>$postInput</span>":"")."</label>";
+                if (strlen($preInput)) {
+                    $preInput  = ("<span class='PRE'>$preInput</span>");
+                }
+                if (strlen($postInput)) {
+                    $postInput = ("<span class='POST'>$postInput</span>");
+                }
             }
             $this->HtmlRendered(true);
             $ret=$preElem.$container1.$preInput.$htmlInput.$postInput.$errorMsg.$container2.$postElem."\n";
@@ -173,6 +180,26 @@ abstract class Gb_Form_Elem_Abstract
         return $ret;
     }
 
+    /**
+     * Renders HTML label
+     * @return string
+     */
+    public final function renderLabelHtml()
+    {
+        $text = $this->_label;
+        $elemid = $this->elemId();
+        $fLabel=true;
+        $ret = "";
+        if (get_class($this) == "Gb_Form_Elem_Radio") {
+            $fLabel=false;
+        }
+        if (strlen($text)) {
+            $ret = (($fLabel)?("<label for='$elemid'>"):("")) . ("<span class='LABEL'>$text</span>") . (($fLabel)?("</label>"):(""));
+        }
+        
+        return $ret;
+    }
+    
     public function getAjaxArgs()
     {
         $gbname=$this->elemId();
@@ -222,7 +249,7 @@ abstract class Gb_Form_Elem_Abstract
         return $ret;
     }
     
-    protected function _renderjavascript($js)
+    protected function _renderjavascript($js=null)
     {
         $ret = "";
         if (strlen($js)) {
@@ -288,6 +315,28 @@ abstract class Gb_Form_Elem_Abstract
         else { $this->_postInput=self::textSetter($text, $this->_postInput, $mode); return $this;}
     }
     /**
+     * get/set beforeInput
+     * @param string[optional] $text
+     * @param string[optional] "append" (default)/"prepend"/"set"
+     * @return Gb_Form_Elem_Abstract|String 
+     */
+    final public function beforeInput($text=null, $mode="append")
+    {   
+        if ($text===null) {             return $this->_beforeInput; }
+        else { $this->_beforeInput=self::textSetter($text, $this->_beforeInput, $mode); return $this;}
+    }
+    /**
+     * get/set afterInput
+     * @param string[optional] $text
+     * @param string[optional] "append" (default)/"prepend"/"set"
+     * @return Gb_Form_Elem_Abstract|String 
+     */
+    final public function afterInput($text=null, $mode="append")
+    {   
+        if ($text===null) {             return $this->_afterInput; }
+        else { $this->_afterInput=self::textSetter($text, $this->_afterInput, $mode); return $this;}
+    }
+    /**
      * get/set preElem
      * @param string[optional] $text
      * @param string[optional] "append" (default)/"prepend"/"set"
@@ -308,6 +357,17 @@ abstract class Gb_Form_Elem_Abstract
     {   
         if ($text===null) {         return $this->_postElem; }
         else { $this->_postElem=self::textSetter($text, $this->_postElem, $mode); return $this;}
+    }
+    /**
+     * get/set label
+     * @param string[optional] $text
+     * @param string[optional] "append" (default)/"prepend"/"set"
+     * @return Gb_Form_Elem_Abstract|String 
+     */
+    public function label($text=null, $mode="append")
+    {   
+        if ($text===null) {         return $this->_label; }
+        else { $this->_label=self::textSetter($text, $this->_label, $mode); return $this;}
     }
     /**
      * get/set value

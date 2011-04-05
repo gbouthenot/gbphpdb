@@ -5,7 +5,7 @@ if (!defined("_GB_PATH")) {
 }
 
 /**
- * Gb_Form_Elem_Text_Password
+ * Gb_Form_Elem_Password
  * 
  * @author Gilles Bouthenot
  * @version $Revision$
@@ -20,9 +20,4 @@ class Gb_Form_Elem_Password extends Gb_Form_Elem_Text_Abstract
         return "type='password' class='password'";
     }
 
-    protected function _renderJavascript()
-    {
-        $ret2=parent::_renderJavascript("");
-        return $ret2;
-    }
 }
