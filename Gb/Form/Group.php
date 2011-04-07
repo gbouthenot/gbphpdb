@@ -27,7 +27,7 @@ class Gb_Form_Group implements IteratorAggregate
     protected $_postGroup;
 
     protected $_fGrouped=false;
-    protected $_format;
+    protected $_format = "_LABELS__ELEMS_";
     protected $_labelFormat = "_LABEL_";
     protected $_elemFormat = "_ELEM_";
     
