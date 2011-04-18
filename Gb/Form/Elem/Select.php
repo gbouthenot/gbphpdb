@@ -65,15 +65,16 @@ class Gb_Form_Elem_Select extends Gb_Form_Elem_Abstract
         // attention utilise prototype String.strip()
         $ret.="var value=\$F('{$elemid}');\n";
         
-        // traitement fMandatory
+        $aValues="";
+        foreach($args as $ordre=>$val) {
+            $val=htmlspecialchars($val[0], ENT_QUOTES);
+            if ($val===false) { $val="false"; }
+            $aValues[]="'$ordre':'$val'";
+        }
+        $ret.="var {$elemid}_values = { ".implode(", ",$aValues)."};\n";
+
+            // traitement fMandatory
         if ($this->fMandatory()) {
-            $aValues="";
-            foreach($args as $ordre=>$val) {
-                $val=htmlspecialchars($val[0], ENT_QUOTES);
-                if ($val===false) { $val="false"; }
-                $aValues[]="'$ordre':'$val'";
-            }
-            $ret.="var {$elemid}_values = { ".implode(", ",$aValues)."};\n";
             $ret.="if (({$elemid}_values[value])=='false') {\n";
             $ret.=" \$('{$elemid}_div').className='NOK';\n";
             $ret.="}\n";
@@ -90,7 +91,7 @@ class Gb_Form_Elem_Select extends Gb_Form_Elem_Abstract
                  } else {
                    $ret.=" var notvalue=\"".addslashes($notValue)."\";\n";
                  }
-                 $ret.=" if (bornevalue == notvalue) {";
+                 $ret.=" if ((bornevalue == notvalue) && ({$elemid}_values[value] != 'false')) {";
                  $ret.=" \$('{$elemid}_div').className='NOK';";
                  $ret.="}\n";
             }
@@ -160,8 +161,13 @@ class Gb_Form_Elem_Select extends Gb_Form_Elem_Abstract
             return "Choix invalide";
         }                
         
-        if ($value==='false' && $fMandatory) {
-            return $this->errorMsgMissing();        
+        if ($value==='false') {
+            // no value selected. if mandatory: ERROR, else OK.
+            if ($fMandatory) {
+                return $this->errorMsgMissing();        
+            } else {
+                return true;
+            }
         }
         
         $chk=$this->_maxminvalueValidate("=", $value, $notValues, $form); if (strlen($chk)) { return $chk; }

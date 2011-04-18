@@ -32,6 +32,7 @@ abstract class Gb_Form_Backend_Abstract
     protected $_moreData=array();
     protected $_moreDataInsert=array();
     protected $_moreDataUpdate=array();
+    protected $_dbColFormat="_DBCOL_";
     
     /**
      * Link parent to Gb_Form2. Applies modificators specified with $aModifiers in the constructor.
@@ -55,7 +56,7 @@ abstract class Gb_Form_Backend_Abstract
         $this->_aModifiers=$aModifiers;
 
         $availableParams=array(
-            "moreData", "moreDataInsert", "moreDataUpdate",
+            "moreData", "moreDataInsert", "moreDataUpdate", "dbColFormat",
         );
 
         foreach ($availableParams as $key) {
@@ -119,6 +120,16 @@ abstract class Gb_Form_Backend_Abstract
         if ($text===null) {         return $this->_moreDataUpdate; }
         else { $this->_moreDataUpdate=$text; return $this;}
     }
-
+    /**
+     * get/set dbColFormat "_DBCOL_" by default
+     * @param string $text
+     * @return Gb_Form_Backend_Abstract|array
+     */
+    final public function dbColFormat($text=null)
+    {
+        if ($text===null) {         return $this->_dbColFormat; }
+        else { $this->_dbColFormat=$text; return $this;}
+    }
+    
 
 }

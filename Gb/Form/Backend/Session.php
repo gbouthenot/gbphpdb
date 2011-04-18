@@ -67,10 +67,10 @@ class Gb_Form_Backend_Session extends Gb_Form_Backend_Abstract
         foreach (array_keys($aCols) as $nom) {
             $elem=$this->_parent->getElem($nom);
             $dbcol=$elem->backendCol();
-            if (Gb_Session::_isset($this->_sessionprefix.$dbcol)) {
+            if (Gb_Session::_isset($this->_sessionprefix.str_replace("_DBCOL_", $dbcol, $this->dbColFormat()))) {
                 // trouvé
                 $fData=true;
-                $val=Gb_Session::get($this->_sessionprefix.$dbcol);
+                $val=Gb_Session::get($this->_sessionprefix.str_replace("_DBCOL_", $dbcol, $this->dbColFormat()));
                 $elem->backendValue($val);
                 $this->_parent->hasData(true);
             }
@@ -94,7 +94,7 @@ class Gb_Form_Backend_Session extends Gb_Form_Backend_Abstract
         $aCols=array_merge($aCols, $this->moreDataInsert());
     
         foreach ($aCols as $dbcol=>$val) {
-            Gb_Session::set($this->_sessionprefix.$dbcol, $val);
+            Gb_Session::set($this->_sessionprefix.str_replace("_DBCOL_", $dbcol, $this->dbColFormat()), $val);
         }
     
         Gb_Log::LogInfo("GBFORMSESSION->putInDb OK", $aCols );

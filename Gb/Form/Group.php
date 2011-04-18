@@ -138,7 +138,32 @@ class Gb_Form_Group implements IteratorAggregate
         }
         return $this;
     }
-
+    
+    /**
+     * search a elem by name recursively. To get en elem without recursion, use object->elemName OOP function
+     *
+     * @param string $name
+     * @param boolean $fDontThrow
+     * @return Gb_Form_Elem_Abstract|false
+     * @throws Gb_Exception
+     */
+    public function getElem($name, $fDontThrow=null)
+    {
+        foreach (new RecursiveIteratorIterator($this->getIterator()) as $elem) {
+            $c=get_class($elem);
+            if (substr($c, 0, 13)=="Gb_Form_Elem_") {
+                if ($elem->name()==$name) {
+                    return $elem;
+                }
+            }
+        }
+        if ($fDontThrow) {
+            return false;
+        }
+        throw new Gb_Exception("Element $name not found");
+    }
+    
+    
     final public function getKeys()
     {
         return array_keys($this->_elems);
@@ -150,59 +175,75 @@ class Gb_Form_Group implements IteratorAggregate
     }
     final public function renderHtml($aElemNames=null)
     {
-        $ret=$this->preGroup();
+        $ret = "";
         $format = $this->_format;
         $labelFormat = $this->_labelFormat;
         $elemFormat = $this->_elemFormat;
         
-        if ($aElemNames===null) {
-            if (false == $this->fGrouped()) {
-                // not grouped
-                foreach ($this as $elemOrGroup) {
-                    if ($elemOrGroup instanceof Gb_Form_Elem_Abstract || $elemOrGroup instanceOf Gb_Form_Group) {
-                        $sLabel = str_replace("_LABEL_", $elemOrGroup->renderLabelHtml(), $labelFormat);
-                        $sElem  = str_replace("_ELEM_",  $elemOrGroup->renderHtml()     , $elemFormat);
-                        
-                        $sElem2 = $format;
-                        $sElem2 = str_replace("_LABELS_", $sLabel, $sElem2);
-                        $sElem2 = str_replace("_ELEMS_"  , $sElem,  $sElem2);
-                        
-                        $ret .= $sElem2;
+        if (is_string($aElemNames)) {
+            $aElemNames=array($aElemNames);
+        }
+        
+        if (false == $this->fGrouped()) {
+            // not grouped
+            foreach ($this as $elemName=>$elemOrGroup) {
+                if ($elemOrGroup instanceof Gb_Form_Elem_Abstract || $elemOrGroup instanceOf Gb_Form_Group) {
+                    if (($aElemNames===null) || in_array($elemName, $aElemNames)) {
+                        $renderHtml = $elemOrGroup->renderHtml();
+                        if (strlen($renderHtml)) {
+                            if ($elemOrGroup instanceof Gb_Form_Elem_Abstract) {
+                                $sLabel = str_replace("_LABEL_", $elemOrGroup->renderLabelHtml(), $labelFormat);
+                                $sElem  = str_replace("_ELEM_",  $renderHtml                    , $elemFormat);
+                                
+                                $sElem2 = $format;
+                                $sElem2 = str_replace("_LABELS_", $sLabel, $sElem2);
+                                $sElem2 = str_replace("_ELEMS_"  , $sElem,  $sElem2);
+                                
+                                $ret .= $sElem2;
+                            } else {
+                                $ret .= $renderHtml;
+                            }
+                        }
                     }
                 }
-            } else {
-                // grouped
-                
-                $aLabels = array();
-                $aElems = array();
-                
-                foreach ($this as $elemOrGroup) {
-                    if ($elemOrGroup instanceof Gb_Form_Elem_Abstract || $elemOrGroup instanceOf Gb_Form_Group) {
-                        $aLabels[] = str_replace("_LABEL_", $elemOrGroup->renderLabelHtml(), $labelFormat);
-                        $aElems[]  = str_replace("_ELEM_",  $elemOrGroup->renderHtml()     , $elemFormat);
+            }
+        } else {
+            // grouped
+            
+            $aLabels = array();
+            $aElems = array();
+            
+            foreach ($this as $elemName=>$elemOrGroup) {
+                if ($elemOrGroup instanceof Gb_Form_Elem_Abstract || $elemOrGroup instanceOf Gb_Form_Group) {
+                    if (($aElemNames===null) || in_array($elemName, $aElemNames)) {
+                        $renderHtml = $elemOrGroup->renderHtml();
+                        if (strlen($renderHtml)) {
+                            if ($elemOrGroup instanceof Gb_Form_Elem_Abstract) {
+                                $aLabels[] = str_replace("_LABEL_", $elemOrGroup->renderLabelHtml(), $labelFormat);
+                                $aElems[]  = str_replace("_ELEM_",  $renderHtml,                     $elemFormat);
+                            } else {
+                                $ret .= $renderHtml;
+                            }
+                        }
                     }
                 }
-                
+            }
+
+            if (count($aElems)) {
                 $format = str_replace("_LABELS_", join("", $aLabels), $format);
                 $format = str_replace("_ELEMS_", join("", $aElems), $format);
                 
                 $ret .= $format;
-                
             }
-        } else {
-            if (is_string($aElemNames)) {
-                $aElemNames=array($aElemNames);
-            }
-            foreach ($aElemNames as $elemname) {
-                $elemOrGroup=$this->getElem($elemname);
-                if ($elemOrGroup instanceof Gb_Form_Elem_Abstract || $elemOrGroup instanceOf Gb_Form_Group) {
-                    $ret.=$elemOrGroup->renderHtml();
-                }
-            }
+            
         }
 
-        $ret.=$this->postGroup();
-        $ret.="\n";
+        if (strlen($ret)) {
+            $ret  = $this->preGroup().$ret;
+            $ret .= $this->postGroup();
+            $ret .= "\n";
+        }
+
         return $ret;
     }
     final public function renderJavascript($aElemNames=null)

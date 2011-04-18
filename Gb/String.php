@@ -193,7 +193,7 @@ class Gb_String
     
     
     /**
-     * Transforme un array en format CSV
+     * Transforme un array en format CSV. Remplace les sauts de ligne par un espace.
      *
      * @param array $data données au même format que 
      * @return string la chaine en csv
@@ -214,7 +214,10 @@ class Gb_String
         
         foreach($data as $ligne) {
             foreach(array_keys($firstligne) as $ind) {
-                $ret.=$ligne[$ind].";";
+                $col = $ligne[$ind];
+//                $col = str_replace("\n", " ", $col);
+                $col = str_replace("\r", "",  $col);
+                $ret .= "\"".$col."\";";
             }
             $ret.="\n";
         }

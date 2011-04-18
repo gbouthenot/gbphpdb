@@ -82,7 +82,7 @@ class Gb_Form_Backend_Database extends Gb_Form_Backend_Abstract
         foreach (array_keys($aCols) as $nom) {
             $elem=$this->_parent->getElem($nom);
             $dbcol=$elem->backendCol();
-            $aDbCols[]=$dbcol;
+            $aDbCols[]=str_replace("_DBCOL_", $dbcol, $this->dbColFormat());
         }
         $sql=" SELECT ".implode(",", $aDbCols)." FROM ".$this->tableName." WHERE ".implode(" AND ", $this->where);
         $aRes=$this->db->retrieve_one($sql);
@@ -91,6 +91,7 @@ class Gb_Form_Backend_Database extends Gb_Form_Backend_Abstract
             foreach (array_keys($aCols) as $nom) {
                 $elem=$this->_parent->getElem($nom);
                 $dbcol=$elem->backendCol();
+                $dbcol = str_replace("_DBCOL_", $dbcol, $this->dbColFormat());
                 $value=$aRes[$dbcol];
                 $elem->backendValue($value);
             }
@@ -127,6 +128,7 @@ class Gb_Form_Backend_Database extends Gb_Form_Backend_Abstract
         foreach (array_keys($aCols) as $nom) {
             $elem=$this->_parent->getElem($nom);
             $dbcol=$elem->backendCol();
+            $dbcol = str_replace("_DBCOL_", $dbcol, $this->dbColFormat());
             $aDbCols[$dbcol]=$elem->backendValue();
         }
         

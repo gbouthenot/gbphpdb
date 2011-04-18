@@ -30,7 +30,7 @@ class Gb_Form_Elem_Checkbox extends Gb_Form_Elem_Abstract
         return $ret;
     }
     
-    protected function _renderJavascript($js)
+    protected function _renderJavascript($js=null)
     {
         $js = null;
         $ret="";

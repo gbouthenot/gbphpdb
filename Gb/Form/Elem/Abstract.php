@@ -23,7 +23,7 @@ abstract class Gb_Form_Elem_Abstract
         'Url'             => '/^((https?|ftp):\/\/([-\w]+\.)+[A-Za-z]{2,}(:\d+)?([\\\\\/]\S+)*?[\\\\\/]?(\?\S*)?)$/i',
         'PositiveInteger' => '/^(\d+)$/',
         'RelativeInteger' => '/^(-?\d+)$/',
-        'DecimalNumber'   => '/^(-?(\d*\.)?\d+$)/',
+        'DecimalNumber'   => '/^(-?(\d*[\.\,])?\d+$)/',
         'AlphaNumeric'    => '/^([\w\s]+)$/i',
         'PostalCodeFr'    => '/^([0-9]{5})$/',
         'Year'            => '/^(((19)|(20))[0-9]{2})$/', // aaaa 1900<=aaaa<=2099
@@ -67,8 +67,10 @@ abstract class Gb_Form_Elem_Abstract
     protected $_toBackendFunc;
     protected $_fromBackendFunc;
     protected $_validateFunc;
-    protected $_preElem;
-    protected $_postElem;
+    protected $_preInputContainer;
+    protected $_postInputContainer;
+    protected $_preLabel;
+    protected $_postLabel;
     protected $_classStatut;
     protected $_container="div";
     protected $_errorContainer;
@@ -90,8 +92,8 @@ abstract class Gb_Form_Elem_Abstract
         $this->_name=$name;
 
         $availableParams=array_merge($availableParams, array(
-            "toStringRendersAs", "validateFunc", "postInput", "errorMsg", "preElem",
-            "javascriptEnabled", "fMandatory",   "container", "inInput",  "postElem",
+            "toStringRendersAs", "validateFunc", "postInput", "errorMsg", "preInputContainer", "preLabel",
+            "javascriptEnabled", "fMandatory",   "container", "inInput",  "postInputContainer", "postLabel",
             "classStatut",       "name",         "toBackendFunc",  "backendCol",    "errorContainer",
             "publicName",        "fromBackendFunc",   "preInput",  "value",    "errorMsgMissing",
             "errorMsgCustom",    "disabled",     "fReadOnly",
@@ -150,8 +152,8 @@ abstract class Gb_Form_Elem_Abstract
             $inputjs=$this->javascriptEnabled()?$this->getInputJavascript():"";
             $htmlInput=$this->getInput($value, $inInput, $inputjs);
             
-            $preElem=$this->preElem();
-            $postElem=$this->postElem();
+            $preInputContainer=$this->preInputContainer();
+            $postInputContainer=$this->postInputContainer();
             $container1=$container2="";$container1;$container2; // l'editeur dit qu'ils ne sont pas utilisés !
             $container=$this->container();
             $errorContainer=$this->errorContainer();
@@ -175,7 +177,7 @@ abstract class Gb_Form_Elem_Abstract
                 }
             }
             $this->HtmlRendered(true);
-            $ret=$preElem.$container1.$preInput.$htmlInput.$postInput.$errorMsg.$container2.$postElem."\n";
+            $ret=$preInputContainer.$container1.$preInput.$htmlInput.$postInput.$errorMsg.$container2.$postInputContainer."\n";
         }
         return $ret;
     }
@@ -197,7 +199,7 @@ abstract class Gb_Form_Elem_Abstract
             $ret = (($fLabel)?("<label for='$elemid'>"):("")) . ("<span class='LABEL'>$text</span>") . (($fLabel)?("</label>"):(""));
         }
         
-        return $ret;
+        return $this->preLabel().$ret.$this->postLabel();
     }
     
     public function getAjaxArgs()
@@ -337,26 +339,48 @@ abstract class Gb_Form_Elem_Abstract
         else { $this->_afterInput=self::textSetter($text, $this->_afterInput, $mode); return $this;}
     }
     /**
-     * get/set preElem
+     * get/set preInputContainer
      * @param string[optional] $text
      * @param string[optional] "append" (default)/"prepend"/"set"
      * @return Gb_Form_Elem_Abstract|String 
      */
-    public function preElem($text=null, $mode="append")
+    public function preInputContainer($text=null, $mode="append")
     {   
-        if ($text===null) {         return $this->_preElem; }
-        else { $this->_preElem=self::textSetter($text, $this->_preElem, $mode); return $this;}
+        if ($text===null) {         return $this->_preInputContainer; }
+        else { $this->_preInputContainer=self::textSetter($text, $this->_preInputContainer, $mode); return $this;}
     }
     /**
-     * get/set postElem
+     * get/set postInputContainer
      * @param string[optional] $text
      * @param string[optional] "append" (default)/"prepend"/"set"
      * @return Gb_Form_Elem_Abstract|String 
      */
-    public function postElem($text=null, $mode="append")
+    public function postInputContainer($text=null, $mode="append")
     {   
-        if ($text===null) {         return $this->_postElem; }
-        else { $this->_postElem=self::textSetter($text, $this->_postElem, $mode); return $this;}
+        if ($text===null) {         return $this->_postInputContainer; }
+        else { $this->_postInputContainer=self::textSetter($text, $this->_postInputContainer, $mode); return $this;}
+    }
+    /**
+     * get/set preLabel
+     * @param string[optional] $text
+     * @param string[optional] "append" (default)/"prepend"/"set"
+     * @return Gb_Form_Elem_Abstract|String 
+     */
+    public function preLabel($text=null, $mode="append")
+    {   
+        if ($text===null) {         return $this->_preLabel; }
+        else { $this->_preLabel=self::textSetter($text, $this->_preLabel, $mode); return $this;}
+    }
+    /**
+     * get/set postLabel
+     * @param string[optional] $text
+     * @param string[optional] "append" (default)/"prepend"/"set"
+     * @return Gb_Form_Elem_Abstract|String 
+     */
+    public function postLabel($text=null, $mode="append")
+    {   
+        if ($text===null) {         return $this->_postLabel; }
+        else { $this->_postLabel=self::textSetter($text, $this->_postLabel, $mode); return $this;}
     }
     /**
      * get/set label
