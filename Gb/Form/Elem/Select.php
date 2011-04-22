@@ -67,8 +67,14 @@ class Gb_Form_Elem_Select extends Gb_Form_Elem_Abstract
         
         $aValues="";
         foreach($args as $ordre=>$val) {
-            $val=htmlspecialchars($val[0], ENT_QUOTES);
-            if ($val===false) { $val="false"; }
+            if (is_array($val)) {
+                $val = $val[0];
+            }
+            if ($val===false) {
+                $val="false";
+            } else {
+                $val = htmlspecialchars($val, ENT_QUOTES);
+            }
             $aValues[]="'$ordre':'$val'";
         }
         $ret.="var {$elemid}_values = { ".implode(", ",$aValues)."};\n";
