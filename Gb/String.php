@@ -172,8 +172,8 @@ class Gb_String
 
     /**
      * Check if a [given] time is in the interval [start; end[
-     * @param mixed $start integer, string (fr/iso)
-     * @param mixed $end
+     * @param mixed[optional] $start integer or string (fr/iso)
+     * @param mixed[optional] $end integer or string (fr/iso)
      * @param integer $time -1/0/+1 means before/in/after
      */
     public static function date_isIntoInterval($start=null, $end=null, $time=null)
@@ -184,16 +184,16 @@ class Gb_String
             $time = self::str_to_time($time);
         }
         
-        if (!is_numeric($start)) {
+        if (($start !== null) && (!is_numeric($start))) {
             $start = Gb_String::str_to_time($start);
         }
-        if (!is_numeric($end)) {
+        if (($end !== null) && (!is_numeric($end))) {
             $end = Gb_String::str_to_time($end);
         }
 
-        if ($time < $start) {
+        if (($start !== null) && ($time < $start)) {
             return -1;
-        } elseif ($time >= $end) {
+        } elseif (($end !== null) && ($time >= $end)) {
             return +1;
         } else {
             return 0;
