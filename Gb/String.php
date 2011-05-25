@@ -215,8 +215,11 @@ class Gb_String
         foreach($data as $ligne) {
             foreach(array_keys($firstligne) as $ind) {
                 $col = $ligne[$ind];
-//                $col = str_replace("\n", " ", $col);
-                $col = str_replace("\r", "",  $col);
+                $col = str_replace('"',    '""',   $col);
+                $col = str_replace("\n\r", " - ",  $col);
+                $col = str_replace("\r\n", " - ",  $col);
+                $col = str_replace("\n",   "",     $col);
+                $col = str_replace("\r",   "",     $col);
                 $ret .= "\"".$col."\";";
             }
             $ret.="\n";
