@@ -1,16 +1,16 @@
 <?php
-
-if (!defined("_GB_PATH")) {
-    define("_GB_PATH", realpath(dirname(__FILE__).DIRECTORY_SEPARATOR.'..'.DIRECTORY_SEPARATOR.'..').DIRECTORY_SEPARATOR);
-}
-
 /**
- * Gb_Form_Elem_Text_Hidden
+ * Gb_Form_Elem_Print
  * 
  * @author Gilles Bouthenot
  * @version $Revision$
  * @Id $Id$
  */
+
+if (!defined("_GB_PATH")) {
+    define("_GB_PATH", realpath(dirname(__FILE__).DIRECTORY_SEPARATOR.'..'.DIRECTORY_SEPARATOR.'..').DIRECTORY_SEPARATOR);
+}
+
 
 class Gb_Form_Elem_Print extends Gb_Form_Elem_Abstract
 {

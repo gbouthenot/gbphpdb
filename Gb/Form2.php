@@ -1,9 +1,7 @@
 <?php
 
-require_once("Form/Iterator.php");
-
 /**
- * Gb_Form
+ * Gb_Form2
  * 
  * @author Gilles Bouthenot
  * @version $Revision$
@@ -15,6 +13,8 @@ if (!defined("_GB_PATH")) {
 }
 
 require_once(_GB_PATH."Exception.php");
+require_once(_GB_PATH."Form/Iterator.php");
+
 
 Class Gb_Form2 implements IteratorAggregate
 {
@@ -790,13 +790,5 @@ Class Gb_Form2 implements IteratorAggregate
         }
         return $this->hasData();
     }
-
-    
-    
-    
-    
-
-    
-    
 
 }

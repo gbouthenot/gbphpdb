@@ -11,8 +11,10 @@ if (!defined("_GB_PATH")) {
     define("_GB_PATH", dirname(__FILE__).DIRECTORY_SEPARATOR);
 }
 
+require_once(_GB_PATH."Exception.php");
 require_once(_GB_PATH."Glue.php");
 require_once(_GB_PATH."Log.php");
+
 
 Class Gb_Timer
 {
@@ -20,14 +22,14 @@ Class Gb_Timer
   protected $name;
   protected $pause=0;
 
-  protected static $nbInstance_total=0;           // Nombre de classes ouvertes au total       
-  protected static $nbInstance_peak=0;            // maximum ouvertes simultanément                 
-  protected static $nbInstance_current=0;         // nom d'instances ouvertes en ce moment          
+  protected static $nbInstance_total=0;           // Nombre de classes ouvertes au total
+  protected static $nbInstance_peak=0;            // maximum ouvertes simultanÃ©ment
+  protected static $nbInstance_current=0;         // nom d'instances ouvertes en ce moment
 
   protected static $fPluginRegistred=false;
   
     /**
-     * Renvoie la revision de la classe ou un boolean si la version est plus petite que précisée, ou Gb_Exception
+     * Renvoie la revision de la classe ou un boolean si la version est plus petite que prÃ©cisÃ©e, ou Gb_Exception
      *
      * @return boolean|integer
      * @throws Gb_Exception
@@ -46,7 +48,7 @@ Class Gb_Timer
   /**
    * Initialise le timer.
    *
-   * @param string[optional] $name text à afficher dans footer
+   * @param string[optional] $name text Ã  afficher dans footer
    */
   public function __construct($name='')
   {
@@ -71,7 +73,7 @@ Class Gb_Timer
   }
 
   /**
-   * Réinitialise le timer. Annule une éventuelle pause
+   * RÃ©initialise le timer. Annule une Ã©ventuelle pause
    */
   public function reset()
   {
@@ -80,10 +82,10 @@ Class Gb_Timer
   }
 
   /**
-   * Renvoie le temps écoulé
+   * Renvoie le temps Ã©coulÃ©
    *
-   * @param int|null $nbdigits nombre de chiffres significatifs|null pour inchangé
-   * @return float temps écoulé
+   * @param int|null $nbdigits nombre de chiffres significatifs|null pour inchangÃ©
+   * @return float temps Ã©coulÃ©
    */
   public function get($nbdigits=3)
   { if (empty($nbdigits))
@@ -92,7 +94,7 @@ Class Gb_Timer
   }
 
   /**
-   * loggue l'état du timer courant
+   * loggue l'Ã©tat du timer courant
    *
    * @param string[optional] $text
    */
@@ -115,9 +117,9 @@ Class Gb_Timer
   }
 
   /**
-   * Renvoie le temps écoulé avec 3 décimales
+   * Renvoie le temps Ã©coulÃ© avec 3 dÃ©cimales
    *
-   * @return string temps écoulé
+   * @return string temps Ã©coulÃ©
    */
   public function __toString()
   {
@@ -125,7 +127,7 @@ Class Gb_Timer
   }
 
   /**
-   * Pause le timer. Les appels à get() sont figés, resume() pour reprendre
+   * Pause le timer. Les appels Ã  get() sont figÃ©s, resume() pour reprendre
    */
   public function pause()
   {
@@ -134,7 +136,7 @@ Class Gb_Timer
   }
 
   /**
-   * Reprend le comptage après un pause()
+   * Reprend le comptage aprÃ¨s un pause()
    */
   public function resume()
   {

@@ -1,9 +1,4 @@
 <?php
-
-if (!defined("_GB_PATH")) {
-    define("_GB_PATH", realpath(dirname(__FILE__).DIRECTORY_SEPARATOR.'..').DIRECTORY_SEPARATOR);
-}
-
 /**
  * Gb_Form_Elem_Abstract
  * 
@@ -11,6 +6,13 @@ if (!defined("_GB_PATH")) {
  * @version $Revision$
  * @Id $Id$
  */
+
+if (!defined("_GB_PATH")) {
+    define("_GB_PATH", realpath(dirname(__FILE__).DIRECTORY_SEPARATOR.'..'.DIRECTORY_SEPARATOR.'..').DIRECTORY_SEPARATOR);
+}
+
+require_once(_GB_PATH."Exception.php");
+
 
 abstract class Gb_Form_Elem_Abstract
 {

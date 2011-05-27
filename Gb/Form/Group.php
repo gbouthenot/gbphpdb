@@ -1,12 +1,4 @@
 <?php
-
-if (!defined("_GB_PATH")) {
-    define("_GB_PATH", realpath(dirname(__FILE__).DIRECTORY_SEPARATOR.'..').DIRECTORY_SEPARATOR);
-}
-
-require_once("Iterator.php");
-require_once("Elem/Abstract.php");
-
 /**
  * Gb_Form_Group
  * 
@@ -14,6 +6,15 @@ require_once("Elem/Abstract.php");
  * @version $Revision$
  * @Id $Id$
  */
+
+if (!defined("_GB_PATH")) {
+    define("_GB_PATH", realpath(dirname(__FILE__).DIRECTORY_SEPARATOR.'..').DIRECTORY_SEPARATOR);
+}
+
+require_once(_GB_PATH."Exception.php");
+require_once(_GB_PATH."Form/Iterator.php");
+require_once(_GB_PATH."Form/Elem/Abstract.php");
+
 
 class Gb_Form_Group implements IteratorAggregate
 {

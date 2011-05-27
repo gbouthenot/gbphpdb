@@ -1,11 +1,4 @@
 <?php
-
-if (!defined("_GB_PATH")) {
-    define("_GB_PATH", realpath(dirname(__FILE__).DIRECTORY_SEPARATOR.'..').DIRECTORY_SEPARATOR);
-}
-
-require_once("Gb/Exception.php");
-
 /**
  * Gb_Form_Iterator
  * 
@@ -13,6 +6,13 @@ require_once("Gb/Exception.php");
  * @version $Revision$
  * @Id $Id$
  */
+
+if (!defined("_GB_PATH")) {
+    define("_GB_PATH", realpath(dirname(__FILE__).DIRECTORY_SEPARATOR.'..').DIRECTORY_SEPARATOR);
+}
+
+require_once(_GB_PATH."Exception.php");
+
 
 class Gb_Form_Iterator implements RecursiveIterator, Countable
 {

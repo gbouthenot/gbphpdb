@@ -13,19 +13,19 @@ if (!defined("_GB_PATH")) {
 
 require_once(_GB_PATH."Exception.php");
 require_once(_GB_PATH."Glue.php");
-
 require_once(_GB_PATH."String.php");
 require_once(_GB_PATH."Log.php");
 
+
 Class Gb_Session
 {
-    public static $sessionDir="";           // Répertoire des sessions par défaut session_path/PROJECTNAME/sessions
+    public static $sessionDir="";           // RÃ©pertoire des sessions par dÃ©faut session_path/PROJECTNAME/sessions
     
     protected static $grandTimeOutMinutes;
     
     
     /**
-     * Renvoie la revision de la classe ou un boolean si la version est plus petite que précisée, ou Gb_Exception
+     * Renvoie la revision de la classe ou un boolean si la version est plus petite que prÃ©cisÃ©e, ou Gb_Exception
      *
      * @return boolean|integer
      * @throws Gb_Exception
@@ -42,7 +42,7 @@ Class Gb_Session
     
    /**
    * Renvoie le nom du repertoire de la session
-   * crée le répertoire si besoin
+   * crÃ©e le rÃ©pertoire si besoin
    *
    * @return string sessionDir
    * @throws Gb_Exception
@@ -58,7 +58,7 @@ Class Gb_Session
             if ( (!is_dir($updir3) || !is_writable($updir3)) && is_dir($updir2) && is_writable($updir2) )
                 @mkdir($updir3, 0700);
             if ( !is_dir($updir3) || !is_writable($updir3) )
-                throw new Gb_Exception("Impossible de créer le répertoire $updir3 pour stocker les sessions ! session_save_path()=$updir");
+                throw new Gb_Exception("Impossible de crÃ©er le rÃ©pertoire $updir3 pour stocker les sessions ! session_save_path()=$updir");
             session_save_path($updir3);
             self::$sessionDir=$updir3;
         }
@@ -80,12 +80,12 @@ Class Gb_Session
     
     
    /**
-    * Démarre une session sécurisée (id changeant, watch ip et l'user agent)
-    * Mettre echo Gb_Session::session_start() au début du script.
+    * DÃ©marre une session sÃ©curisÃ©e (id changeant, watch ip et l'user agent)
+    * Mettre echo Gb_Session::session_start() au dÃ©but du script.
     *
-    * @param int[optional] $relTimeOutMinutes Timeout depuis la dernière page (1h défaut)
-    * @param int[optional] $grandTimeOutMinutes Timeout depuis création de la session (6h défaut)
-    * @throws Gb_Exception si impossible de créer répertoire pour le sessions
+    * @param int[optional] $relTimeOutMinutes Timeout depuis la derniÃ¨re page (1h dÃ©faut)
+    * @param int[optional] $grandTimeOutMinutes Timeout depuis crÃ©ation de la session (6h dÃ©faut)
+    * @throws Gb_Exception si impossible de crÃ©er rÃ©pertoire pour le sessions
     * @return string texte de warning ou ""
     */
     public static function session_start($relTimeOutMinutes=60, $grandTimeOutMinutes=360)
@@ -109,13 +109,13 @@ Class Gb_Session
         if (empty($curSession["relTimeout"]))   { $curSession["relTimeout"]=0;    }
             
     
-// j'enlève parce que ca engendre une dépendance sur Gb_Request
+// j'enlÃ¨ve parce que ca engendre une dÃ©pendance sur Gb_Request
 //        $uniqId=Gb_Request::getForm("uniqId");
 //        if( strlen($uniqId) && $uniqId != $curSession["uniqId"] )
 //        { // session hijacking ? Teste l'uniqId du formulaire (ou get)
 //            $curSession=self::destroy();
-//            $sWarning.="<b>Votre session n'est pas authentifiée";
-//            $sWarning.=" Pour protéger votre confidentialité, veuillez vous réidentifier.</b><br />\n";
+//            $sWarning.="<b>Votre session n'est pas authentifiÃ©e";
+//            $sWarning.=" Pour protÃ©ger votre confidentialitÃ©, veuillez vous rÃ©identifier.</b><br />\n";
 //        }
 //        elseif (  $curSession["client"]!=$client )
 
@@ -124,16 +124,16 @@ Class Gb_Session
         { // session hijacking ? Teste l'IP et l'user agent du client
             //Gb_Log::logNotice("Session uniqId={$curSession['uniqId']} destroyed because client {$curSession['client']} != {$client} ");
             $curSession=self::destroy();
-            $sWarning.="<b>Votre adresse IP ou votre navigateur a changé depuis la dernière page demandée.";
-            $sWarning.=" Pour protéger votre confidentialité, veuillez vous réidentifier.</b><br />\n";
+            $sWarning.="<b>Votre adresse IP ou votre navigateur a changÃ© depuis la derniÃ¨re page demandÃ©e.";
+            $sWarning.=" Pour protÃ©ger votre confidentialitÃ©, veuillez vous rÃ©identifier.</b><br />\n";
         }
         elseif( ($curSession["grandTimeout"] && $time>$curSession["grandTimeout"])
              ||  ($curSession["relTimeout"]   && $time>$curSession["relTimeout"]   )     )
         {
             //Gb_Log::logNotice("Session destroyed because $time > ({$curSession["grandTimeout"]} or {$curSession["relTimeout"]})");
             $curSession=self::destroy();
-            $sWarning.="<b>Votre session a expiré";
-            $sWarning.=" Pour protéger votre confidentialité, veuillez vous réidentifier.</b><br />\n";
+            $sWarning.="<b>Votre session a expirÃ©";
+            $sWarning.=" Pour protÃ©ger votre confidentialitÃ©, veuillez vous rÃ©identifier.</b><br />\n";
         }
     
         if (strlen($curSession["uniqId"])==0)
@@ -141,7 +141,7 @@ Class Gb_Session
             $curSession=self::destroy();
         }
         elseif (rand(1, 100)<=20)
-        { // 20% de chance de regénérer l'ID de session
+        { // 20% de chance de regÃ©nÃ©rer l'ID de session
             //Gb_Log::logDebug("session_regenerate_id() uniqId={$curSession['uniqId']}");
             session_regenerate_id(true);
         }
@@ -195,10 +195,10 @@ Class Gb_Session
 
     
     /**
-     * Renvoie la valeur SESSION, sans slash ou default si elle n'est pas définie
+     * Renvoie la valeur SESSION, sans slash ou default si elle n'est pas dÃ©finie
      *
-     * @param string $key valeur à chercher
-     * @param mixed[optional=false] $value valeur à renvoyer si non trouvé
+     * @param string $key valeur Ã  chercher
+     * @param mixed[optional=false] $value valeur Ã  renvoyer si non trouvÃ©
      * @return mixed| $_SESSION[$key]
      */
     public static function get($key, $default=false)
@@ -213,8 +213,8 @@ Class Gb_Session
     /**
      * Stocke une valeur dans SESSION
      *
-     * @param string $key valeur à chercher
-     * @param mixed $key valeur à chercher
+     * @param string $key valeur Ã  chercher
+     * @param mixed $key valeur Ã  chercher
      * @return mixed la valeur
      */
     public static function set($key, $value)

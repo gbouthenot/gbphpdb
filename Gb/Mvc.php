@@ -12,7 +12,7 @@ if (!defined("_GB_PATH")) {
 }
 
 require_once(_GB_PATH."Args.php");
-
+require_once(_GB_PATH."Exception.php");
 
 
 Class Gb_Mvc

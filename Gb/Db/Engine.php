@@ -14,6 +14,7 @@ if (!defined("_GB_PATH")) {
 require_once(_GB_PATH."Exception.php");
 require_once(_GB_PATH."Db.php");
 
+
 Class Gb_Db_Engine
 {
     protected $_aliases;

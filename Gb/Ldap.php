@@ -13,11 +13,7 @@ if (!defined("_GB_PATH")) {
 
 require_once(_GB_PATH."Exception.php");
 
-/** 
- * @author gbouthenot
- * 
- * 
- */
+
 class Gb_Ldap
 {
     protected static $_connexion;

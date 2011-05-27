@@ -11,6 +11,7 @@ if (!defined("_GB_PATH")) {
     define("_GB_PATH", dirname(__FILE__).DIRECTORY_SEPARATOR);
 }
 
+
 /**
  * Class Gb_Exception
  *

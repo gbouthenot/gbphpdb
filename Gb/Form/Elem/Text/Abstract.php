@@ -1,5 +1,4 @@
 <?php
-
 /**
  * Gb_Form_Elem_Text_Abstract
  * 
@@ -7,6 +6,11 @@
  * @version $Revision$
  * @Id $Id$
  */
+
+if (!defined("_GB_PATH")) {
+    define("_GB_PATH", realpath(dirname(__FILE__).DIRECTORY_SEPARATOR.'..'.DIRECTORY_SEPARATOR.'..'.DIRECTORY_SEPARATOR.'..').DIRECTORY_SEPARATOR);
+}
+
 
 abstract class Gb_Form_Elem_Text_Abstract extends Gb_Form_Elem_Abstract
 {

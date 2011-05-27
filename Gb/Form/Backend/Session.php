@@ -1,7 +1,14 @@
 <?php
+/**
+ * Gb_Form_Backend_Session
+ * 
+ * @author Gilles Bouthenot
+ * @version $Revision$
+ * @Id $Id$
+ */
 
 if (!defined("_GB_PATH")) {
-    define("_GB_PATH", realpath(dirname(__FILE__).DIRECTORY_SEPARATOR.'..').DIRECTORY_SEPARATOR);
+    define("_GB_PATH", realpath(dirname(__FILE__).DIRECTORY_SEPARATOR.'..'.DIRECTORY_SEPARATOR.'..').DIRECTORY_SEPARATOR);
 }
 
 require_once(_GB_PATH."Exception.php");
@@ -9,13 +16,6 @@ require_once(_GB_PATH."Form2.php");
 require_once(_GB_PATH."Log.php");
 require_once(_GB_PATH."Session.php");
 
-/**
- * Gb_Form_Session
- * 
- * @author Gilles Bouthenot
- * @version $Revision$
- * @Id $Id$
- */
 
 class Gb_Form_Backend_Session extends Gb_Form_Backend_Abstract
 {

@@ -11,10 +11,13 @@ if (!defined("_GB_PATH")) {
     define("_GB_PATH", dirname(__FILE__).DIRECTORY_SEPARATOR);
 }
 
+require_once(_GB_PATH."Exception.php");
+
+
 class Gb_Request
 {
     /**
-     * Renvoie la revision de la classe ou un boolean si la version est plus petite que précisée, ou Gb_Exception
+     * Renvoie la revision de la classe ou un boolean si la version est plus petite que prÃ©cisÃ©e, ou Gb_Exception
      *
      * @return boolean|integer
      * @throws Gb_Exception

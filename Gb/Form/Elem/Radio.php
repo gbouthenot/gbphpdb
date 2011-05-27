@@ -1,9 +1,4 @@
 <?php
-
-if (!defined("_GB_PATH")) {
-    define("_GB_PATH", realpath(dirname(__FILE__).DIRECTORY_SEPARATOR.'..'.DIRECTORY_SEPARATOR.'..').DIRECTORY_SEPARATOR);
-}
-
 /**
  * Gb_Form_Elem_Radio
  * 
@@ -11,6 +6,11 @@ if (!defined("_GB_PATH")) {
  * @version $Revision: 176 $
  * @Id $Id: Select.php 176 2011-01-12 08:52:11Z gbouthen $
  */
+
+if (!defined("_GB_PATH")) {
+    define("_GB_PATH", realpath(dirname(__FILE__).DIRECTORY_SEPARATOR.'..'.DIRECTORY_SEPARATOR.'..').DIRECTORY_SEPARATOR);
+}
+
 
 class Gb_Form_Elem_Radio extends Gb_Form_Elem_Abstract
 {

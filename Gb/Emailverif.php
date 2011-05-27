@@ -15,6 +15,7 @@ require_once(_GB_PATH."Exception.php");
 require_once(_GB_PATH."Db.php");
 require_once(_GB_PATH."String.php");
 
+
 Class Gb_Emailverif
 {
     /*

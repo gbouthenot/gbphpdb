@@ -14,6 +14,7 @@ if (!defined("_GB_PATH")) {
 require_once(_GB_PATH."Exception.php");
 require_once(_GB_PATH."Glue.php");
 
+
 Class Gb_Cache
 {
     public static       $cacheDir="";                  // Répertoire du cache par défaut session_path/PROJECTNAME/cache

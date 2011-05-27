@@ -13,6 +13,7 @@ if (!defined("_GB_PATH")) {
 
 require_once(_GB_PATH."Exception.php");
 
+
 /**
  * Classe Gb_Source
  */
