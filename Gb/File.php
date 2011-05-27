@@ -275,20 +275,4 @@ Class Gb_File
     }
     
     
-    /**
-     * Renvoie la revision de la classe ou un boolean si la version est plus petite que précisée, ou Gb_Exception
-     *
-     * @return boolean|integer
-     * @throws Gb_Exception
-     */
-    public static function getRevision($mini=null, $throw=true)
-    {
-        $revision='$Revision$';
-        $revision=trim(substr($revision, strrpos($revision, ":")+2, -1));
-        if ($mini===null) { return $revision; }
-        if ($revision>=$mini) { return true; }
-        if ($throw) { throw new Gb_Exception(__CLASS__." r".$revision."<r".$mini); }
-        return false;
-    }
-        
 }
