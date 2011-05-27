@@ -3,8 +3,8 @@
  * Gb_Ldap
  * 
  * @author Gilles Bouthenot
- * @version $Revision: 174 $
- * @Id $Id: Db.php 174 2010-12-22 11:13:50Z gbouthen $
+ * @version $Revision$
+ * @Id $Id$
  */
 
 if (!defined("_GB_PATH")) {
@@ -30,7 +30,7 @@ class Gb_Ldap
      */
     public static function getRevision($mini=null, $throw=true)
     {
-        $revision='$Revision: 149 $';
+        $revision='$Revision$';
         $revision=(int) trim(substr($revision, strrpos($revision, ":")+2, -1));
         if ($mini===null) { return $revision; }
         if ($revision>=$mini) { return true; }
