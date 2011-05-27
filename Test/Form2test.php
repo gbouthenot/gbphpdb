@@ -24,7 +24,7 @@ $e1
  ->postInput("(case-sensitive)")
  ->minValue(1234)
  ->notValue(array("2345", "3456", "abcd", "GBFORM_GROUP1_TEXT2"))
- ->publicName("Deuxième nom")
+ ->publicName("DeuxiÃ¨me nom")
 ;
 
 $e2=new Gb_Form_Elem_Hidden("HIDDEN1", array("container"=>"div"));

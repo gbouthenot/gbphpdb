@@ -19,6 +19,23 @@ Class Gb_Args
     protected $_args;
     
     /**
+     * Renvoie la revision de la classe ou un boolean si la version est plus petite que précisée, ou Gb_Exception
+     *
+     * @return boolean|integer
+     * @throws Gb_Exception
+     */
+    public static function getRevision($mini=null, $throw=true)
+    {
+        $revision='$Revision$';
+        $revision=(int) trim(substr($revision, strrpos($revision, ":")+2, -1));
+        if ($mini===null) { return $revision; }
+        if ($revision>=$mini) { return true; }
+        if ($throw) { throw new Gb_Exception(__CLASS__." r".$revision."<r".$mini); }
+        return false;
+    }    
+    
+    
+    /**
      * @param array|string|Gb_Args[optional]  $params
      */
     public function __construct($params=array())

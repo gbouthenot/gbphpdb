@@ -21,6 +21,23 @@ class Gb_Ldap
     protected static $_params;
     
     protected static $_shutdownRegistred;
+
+    /**
+     * Renvoie la revision de la classe ou un boolean si la version est plus petite que pr�cis�e, ou Gb_Exception
+     *
+     * @return boolean|integer
+     * @throws Gb_Exception
+     */
+    public static function getRevision($mini=null, $throw=true)
+    {
+        $revision='$Revision: 149 $';
+        $revision=(int) trim(substr($revision, strrpos($revision, ":")+2, -1));
+        if ($mini===null) { return $revision; }
+        if ($revision>=$mini) { return true; }
+        if ($throw) { throw new Gb_Exception(__CLASS__." r".$revision."<r".$mini); }
+        return false;
+    }
+    
     
     function __construct($server, $dn=null, $pass=null, $port=null)
     {

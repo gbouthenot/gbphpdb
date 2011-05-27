@@ -24,7 +24,7 @@ Class Gb_Emailverif
      *   `mco_date` DATETIME NOT NULL,
      *   `mco_ip` VARCHAR(50) NOT NULL,
      *   PRIMARY KEY (`mco_emailhash`)
-     * ) ENGINE = InnoDB COMMENT = 'Stock les adresses mail validées par le web';
+     * ) ENGINE = InnoDB COMMENT = 'Stock les adresses mail validï¿½es par le web';
      */
 
     /**
@@ -37,7 +37,7 @@ Class Gb_Emailverif
     protected $_table;
     
     /**
-     * Renvoie la revision de la classe ou un boolean si la version est plus petite que précisée, ou Gb_Exception
+     * Renvoie la revision de la classe ou un boolean si la version est plus petite que prï¿½cisï¿½e, ou Gb_Exception
      *
      * @return boolean|integer
      * @throws Gb_Exception
@@ -45,7 +45,7 @@ Class Gb_Emailverif
     public static function getRevision($mini=null, $throw=true)
     {
         $revision='$Revision$';
-        $revision=trim(substr($revision, strrpos($revision, ":")+2, -1));
+        $revision=(int) trim(substr($revision, strrpos($revision, ":")+2, -1));
         if ($mini===null) { return $revision; }
         if ($revision>=$mini) { return true; }
         if ($throw) { throw new Gb_Exception(__CLASS__." r".$revision."<r".$mini); }
@@ -59,8 +59,8 @@ Class Gb_Emailverif
      *
      * @param string $pass 32-hexadecimal chars
      * @param Gb_Db $db
-     * @param integer[optional] $hoursValidy nombre d'heures (défaut 48) que la validation est considérée comme valide
-     * @param string[optional] tablename (défaut mail_verif)
+     * @param integer[optional] $hoursValidy nombre d'heures (dï¿½faut 48) que la validation est considï¿½rï¿½e comme valide
+     * @param string[optional] tablename (dï¿½faut mail_verif)
      */
     public function __construct($salt, Gb_Db $db, $hoursValidity=48, $table="mail_verif")
     {
@@ -85,7 +85,7 @@ Class Gb_Emailverif
     
     
     /**
-     * Vérifie si un mail a été validé
+     * Vï¿½rifie si un mail a ï¿½tï¿½ validï¿½
      *
      * @param string $email
      * @return boolean

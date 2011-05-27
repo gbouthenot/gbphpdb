@@ -57,7 +57,7 @@ class Gb_FileTest extends PHPUnit_Framework_TestCase
      */
     public function test__construct()
     {
-        // insËre une ligne avec une clÈ primaire dÈj‡ existante
+        // ins√®re une ligne avec une cl√© primaire d√©j√† existante
         $ok=false;
         try {
             $this->Gb_File=new Gb_File("/var/lib/php5/files/nonexistent");
@@ -101,7 +101,7 @@ class Gb_FileTest extends PHPUnit_Framework_TestCase
     public function testStore()
     {
         // TODO Auto-generated Gb_FileTest->testStore()
-        $this->Gb_File->store($this->sourcefsname, "rzerÈ--_32.abc.txt", "abc/def", "prefix");
+        $this->Gb_File->store($this->sourcefsname, "rzer√©--_32.abc.txt", "abc/def", "prefix");
     }
 
 

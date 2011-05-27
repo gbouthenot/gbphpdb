@@ -66,7 +66,7 @@ class Gb_UtilTest extends PHPUnit_Framework_TestCase
             $e;
             return;  
         }
-        $this->fail("Exception non attrapÈe");
+        $this->fail("Exception non attrap√©e");
     }
 
 

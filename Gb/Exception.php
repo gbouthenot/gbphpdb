@@ -20,7 +20,7 @@ if (!defined("_GB_PATH")) {
 class Gb_Exception extends Exception
 {
     /**
-     * Renvoie la revision de la classe ou un boolean si la version est plus petite que précisée, ou Gb_Exception
+     * Renvoie la revision de la classe ou un boolean si la version est plus petite que prï¿½cisï¿½e, ou Gb_Exception
      *
      * @return boolean|integer
      * @throws Gb_Exception
@@ -28,7 +28,7 @@ class Gb_Exception extends Exception
     public static function getRevision($mini=null, $throw=true)
     {
         $revision='$Revision$';
-        $revision=trim(substr($revision, strrpos($revision, ":")+2, -1));
+        $revision=(int) trim(substr($revision, strrpos($revision, ":")+2, -1));
         if ($mini===null) { return $revision; }
         if ($revision>=$mini) { return true; }
         if ($throw) { throw new Gb_Exception(__CLASS__." r".$revision."<r".$mini); }

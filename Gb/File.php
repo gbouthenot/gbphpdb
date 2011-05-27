@@ -30,6 +30,22 @@ Class Gb_File
     protected $_tableName;
     
     /**
+     * Renvoie la revision de la classe ou un boolean si la version est plus petite que pr�cis�e, ou Gb_Exception
+     *
+     * @return boolean|integer
+     * @throws Gb_Exception
+     */
+    public static function getRevision($mini=null, $throw=true)
+    {
+        $revision='$Revision$';
+        $revision=(int) trim(substr($revision, strrpos($revision, ":")+2, -1));
+        if ($mini===null) { return $revision; }
+        if ($revision>=$mini) { return true; }
+        if ($throw) { throw new Gb_Exception(__CLASS__." r".$revision."<r".$mini); }
+        return false;
+    }
+    
+    /**
      * Constructeur Pour uploader les fichiers dans /var/lib/php5/files/c2i:
      *
      * @param string $fileroot "/var/lib/php5/files"

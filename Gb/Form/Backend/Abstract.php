@@ -3,8 +3,8 @@
  * Gb_Form_Backend_Interface
  * 
  * @author Gilles Bouthenot
- * @version $Revision: 168 $
- * @Id $Id: Database.php 168 2010-10-26 09:29:58Z gbouthenot $
+ * @version $Revision$
+ * @Id $Id$
  */
 
 if (!defined("_GB_PATH")) {

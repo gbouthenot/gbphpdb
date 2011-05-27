@@ -30,7 +30,7 @@ class Gb_Glue
     public static function getRevision($mini=null, $throw=true)
     {
         $revision='$Revision$';
-        $revision=trim(substr($revision, strrpos($revision, ":")+2, -1));
+        $revision=(int) trim(substr($revision, strrpos($revision, ":")+2, -1));
         if ($mini===null) { return $revision; }
         if ($revision>=$mini) { return true; }
         if ($throw) { throw new Gb_Exception(__CLASS__." r".$revision."<r".$mini); }
@@ -40,9 +40,9 @@ class Gb_Glue
     /**
      * Ajoute un plugin
      *
-     * @param string $sClass nom de la classe où ajouter le plugin
+     * @param string $sClass nom de la classe oï¿½ ajouter le plugin
      * @param string|array $fname nom de la fonction ou array(class,method)
-     * @param array[optional] $aParam paramètres
+     * @param array[optional] $aParam paramï¿½tres
      */
     public static function registerPlugin($sClass, $fname, array $aParam=array())
     {
@@ -53,7 +53,7 @@ class Gb_Glue
     
     
     /**
-     * Réinitialise tous les plugins pour une classe donnée, ou globalement
+     * Rï¿½initialise tous les plugins pour une classe donnï¿½e, ou globalement
      *
      * @param string[optional] $sClass
      */
@@ -70,7 +70,7 @@ class Gb_Glue
     
     
     /**
-     * renvoie les plugins enregistrés à une classe donnée
+     * renvoie les plugins enregistrï¿½s ï¿½ une classe donnï¿½e
      *
      * @param string $sClass
      * @return array
@@ -88,7 +88,7 @@ class Gb_Glue
     
     
   /**
-   * Renvoie le nom du projet, par défaut le répertoire du script php
+   * Renvoie le nom du projet, par dï¿½faut le rï¿½pertoire du script php
    *
    * @return string projectName
    */
@@ -96,13 +96,13 @@ class Gb_Glue
   {
     $sProjectName=self::$projectName;
     if ($sProjectName=="")
-    { // Met le nom du projet sur le nom du répertoire contenant le script
+    { // Met le nom du projet sur le nom du rï¿½pertoire contenant le script
       // "/gbo/gestion_e_mvc/bootstrap.php" --> "__gbo__gestion_e_mvc__bootstrap.php"
       $d="/";
       $php_self=$_SERVER["PHP_SELF"];
       $php_self=str_replace("\\", "/", $php_self);
       
-      // 1: [////]   2: le répertoire    3: /    4:nomfich.php[/]
+      // 1: [////]   2: le rï¿½pertoire    3: /    4:nomfich.php[/]
       $matches=null;
       preg_match("@^($d*)(.*)($d+)(.+$d*)$@", $php_self, $matches);
       if (isset($matches[2]) && strlen($matches[2]))

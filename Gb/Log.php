@@ -77,7 +77,7 @@ class Gb_Log
     public static function getRevision($mini=null, $throw=true)
     {
         $revision='$Revision$';
-        $revision=trim(substr($revision, strrpos($revision, ":")+2, -1));
+        $revision=(int) trim(substr($revision, strrpos($revision, ":")+2, -1));
         if ($mini===null) { return $revision; }
         if ($revision>=$mini) { return true; }
         if ($throw) { throw new Gb_Exception(__CLASS__." r".$revision."<r".$mini); }

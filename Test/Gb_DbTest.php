@@ -23,7 +23,7 @@ class Gb_DbTest extends PHPUnit_Framework_TestCase
         $db->delete("test_gb_db_2", array());
 
         $this->assertEquals(1, $db->insert("test_gb_db_2", array("usa_id"=>1, "usa_nom"=>"Premier usager")));
-        $this->assertEquals(1, $db->insert("test_gb_db_2", array("usa_id"=>2, "usa_nom"=>"Deuxième usager")));
+        $this->assertEquals(1, $db->insert("test_gb_db_2", array("usa_id"=>2, "usa_nom"=>"DeuxiÃ¨me usager")));
         $this->assertEquals(1, $db->insert("test_gb_db_1", array("pkey"=>"key1", "val"=>"abc", "usr"=>1)));
         $this->assertEquals(1, $db->insert("test_gb_db_1", array("pkey"=>"key2", "val"=>"abc", "usr"=>2)));
         
@@ -44,7 +44,27 @@ class Gb_DbTest extends PHPUnit_Framework_TestCase
      */
     public function __construct()
     {
-        $this->db=new Gb_Db(array("type"=>"mysql", "host"=>"localhost", "user"=>"test", "pass"=>"***REMOVED***", "dbname"=>"test"));
+        $this->db=new Gb_Db(array("type"=>"mysql", "host"=>"pollux4.openvpn", "user"=>"test", "pass"=>"***REMOVED***", "dbname"=>"test"));
+        
+        $this->db->query("DROP TABLE IF EXISTS test_gb_db_1");
+        $this->db->query("DROP TABLE IF EXISTS test_gb_db_2");
+        $this->db->query("
+CREATE TABLE `test_gb_db_2` (
+  `usa_id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `usa_nom` varchar(45) NOT NULL,
+  PRIMARY KEY (`usa_id`)
+) ENGINE=InnoDB
+        ");
+        $this->db->query("
+  CREATE TABLE `test_gb_db_1` (
+  `pkey` varchar(5) NOT NULL,
+  `val` varchar(50) DEFAULT NULL,
+  `usr` int(10) unsigned NOT NULL,
+  PRIMARY KEY (`pkey`) USING BTREE,
+  KEY `FK_test_gb_db_1_1` (`usr`),
+  CONSTRAINT `FK_test_gb_db_1_1` FOREIGN KEY (`usr`) REFERENCES `test_gb_db_2` (`usa_id`)
+) ENGINE=InnoDB
+        ");
     }
 
 /*
@@ -61,19 +81,29 @@ mysql> select * from test_gb_db_2;
 | usa_id | usa_nom         |
 +--------+-----------------+
 |      1 | Premier usager  | 
-|      2 | Deuxième usager | 
+|      2 | DeuxiÃ¨me usager | 
 +--------+-----------------+
 */
     
     public function testgetTables()
     {
         $getTables=$this->db->getTables();
-
-        // s'assure que la table test_gb_db_1 et 2 sont présentes
-        $this->assertTrue(in_array("test.test_gb_db_1", $getTables), "table test_gb_db_1 non trouvée");
-        $this->assertTrue(in_array("test.test_gb_db_2", $getTables), "table test_gb_db_2 non trouvée");
-
-        // le deuxième appel doit donner le même résultat
+        
+        // s'assure que la table test_gb_db_1 et 2 sont prÃ©sentes
+        $found1 = $found2 = 0;
+        foreach ($getTables as $table) {
+            $tablename = $table["FULL_NAME"];
+            if ($tablename == "test.test_gb_db_1") {
+                $found1++;
+            } elseif ($tablename == "test.test_gb_db_2") {
+                $found2++;
+            }
+        }
+        
+        $this->assertEquals(1, $found1, "table test_gb_db_1 non trouvÃ©e");
+        $this->assertEquals(1, $found2, "table test_gb_db_2 non trouvÃ©e");
+        
+        // le deuxiÃ¨me appel doit donner le mÃªme rÃ©sultat
         $this->assertSame($getTables, $this->db->getTables());
         
     }
@@ -101,7 +131,7 @@ mysql> select * from test_gb_db_2;
         $this->assertSame($expected1, $td1);
         $this->assertSame($expected2, $td2);
 
-        // le deuxième appel doit donner le même résultat
+        // le deuxiÃ¨me appel doit donner le mÃªme rÃ©sultat
         $this->assertSame($expected1, $td1);
         $this->assertSame($expected2, $td2);
     }
@@ -114,7 +144,7 @@ mysql> select * from test_gb_db_2;
         $expected=array("key1"=>array("val"=>"abc", "usr"=>"1"), "key2"=>array("val"=>"abc", "usr"=>"2"), "keyte"=>array("val"=>"test", "usr"=>"1"));
         $this->assertSame($expected, $db->retrieve_all("SELECT * FROM test_gb_db_1", array(), "pkey"));
         
-        // insère une ligne avec une clé primaire déjà existante
+        // insÃ¨re une ligne avec une clÃ© primaire dÃ©jÃ  existante
         $ok=false;
         try {
             $db->insert("test_gb_db_1", array("pkey"=>"key2", "val"=>"abc", "usr"=>2));
@@ -125,7 +155,7 @@ mysql> select * from test_gb_db_2;
             $this->fail("duplicate pkey not catched");
         }
 
-        // insère une ligne avec une clé étrangère inexistante
+        // insÃ¨re une ligne avec une clÃ© Ã©trangÃ¨re inexistante
         $ok=false;
         try {
             $db->insert("test_gb_db_1", array("pkey"=>"key3", "val"=>"abc", "usr"=>0));
@@ -141,16 +171,16 @@ mysql> select * from test_gb_db_2;
     {
         $db=$this->db;
         
-        // insertion en précisant la valeur autoincrémentée
+        // insertion en prÃ©cisant la valeur autoincrÃ©mentÃ©e
         $this->assertEquals(1, $db->insert("test_gb_db_2", array("usa_id"=>"3", "usa_nom"=>"Trois")));
         $this->assertEquals(3, $db->lastInsertId());
-        $expected=array("1"=>"Premier usager", "2"=>"Deuxième usager", "3"=>"Trois");
+        $expected=array("1"=>"Premier usager", "2"=>"DeuxiÃ¨me usager", "3"=>"Trois");
         $this->assertSame($expected, $db->retrieve_all("SELECT * FROM test_gb_db_2", array(), "usa_id", "usa_nom"));
     
-        // insertion sans préciser la valeur autoincrémentée
+        // insertion sans prÃ©ciser la valeur autoincrÃ©mentÃ©e
         $this->assertEquals(1, $db->insert("test_gb_db_2", array("usa_nom"=>"Autre")));
         $id=$db->lastInsertId();
-        $expected=array("1"=>"Premier usager", "2"=>"Deuxième usager", "3"=>"Trois", $id=>"Autre");
+        $expected=array("1"=>"Premier usager", "2"=>"DeuxiÃ¨me usager", "3"=>"Trois", $id=>"Autre");
         $this->assertSame($expected, $db->retrieve_all("SELECT * FROM test_gb_db_2", array(), "usa_id", "usa_nom"));
         
     }
@@ -159,7 +189,7 @@ mysql> select * from test_gb_db_2;
     {
         $db=$this->db;
 
-        // Essaie de supprimer une clé qui est référencée ailleurs
+        // Essaie de supprimer une clÃ© qui est rÃ©fÃ©rencÃ©e ailleurs
         $ok=false;
         try {
             $db->delete("test_gb_db_2", array($db->quoteInto("usa_id=?", 1)));
@@ -170,7 +200,7 @@ mysql> select * from test_gb_db_2;
             $this->fail("Foreign key deletion not catched");
         }
         
-        // supprime la ligne qui référence cette ligne
+        // supprime la ligne qui rÃ©fÃ©rence cette ligne
         $this->assertEquals(1, $db->delete("test_gb_db_1", array($db->quoteInto("pkey=?", "key1"))));
 
         // maintenant on peut supprimer la ligne
@@ -185,7 +215,7 @@ mysql> select * from test_gb_db_2;
     {
         $db=$this->db;
 
-        // essaie d'attribuer une clé étrangere qui n'existe pas
+        // essaie d'attribuer une clÃ© Ã©trangere qui n'existe pas
         $ok=false;
         try {
             $db->update("test_gb_db_1", array("usr"=>"99"),  array($db->quoteInto("pkey=?", "key1")));
@@ -201,7 +231,7 @@ mysql> select * from test_gb_db_2;
         $expected=array("key1"=>array("val"=>"abc", "usr"=>"1"), "key2"=>array("val"=>"abc", "usr"=>"2"));
         $this->assertSame($expected, $db->retrieve_all("SELECT * FROM test_gb_db_1", array(), "pkey"));
         
-        // update 1 changement, 2 lignes concernées
+        // update 1 changement, 2 lignes concernÃ©es
         $this->assertEquals(1, $db->update("test_gb_db_1", array("usr"=>"1")));
         $expected=array("key1"=>array("val"=>"abc", "usr"=>"1"), "key2"=>array("val"=>"abc", "usr"=>"1"));
         $this->assertSame($expected, $db->retrieve_all("SELECT * FROM test_gb_db_1", array(), "pkey"));
@@ -211,19 +241,19 @@ mysql> select * from test_gb_db_2;
         $expected=array("key1"=>array("val"=>"abc", "usr"=>"2"), "key2"=>array("val"=>"abc", "usr"=>"2"));
         $this->assertSame($expected, $db->retrieve_all("SELECT * FROM test_gb_db_1", array(), "pkey"));
 
-        // insertion en précisant la valeur autoincrémentée
+        // insertion en prÃ©cisant la valeur autoincrÃ©mentÃ©e
         $this->assertEquals(1, $db->insert("test_gb_db_2", array("usa_id"=>"3", "usa_nom"=>"Trois")));
-        $expected=array("1"=>"Premier usager", "2"=>"Deuxième usager", "3"=>"Trois");
+        $expected=array("1"=>"Premier usager", "2"=>"DeuxiÃ¨me usager", "3"=>"Trois");
         $this->assertSame($expected, $db->retrieve_all("SELECT * FROM test_gb_db_2", array(), "usa_id", "usa_nom"));
 
         // modifie la valeur:
         $this->assertEquals(1, $db->update("test_gb_db_2", array("usa_nom"=>"Troi"), array($db->quoteInto("usa_id=?", "3"))));
-        $expected=array("1"=>"Premier usager", "2"=>"Deuxième usager", "3"=>"Troi");
+        $expected=array("1"=>"Premier usager", "2"=>"DeuxiÃ¨me usager", "3"=>"Troi");
         $this->assertSame($expected, $db->retrieve_all("SELECT * FROM test_gb_db_2", array(), "usa_id", "usa_nom"));
 
-        // modifie la clé:
+        // modifie la clÃ©:
         $this->assertEquals(1, $db->update("test_gb_db_2", array("usa_id"=>"4"), array($db->quoteInto("usa_id=?", "3"))));
-        $expected=array("1"=>"Premier usager", "2"=>"Deuxième usager", "4"=>"Troi");
+        $expected=array("1"=>"Premier usager", "2"=>"DeuxiÃ¨me usager", "4"=>"Troi");
         $this->assertSame($expected, $db->retrieve_all("SELECT * FROM test_gb_db_2", array(), "usa_id", "usa_nom"));
     }
 
@@ -231,7 +261,7 @@ mysql> select * from test_gb_db_2;
     {
         $db=$this->db;
 
-        // essaie d'attribuer une clé étrangere qui n'existe pas
+        // essaie d'attribuer une clÃ© Ã©trangere qui n'existe pas
         $ok=false;
         try {
             $db->replace("test_gb_db_1", array("usr"=>"99"),  array($db->quoteInto("pkey=?", "key1")));
@@ -242,7 +272,7 @@ mysql> select * from test_gb_db_2;
             $this->fail("unknown foreign key not catched");
         }
 
-        // essaie d'attribuer une clé étrangere qui n'existe pas sur une clé primaire qui n'existe pas non plus
+        // essaie d'attribuer une clÃ© Ã©trangere qui n'existe pas sur une clÃ© primaire qui n'existe pas non plus
         $ok=false;
         try {
             $db->replace("test_gb_db_1", array("usr"=>"99"),  array($db->quoteInto("pkey=?", "keyx")));
@@ -258,7 +288,7 @@ mysql> select * from test_gb_db_2;
         $expected=array("key1"=>array("val"=>"abc", "usr"=>"1"), "key2"=>array("val"=>"abc", "usr"=>"2"));
         $this->assertSame($expected, $db->retrieve_all("SELECT * FROM test_gb_db_1", array(), "pkey"));
         
-        // replace 1 changement, 2 lignes concernées -> doit faire exception
+        // replace 1 changement, 2 lignes concernÃ©es -> doit faire exception
         $ok=false;
         try {
             $db->replace("test_gb_db_1", array("usr"=>"1"));
@@ -275,19 +305,19 @@ mysql> select * from test_gb_db_2;
         $this->assertSame($expected, $db->retrieve_all("SELECT * FROM test_gb_db_1", array(), "pkey"));
 
 
-        // insertion en précisant la valeur autoincrémentée
+        // insertion en prÃ©cisant la valeur autoincrÃ©mentÃ©e
         $this->assertEquals(1, $db->insert("test_gb_db_2", array("usa_id"=>"3", "usa_nom"=>"Trois")));
-        $expected=array("1"=>"Premier usager", "2"=>"Deuxième usager", "3"=>"Trois");
+        $expected=array("1"=>"Premier usager", "2"=>"DeuxiÃ¨me usager", "3"=>"Trois");
         $this->assertSame($expected, $db->retrieve_all("SELECT * FROM test_gb_db_2", array(), "usa_id", "usa_nom"));
 
         // modifie la valeur:
         $this->assertEquals(1, $db->replace("test_gb_db_2", array("usa_nom"=>"Troi"), array($db->quoteInto("usa_id=?", "3"))));
-        $expected=array("1"=>"Premier usager", "2"=>"Deuxième usager", "3"=>"Troi");
+        $expected=array("1"=>"Premier usager", "2"=>"DeuxiÃ¨me usager", "3"=>"Troi");
         $this->assertSame($expected, $db->retrieve_all("SELECT * FROM test_gb_db_2", array(), "usa_id", "usa_nom"));
 
-        // modifie la clé:
+        // modifie la clÃ©:
         $this->assertEquals(1, $db->replace("test_gb_db_2", array("usa_id"=>"4"), array($db->quoteInto("usa_id=?", "3"))));
-        $expected=array("1"=>"Premier usager", "2"=>"Deuxième usager", "4"=>"Troi");
+        $expected=array("1"=>"Premier usager", "2"=>"DeuxiÃ¨me usager", "4"=>"Troi");
         $this->assertSame($expected, $db->retrieve_all("SELECT * FROM test_gb_db_2", array(), "usa_id", "usa_nom"));
         
     }
@@ -296,11 +326,11 @@ mysql> select * from test_gb_db_2;
     {
         $db=$this->db;
 
-        // vérifie que la bdd est bien dans la bon état
+        // vÃ©rifie que la bdd est bien dans la bon Ã©tat
         $expected=array("key1"=>array("val"=>"abc", "usr"=>"1"), "key2"=>array("val"=>"abc", "usr"=>"2"));
         $this->assertSame($expected, $db->retrieve_all("SELECT * FROM test_gb_db_1", array(), "pkey"));
 
-        // essaie de modifier avec une clé étrangere qui n'existe pas
+        // essaie de modifier avec une clÃ© Ã©trangere qui n'existe pas
         $ok=false;
         try {
             $db->insertOrUpdate("test_gb_db_1", array("pkey"=>"key1", "val"=>"def", "usr"=>"99"));
@@ -310,10 +340,10 @@ mysql> select * from test_gb_db_2;
         if (!$ok) {
             $this->fail("unknown foreign key not catched");
         }
-        // vérifie que la bdd n'a pas été modifiée
+        // vÃ©rifie que la bdd n'a pas Ã©tÃ© modifiÃ©e
         $this->assertSame($expected, $db->retrieve_all("SELECT * FROM test_gb_db_1", array(), "pkey"));
         
-        // essaie d'insérer avec une clé étrangere qui n'existe pas
+        // essaie d'insÃ©rer avec une clÃ© Ã©trangere qui n'existe pas
         $ok=false;
         try {
             $db->insertOrUpdate("test_gb_db_1", array("pkey"=>"key9", "val"=>"def", "usr"=>"99"));
@@ -323,7 +353,7 @@ mysql> select * from test_gb_db_2;
         if (!$ok) {
             $this->fail("unknown foreign key not catched");
         }
-        // vérifie que la bdd n'a pas été modifiée
+        // vÃ©rifie que la bdd n'a pas Ã©tÃ© modifiÃ©e
         $this->assertSame($expected, $db->retrieve_all("SELECT * FROM test_gb_db_1", array(), "pkey"));
         
         // insertion
@@ -336,20 +366,20 @@ mysql> select * from test_gb_db_2;
         $expected=array("key1"=>array("val"=>"abc", "usr"=>"1"), "key2"=>array("val"=>"abc", "usr"=>"2"), "key9"=>array("val"=>"def", "usr"=>"2"));
         $this->assertSame($expected, $db->retrieve_all("SELECT * FROM test_gb_db_1", array(), "pkey"));
 
-        // aucune modification: doit renvoyer 0 lignes modifiées
+        // aucune modification: doit renvoyer 0 lignes modifiÃ©es
         $this->assertEquals(0, $db->insertOrUpdate("test_gb_db_1", array("pkey"=>"key9", "val"=>"def", "usr"=>"2")));
         $expected=array("key1"=>array("val"=>"abc", "usr"=>"1"), "key2"=>array("val"=>"abc", "usr"=>"2"), "key9"=>array("val"=>"def", "usr"=>"2"));
         $this->assertSame($expected, $db->retrieve_all("SELECT * FROM test_gb_db_1", array(), "pkey"));
 
 
-        // insertion en précisant la valeur autoincrémentée
+        // insertion en prÃ©cisant la valeur autoincrÃ©mentÃ©e
         $this->assertEquals(1, $db->insert("test_gb_db_2", array("usa_id"=>"3", "usa_nom"=>"Trois")));
-        $expected=array("1"=>"Premier usager", "2"=>"Deuxième usager", "3"=>"Trois");
+        $expected=array("1"=>"Premier usager", "2"=>"DeuxiÃ¨me usager", "3"=>"Trois");
         $this->assertSame($expected, $db->retrieve_all("SELECT * FROM test_gb_db_2", array(), "usa_id", "usa_nom"));
 
         // modifie la valeur:
         $this->assertEquals(1, $db->insertOrUpdate("test_gb_db_2", array("usa_id"=>"3", "usa_nom"=>"Troi")));
-        $expected=array("1"=>"Premier usager", "2"=>"Deuxième usager", "3"=>"Troi");
+        $expected=array("1"=>"Premier usager", "2"=>"DeuxiÃ¨me usager", "3"=>"Troi");
         $this->assertSame($expected, $db->retrieve_all("SELECT * FROM test_gb_db_2", array(), "usa_id", "usa_nom"));
     }
 
@@ -357,11 +387,11 @@ mysql> select * from test_gb_db_2;
     {
         $db=$this->db;
 
-        // vérifie que la bdd est bien dans la bon état
+        // vÃ©rifie que la bdd est bien dans la bon Ã©tat
         $expected=array("key1"=>array("val"=>"abc", "usr"=>"1"), "key2"=>array("val"=>"abc", "usr"=>"2"));
         $this->assertSame($expected, $db->retrieve_all("SELECT * FROM test_gb_db_1", array(), "pkey"));
 
-        // essaie de modifier avec une clé étrangere qui n'existe pas
+        // essaie de modifier avec une clÃ© Ã©trangere qui n'existe pas
         $ok=false;
         try {
             $db->insertOrDeleteInsert("test_gb_db_1", array("pkey"=>"key1", "val"=>"def", "usr"=>"99"));
@@ -371,10 +401,10 @@ mysql> select * from test_gb_db_2;
         if (!$ok) {
             $this->fail("unknown foreign key not catched");
         }
-        // vérifie que la bdd n'a pas été modifiée
+        // vÃ©rifie que la bdd n'a pas Ã©tÃ© modifiÃ©e
         $this->assertSame($expected, $db->retrieve_all("SELECT * FROM test_gb_db_1", array(), "pkey"));
         
-        // essaie d'insérer avec une clé étrangere qui n'existe pas
+        // essaie d'insÃ©rer avec une clÃ© Ã©trangere qui n'existe pas
         $ok=false;
         try {
             $db->insertOrDeleteInsert("test_gb_db_1", array("pkey"=>"key9", "val"=>"def", "usr"=>"99"));
@@ -384,7 +414,7 @@ mysql> select * from test_gb_db_2;
         if (!$ok) {
             $this->fail("unknown foreign key not catched");
         }
-        // vérifie que la bdd n'a pas été modifiée
+        // vÃ©rifie que la bdd n'a pas Ã©tÃ© modifiÃ©e
         $this->assertSame($expected, $db->retrieve_all("SELECT * FROM test_gb_db_1", array(), "pkey"));
         
         // insertion
@@ -397,20 +427,20 @@ mysql> select * from test_gb_db_2;
         $expected=array("key1"=>array("val"=>"abc", "usr"=>"1"), "key2"=>array("val"=>"abc", "usr"=>"2"), "key9"=>array("val"=>"def", "usr"=>"2"));
         $this->assertSame($expected, $db->retrieve_all("SELECT * FROM test_gb_db_1", array(), "pkey"));
 
-        // aucune modification: doit renvoyer 1 quand même. (car suppression puis modification)
+        // aucune modification: doit renvoyer 1 quand mÃªme. (car suppression puis modification)
         $this->assertEquals(1, $db->insertOrDeleteInsert("test_gb_db_1", array("pkey"=>"key9", "val"=>"def", "usr"=>"2")));
         $expected=array("key1"=>array("val"=>"abc", "usr"=>"1"), "key2"=>array("val"=>"abc", "usr"=>"2"), "key9"=>array("val"=>"def", "usr"=>"2"));
         $this->assertSame($expected, $db->retrieve_all("SELECT * FROM test_gb_db_1", array(), "pkey"));
 
 
-        // insertion en précisant la valeur autoincrémentée
+        // insertion en prÃ©cisant la valeur autoincrÃ©mentÃ©e
         $this->assertEquals(1, $db->insert("test_gb_db_2", array("usa_id"=>"3", "usa_nom"=>"Trois")));
-        $expected=array("1"=>"Premier usager", "2"=>"Deuxième usager", "3"=>"Trois");
+        $expected=array("1"=>"Premier usager", "2"=>"DeuxiÃ¨me usager", "3"=>"Trois");
         $this->assertSame($expected, $db->retrieve_all("SELECT * FROM test_gb_db_2", array(), "usa_id", "usa_nom"));
 
         // modifie la valeur:
         $this->assertEquals(1, $db->insertOrDeleteInsert("test_gb_db_2", array("usa_id"=>"3", "usa_nom"=>"Troi")));
-        $expected=array("1"=>"Premier usager", "2"=>"Deuxième usager", "3"=>"Troi");
+        $expected=array("1"=>"Premier usager", "2"=>"DeuxiÃ¨me usager", "3"=>"Troi");
         $this->assertSame($expected, $db->retrieve_all("SELECT * FROM test_gb_db_2", array(), "usa_id", "usa_nom"));
     }
     

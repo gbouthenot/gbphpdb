@@ -25,7 +25,7 @@ class Gb_Request
     public static function getRevision($mini=null, $throw=true)
     {
         $revision='$Revision$';
-        $revision=trim(substr($revision, strrpos($revision, ":")+2, -1));
+        $revision=(int) trim(substr($revision, strrpos($revision, ":")+2, -1));
         if ($mini===null) { return $revision; }
         if ($revision>=$mini) { return true; }
         if ($throw) { throw new Gb_Exception(__CLASS__." r".$revision."<r".$mini); }
@@ -33,10 +33,10 @@ class Gb_Request
     }
     
     /**
-     * Enlève les slashes des données GET, POST, COOKIE (gpc), si magic_quote_gpc est actif
+     * Enlï¿½ve les slashes des donnï¿½es GET, POST, COOKIE (gpc), si magic_quote_gpc est actif
      *
-     * @param string $str chaïne à traiter
-     * @return string $str avec éventuellement stripslashes
+     * @param string $str chaï¿½ne ï¿½ traiter
+     * @return string $str avec ï¿½ventuellement stripslashes
      */
     public static function gpcStripSlashes($str)
     {
@@ -53,9 +53,9 @@ class Gb_Request
 
 
     /**
-     * Renvoie la valeur POST, sans slash ou false si elle n'est pas définie
+     * Renvoie la valeur POST, sans slash ou false si elle n'est pas dï¿½finie
      *
-     * @param string $index valeur à chercher
+     * @param string $index valeur ï¿½ chercher
      * @param mixed[optional] $default
      * @return mixed $_POST[$index]
      */
@@ -70,9 +70,9 @@ class Gb_Request
 
 
     /**
-     * Renvoie la valeur GET, sans slash ou false si elle n'est pas définie
+     * Renvoie la valeur GET, sans slash ou false si elle n'est pas dï¿½finie
      *
-     * @param string $index valeur à chercher
+     * @param string $index valeur ï¿½ chercher
      * @param mixed[optional] $default
      * @return mixed $_GET[$index]
      */
@@ -87,9 +87,9 @@ class Gb_Request
 
 
     /**
-     * Renvoie la valeur POST, sans slash ou la valeur GET ou false si elles ne sont par définies
+     * Renvoie la valeur POST, sans slash ou la valeur GET ou false si elles ne sont par dï¿½finies
      *
-     * @param string $index valeur à chercher
+     * @param string $index valeur ï¿½ chercher
      * @param mixed[optional] $default
      * @return mixed $_POST/$_GET[$index]
      */

@@ -34,6 +34,22 @@ Class Gb_Mvc
     
     protected $_href;
     protected $_rootUrl;
+
+    /**
+     * Renvoie la révision de la classe ou un boolean si la version est plus petite que précisée, ou Gb_Exception
+     *
+     * @return boolean|integer
+     * @throws Gb_Exception
+     */
+    public static function getRevision($mini=null, $throw=true)
+    {
+        $revision='$Revision$';
+        $revision=(int) trim(substr($revision, strrpos($revision, ":")+2, -1));
+        if ($mini===null) { return $revision; }
+        if ($revision>=$mini) { return true; }
+        if ($throw) { throw new Gb_Exception(__CLASS__." r".$revision."<r".$mini); }
+        return false;
+    }
     
     /**
      * @return Gb_Mvc

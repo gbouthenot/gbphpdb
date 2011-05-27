@@ -18,7 +18,7 @@ require_once(_GB_PATH."Util.php");
 class Gb_Response
 {
   public static $footer="";       // Le footer
-  public static $show_footer=0;           // ne pas afficher le footer par défaut
+  public static $show_footer=0;           // ne pas afficher le footer par dï¿½faut
   public static $preventGzip=0;           // compresse en gzip
   public static $noFooterEscape=0;    // Evite la ligne </div></span>, etc...
   public static $nologo=0;                // ne pas afficher "built with gbpgpdb vxxx"
@@ -29,7 +29,7 @@ class Gb_Response
     ,"author"             =>array("name", "")
     ,"copyright"          =>array("name", "")
     ,"x-URL"              =>array("name", "")
-    ,"Expires"            =>array("http-equiv", "")                                  // mettre à vide pour une date du passé
+    ,"Expires"            =>array("http-equiv", "")                                  // mettre ï¿½ vide pour une date du passï¿½
     ,"Content-Type"       =>array("http-equiv", "text/html;  charset=ISO-8859-1")
     ,"Content-Script-Type"=>array("http-equiv", "text/javascript")
     ,"Content-Style-Type" =>array("http-equiv", "text/css")
@@ -47,15 +47,15 @@ class Gb_Response
     const P_CUSTOM=1;                 // autre (pour gestion complete)
     const P_HTML=2;                   // dans la balise <HTML>
     const P_HEAD=3;                   // dans la balise <HEAD>
-    const P_XHEAD=4;                  // après la balise </HEAD>
+    const P_XHEAD=4;                  // aprï¿½s la balise </HEAD>
     const P_BODY=5;                   // dans la balise <BODY>
-    const P_XBODY=6;                  // après la balise </BODY>
-    const P_XHTML=7;                  // après la balise </HTML>
+    const P_XBODY=6;                  // aprï¿½s la balise </BODY>
+    const P_XHTML=7;                  // aprï¿½s la balise </HTML>
     const P_PREVENTUSE=99;
     public static $html_parse=self::P_HTTP;
 
     /**
-     * Renvoie la revision de la classe ou un boolean si la version est plus petite que précisée, ou Gb_Exception
+     * Renvoie la revision de la classe ou un boolean si la version est plus petite que prï¿½cisï¿½e, ou Gb_Exception
      *
      * @return boolean|integer
      * @throws Gb_Exception
@@ -63,7 +63,7 @@ class Gb_Response
     public static function getRevision($mini=null, $throw=true)
     {
         $revision='$Revision$';
-        $revision=trim(substr($revision, strrpos($revision, ":")+2, -1));
+        $revision=(int) trim(substr($revision, strrpos($revision, ":")+2, -1));
         if ($mini===null) { return $revision; }
         if ($revision>=$mini) { return true; }
         if ($throw) { throw new Gb_Exception(__CLASS__." r".$revision."<r".$mini); }
@@ -83,7 +83,7 @@ class Gb_Response
       if ($glo_parse<self::P_HTML)
       {
         if (strlen($head["Expires"][1])==0) {             header("Cache-Control: no-cache, must-revalidate");     // HTTP/1.1
-                                                          header("Expires: Mon, 26 Jul 1997 05:00:00 GMT");       // Date du passé
+                                                          header("Expires: Mon, 26 Jul 1997 05:00:00 GMT");       // Date du passï¿½
         }
 
         if (strlen($head["Content-Type"][1]))             header("Content-Type: ".$head["Content-Type"][1]);
@@ -140,7 +140,7 @@ class Gb_Response
   } // function send_headers
     
   /**
-   * Cette classe ne doit pas être instancée !
+   * Cette classe ne doit pas ï¿½tre instancï¿½e !
    */
   private function __construct()
   {
@@ -165,7 +165,7 @@ class Gb_Response
   
   
     /**
-     * Renvoie le footer, avec les plugins appelé
+     * Renvoie le footer, avec les plugins appelï¿½
      *
      * @return string
      */

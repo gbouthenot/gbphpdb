@@ -3,8 +3,8 @@
  * Gb_Form
  * 
  * @author Gilles Bouthenot
- * @version $Revision: 149 $
- * @Id $Id: Source.php 149 2009-08-19 08:22:17Z gbouthenot $
+ * @version $Revision$
+ * @Id $Id$
  */
 
 if (!defined("_GB_PATH")) {
@@ -26,6 +26,22 @@ class Gb_Source
     protected $_includePath;
     
     protected $_defaultOptions;
+
+    /**
+     * Renvoie la revision de la classe ou un boolean si la version est plus petite que pr�cis�e, ou Gb_Exception
+     *
+     * @return boolean|integer
+     * @throws Gb_Exception
+     */
+    public static function getRevision($mini=null, $throw=true)
+    {
+        $revision='$Revision$';
+        $revision=(int) trim(substr($revision, strrpos($revision, ":")+2, -1));
+        if ($mini===null) { return $revision; }
+        if ($revision>=$mini) { return true; }
+        if ($throw) { throw new Gb_Exception(__CLASS__." r".$revision."<r".$mini); }
+        return false;
+    }
     
     /**
      * Constructor

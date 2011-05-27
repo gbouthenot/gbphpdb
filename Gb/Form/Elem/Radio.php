@@ -3,8 +3,8 @@
  * Gb_Form_Elem_Radio
  * 
  * @author Gilles Bouthenot
- * @version $Revision: 176 $
- * @Id $Id: Select.php 176 2011-01-12 08:52:11Z gbouthen $
+ * @version $Revision$
+ * @Id $Id$
  */
 
 if (!defined("_GB_PATH")) {

@@ -95,9 +95,10 @@ class Gb_TimerTest extends PHPUnit_Framework_TestCase
     public function testLogTimer()
     {
         ob_start();
+        sleep(1);
         $this->Gb_Timer->logTimer(Gb_Log::LOG_DEBUG, "test logTimer()");
         $ob=ob_get_clean();
-        $this->assertRegExp("/^test logTimer\\(\\): [0-9\\.]{3,} s$/", $ob);
+        $this->assertStringStartsWith("test logTimer(): 1", $ob);
     }
 
 

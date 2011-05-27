@@ -49,12 +49,12 @@ class Gb_CacheTest extends PHPUnit_Framework_TestCase
      */
     public function testExpire()
     {
-        // vérifie que la propriété est mise, expire, vérifie que la prop est toujours là.
+        // vÃ©rifie que la propriÃ©tÃ© est mise, expire, vÃ©rifie que la prop est toujours lÃ .
         $this->assertEquals($this->CacheableObject->testProperty, "testValue");
         $this->CacheableObject->expire();
         $this->assertEquals($this->CacheableObject->testProperty, "testValue");
 
-        // détruit l'objet, le recrée et vérifie que la prop n'est plus là
+        // dÃ©truit l'objet, le recrÃ©e et vÃ©rifie que la prop n'est plus lÃ 
         unset($this->CacheableObject);
         $this->assertFalse(isset($this->CacheableObject));
         $this->CacheableObject=new Gb_Cache("test");
@@ -71,7 +71,7 @@ class Gb_CacheTest extends PHPUnit_Framework_TestCase
         $test2->test2Property="test2Value";
         $this->assertEquals($test2->test2Property, "test2Value");
         
-        // détruit l'objet, le recrée et vérifie que les propriétés sont toujours là
+        // dÃ©truit l'objet, le recrÃ©e et vÃ©rifie que les propriÃ©tÃ©s sont toujours lÃ 
         unset($this->CacheableObject);
         $this->assertFalse(isset($this->CacheableObject));
         $this->CacheableObject=new Gb_Cache("test");
@@ -87,13 +87,13 @@ class Gb_CacheTest extends PHPUnit_Framework_TestCase
         $this->assertEquals($testFile->testFileProperty, "testFileValue");
         unset($testFile);
 
-        // recharge l'objet, il doit toujours être renseigné
+        // recharge l'objet, il doit toujours Ãªtre renseignÃ©
         $testFile=new Gb_Cache("testFile", "testfile");
         $this->assertTrue(isset($testFile->testFileProperty));
         $this->assertEquals($testFile->testFileProperty, "testFileValue");
         unset($testFile);
         
-        // met à jour le fichier, l'objet ne doit plus être rensigné
+        // met Ã  jour le fichier, l'objet ne doit plus Ãªtre rensignÃ©
         file_put_contents("testfile", "");
         $testFile=new Gb_Cache("testFile", "testfile");
         $this->assertFalse(isset($testFile->testFileProperty));
