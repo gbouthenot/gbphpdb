@@ -9,6 +9,8 @@
 
 if (!defined("_GB_PATH")) {
     define("_GB_PATH", dirname(__FILE__).DIRECTORY_SEPARATOR);
+} elseif (_GB_PATH !== dirname(__FILE__).DIRECTORY_SEPARATOR) {
+    throw new Exception("gbphpdb roots mismatch");
 }
 
 require_once(_GB_PATH."Exception.php");
