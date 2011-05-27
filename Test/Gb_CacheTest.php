@@ -1,5 +1,5 @@
 <?php
-require_once 'Gb/Cache.php';
+require_once '../Gb/Cache.php';
 
 Gb_Cache::$cacheDir=".";
 

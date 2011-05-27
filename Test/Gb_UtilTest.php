@@ -1,5 +1,5 @@
 <?php
-require_once 'Gb/Util.php';
+require_once '../Gb/Util.php';
 /**
  * Gb_Util test case.
  */

@@ -1,7 +1,7 @@
 <?php
-require_once 'Gb/File.php';
-require_once 'Gb/Util.php';
-require_once 'PHPUnit/Framework/TestCase.php';
+require_once '../Gb/File.php';
+require_once '../Gb/Util.php';
+//require_once 'PHPUnit/Framework/TestCase.php';
 /**
  * Gb_File test case.
  */

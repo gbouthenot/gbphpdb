@@ -1,6 +1,6 @@
 <?php
 
-set_include_path(realpath(dirname(__FILE__).DIRECTORY_SEPARATOR."..").PATH_SEPARATOR.realpath(dirname(__FILE__)).PATH_SEPARATOR.get_include_path());
+//set_include_path(realpath(dirname(__FILE__).DIRECTORY_SEPARATOR."..").PATH_SEPARATOR.realpath(dirname(__FILE__)).PATH_SEPARATOR.get_include_path());
 
 require_once 'Gb_CacheTest.php';
 require_once 'Gb_DbTest.php';

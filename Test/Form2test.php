@@ -2,6 +2,7 @@
 
 error_reporting(E_ALL|E_WARNING);
 
+require_once '../Gb/Form2.php';
 
 require_once 'Zend/Loader.php';
 spl_autoload_register(array('Zend_Loader', 'autoload'));

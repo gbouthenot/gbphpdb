@@ -1,5 +1,5 @@
 <?php
-require_once 'Gb/Timer.php';
+require_once '../Gb/Timer.php';
 /**
  * Gb_Timer test case.
  */

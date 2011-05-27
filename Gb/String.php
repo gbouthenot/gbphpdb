@@ -18,9 +18,6 @@ require_once(_GB_PATH."Exception.php");
 
 class Gb_String
 {
-  // " et $ ignorés
-    const STR_SRC=  "' !#%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~€?‚ƒ„…†‡ˆ‰Š‹Œ?Ž??‘’“”•–—˜™š›œ?žŸ ¡¢£¤¥¦§¨©ª«¬­®¯°±²³´µ¶·¸¹º»¼½¾¿ÀÁÂÃÄÅÆÇÈÉÊËÌÍÎÏÐÑÒÓÔÕÖ×ØÙÚÛÜÝÞßàáâãäåæçèéêëìíîïðñòóôõö÷øùúûüýþ";
-    const STR_UPPER="' !#%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`ABCDEFGHIJKLMNOPQRSTUVWXYZ{|}~€?,F,_†‡ˆ%S‹O?Z??''“”.--˜TS›O?ZY IC£¤¥|§¨C2<¬­R¯°±23'UQ.¸10>¼½¾?AAAAAAACEEEEIIIIDNOOOOOXOUUUUYþBAAAAAAACEEEEIIIIONOOOOO/OUUUUYþ";
 
     /**
      * Renvoie la revision de la classe ou un boolean si la version est plus petite que précisée, ou Gb_Exception
@@ -47,8 +44,8 @@ class Gb_String
 
 
     /**
-     * renvoie dans outTime l'heure (nombre de secondes depuis 01/01/1970)
-     * $sTime doit être formaté en "jj/mm/aaaa hh:mm:ss[.xxx]" ou "aaaa-mm-jj hh:mm:ss[.xxxxxx]"
+     * returns unix timestamp number of seconds since 1970-01-01 warning:see mktime() (limit to year 2038)
+     * $sTime must be formatted as"dd/mm/yyyyy[ hh:mm:ss[.xxx]]" or "yyyy-mm-dd[ hh:mm:ss[.xxxxxx]]"
      *
      * @param string[optional] $sTime
      * @return integer
@@ -61,14 +58,22 @@ class Gb_String
             $sTime=substr($sTime, 0, 19);
         if ( strlen($sTime)>=26 )
             $sTime=substr($sTime, 0, 19);
+        if ( strlen($sTime)==10 )
+            $sTime .= " 00:00:00";
         if ( strlen($sTime)!=19 )
             throw new Gb_Exception("Error: bad time string:".$sTime);
         $aCTime1=array();
         $aCTimeDate=array();
         $aCTimeTime=array();
         $aCTime1=explode(' ', $sTime);
+        if (count($aCTime1)!=2) {
+            throw new Gb_Exception("Error: bad time string:".$sTime);
+        }
         $aCTimeDate=explode('/', $aCTime1[0]);
         $aCTimeTime=explode(':', $aCTime1[1]);
+        if (count($aCTimeDate)!=3 || count($aCTimeTime)!=3) {
+            throw new Gb_Exception("Error: bad time string:".$sTime);
+        }
         $outTime=mktime($aCTimeTime[0], $aCTimeTime[1], $aCTimeTime[2], $aCTimeDate[1], $aCTimeDate[0], $aCTimeDate[2]);
         return $outTime;
     }
@@ -120,12 +125,50 @@ class Gb_String
      */
     public static function mystrtoupper($s)
     {
+        return strtoupper(self::removeAccents($s));
+    }
+    
+    /**
+     * convert to pure ASCII, (remove accents)
+     *
+     * @param string $s
+     * @return string
+     */
+    public static function removeAccents($s)
+    {
+        // convert the string to UTF-8
+        $source = "UTF-8";
         if (function_exists("mb_convert_encoding")) {
             $source=mb_detect_encoding($s, array("UTF-8", "ISO-8859-1"));
-            $s=mb_convert_encoding($s, "ISO-8859-1", $source);
+            if ($source !== "UTF-8") {
+                $s=mb_convert_encoding($s, "UTF-8", $source);
+            }
         }
-        return strtr($s, self::STR_SRC, self::STR_UPPER);
+        //$s = iconv($source, "ascii//TRANSLIT//IGNORE", $s); // not supported everywhere (ok on linux, nok on windows libiconv1.9)
+
+        //$s = mb_convert_encoding($s, 'ascii', 'UTF-8');
+        //setlocale(LC_COLLATE, 'fr_FR.UTF-8');
+        //$s = libiconv($source, "ascii//TRANSLIT", $s);            // transform "é" to "'e" or "e" !!
+
+        // function from http://www.weirdog.com/blog/php/supprimer-les-accents-des-caracteres-accentues.html
+        // htmlentities it
+        $s = htmlentities($s, ENT_NOQUOTES, "UTF-8");
+    
+        
+        $s = preg_replace('#&([A-za-z])(?:acute|cedil|circ|grave|orn|ring|slash|th|tilde|uml);#', '\1', $s);
+        $s = str_replace("&euro;", "EUR", $s);
+        $s = preg_replace('#&([A-za-z]{2})(?:lig);#', '\1', $s); // pour les ligatures e.g. '&oelig;'
+        $s = html_entity_decode($s, ENT_NOQUOTES, "UTF-8");
+//        $s = preg_replace('#&[^;]+;#', '', $s); // supprime les autres caractères
+
+        // convert it back to the original charset 
+        if ($source !== "UTF-8") {
+                $s=mb_convert_encoding($s, $source, "UTF-8");
+        }
+        
+        return $s;
     }
+    
 
   /**
    * converti, si nécessaire une date au format YYYY-MM-DD en DD/MM/YYYY
@@ -143,8 +186,11 @@ class Gb_String
         }
         elseif (substr($d,4,1)=='-') {
             // date au format YYYY-MM-DD
-            list($y,$m,$d)=split("-",$d);
-            $d=substr($d,0,2).'/'.$m.'/'.$y.substr($d,2);
+            $split = split("-",$d);
+            if (count($split) == 3) {
+                list($y,$m,$d) = $split;
+                $d=substr($d,0,2).'/'.$m.'/'.$y.substr($d,2);
+            }
         }
 
         return $d;
@@ -173,10 +219,11 @@ class Gb_String
     }
 
     /**
-     * Check if a [given] time is in the interval [start; end[
+     * Check if a [given] time is in the interval [start; end[ warning, see mktime() (limit to year 2038)
      * @param mixed[optional] $start integer or string (fr/iso)
      * @param mixed[optional] $end integer or string (fr/iso)
-     * @param integer $time -1/0/+1 means before/in/after
+     * @param mixed[optional] $time time to test (default: current)
+     * @return integer -1/0/+1 means before/in/after
      */
     public static function date_isIntoInterval($start=null, $end=null, $time=null)
     {
@@ -203,7 +250,7 @@ class Gb_String
     }
     
     /**
-     * comme explode mais renvoie array() au lieu de array("") si l'élément n'a pas été trouvé
+     * as php's explode but returns array() instead of array("") if the input string is empty
      *
      * @param string $delimiter
      * @param string $string
@@ -225,10 +272,10 @@ class Gb_String
     
     
     /**
-     * Transforme un array en format CSV. Remplace les sauts de ligne par un espace.
+     * Transform an array to CSV format. Replace newlines by " - ".
      *
-     * @param array $data données au même format que 
-     * @return string la chaine en csv
+     * @param array $data array(array("field"=>$value, ...), ...) 
+     * @return string
      */
     public static function arrayToCsv(array $data)
     {
@@ -240,7 +287,8 @@ class Gb_String
         // 1ère ligne du csv: les entêtes
         $firstligne=$data[0];
         foreach(array_keys($firstligne) as $ind) {
-            $ret.=$ind.";";
+            $ind = str_replace('"',    '""',   $ind);
+            $ret .= "\"".$ind."\";";
         }
         $ret.="\n";
         
@@ -248,10 +296,12 @@ class Gb_String
             foreach(array_keys($firstligne) as $ind) {
                 $col = $ligne[$ind];
                 $col = str_replace('"',    '""',   $col);
-                $col = str_replace("\n\r", " - ",  $col);
-                $col = str_replace("\r\n", " - ",  $col);
-                $col = str_replace("\n",   "",     $col);
-                $col = str_replace("\r",   "",     $col);
+                $col = str_replace("\r",   "\n",   $col);
+                $col = str_replace("\n\n", "\n",   $col);
+                $col = str_replace("\n\n", "\n",   $col);
+                $col = str_replace("\n\n", "\n",   $col);
+                $col = str_replace("\n\n", "\n",   $col);
+                $col = str_replace("\n",   " - ",     $col);
                 $ret .= "\"".$col."\";";
             }
             $ret.="\n";
@@ -262,15 +312,27 @@ class Gb_String
 
     /**
      * Format a number of seconds in day min sec
-     * @return string
+     * @return string ie "21d 11h 22m 33s"
      */
     public static function formatTime($time)
     {
+        $days=    floor($time/86400);
+        if ($days) { $time -= $days*86400; }
+        
         $hours=   floor($time/3600);
-        $minutes= floor(($time-$hours*3600)/60);
-        $seconds= $time-$hours*3600-$minutes*60;
-        $time_format=  (($hours)?($hours."h "):(""))  .  (($hours||$minutes)?($minutes."m "):(""))  .  ($seconds."s");
-        return $time_format;
+        if ($hours) { $time -= $hours*3600; }
+        
+        $minutes= floor($time/60);
+        if ($minutes) { $time -= $minutes*60; }
+
+        $seconds= $time;
+
+        $time_format  = "";
+        $time_format .= ($days)?($days."d "):("");
+        $time_format .= ($days||$hours)?($hours."h "):("");
+        $time_format .= (($hours||$minutes)&&(!$days))?($minutes."m "):("");
+        $time_format .= ((!$days)&&(!$hours))?($seconds."s "):("");
+        return trim($time_format);
     }
     
     /**
