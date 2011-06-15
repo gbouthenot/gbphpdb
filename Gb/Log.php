@@ -177,17 +177,17 @@ class Gb_Log
 
 
   
-  public static function logEmerg($text="", $o=null) { self::log(self::LOG_EMERG, $text, $o, 1); }
-  public static function logAlert($text="", $o=null) { self::log(self::LOG_ALERT, $text, $o, 1); }
-  public static function logCrit($text="", $o=null) { self::log(self::LOG_CRIT, $text, $o, 1); }
-  public static function logError($text="", $o=null) { self::log(self::LOG_ERROR, $text, $o, 1); }
-  public static function logException($exception, $o=null) { self::log(self::LOG_EXCEPTION, $exception, $o, 1); }
-  public static function logWarning($text="", $o=null) { self::log(self::LOG_WARNING, $text, $o, 1); }
-  public static function logNotice($text="", $o=null) { self::log(self::LOG_NOTICE, $text, $o, 1); }
-  public static function logInfo($text="", $o=null) { self::log(self::LOG_INFO, $text, $o, 1); }
-  public static function logDebug($text="", $o=null) { self::log(self::LOG_DEBUG, $text, $o, 1); }
-  public static function logDump($text="", $o=null) { self::log(self::LOG_DUMP, $text, $o, 1); }
-  public static function logTrace($text="", $o=null) { self::log(self::LOG_TRACE, $text, $o, 1); }
+  public static function logEmerg($text="", $o=null, $fPrintCall=true) { self::log(self::LOG_EMERG, $text, $o, 1, $fPrintCall); }
+  public static function logAlert($text="", $o=null, $fPrintCall=true) { self::log(self::LOG_ALERT, $text, $o, 1, $fPrintCall); }
+  public static function logCrit($text="", $o=null, $fPrintCall=true) { self::log(self::LOG_CRIT, $text, $o, 1, $fPrintCall); }
+  public static function logError($text="", $o=null, $fPrintCall=true) { self::log(self::LOG_ERROR, $text, $o, 1, $fPrintCall); }
+  public static function logException($exception, $o=null, $fPrintCall=true) { self::log(self::LOG_EXCEPTION, $exception, $o, 1, $fPrintCall); }
+  public static function logWarning($text="", $o=null, $fPrintCall=true) { self::log(self::LOG_WARNING, $text, $o, 1, $fPrintCall); }
+  public static function logNotice($text="", $o=null, $fPrintCall=true) { self::log(self::LOG_NOTICE, $text, $o, 1, $fPrintCall); }
+  public static function logInfo($text="", $o=null, $fPrintCall=true) { self::log(self::LOG_INFO, $text, $o, 1, $fPrintCall); }
+  public static function logDebug($text="", $o=null, $fPrintCall=true) { self::log(self::LOG_DEBUG, $text, $o, 1, $fPrintCall); }
+  public static function logDump($text="", $o=null, $fPrintCall=true) { self::log(self::LOG_DUMP, $text, $o, 1, $fPrintCall); }
+  public static function logTrace($text="", $o=null, $fPrintCall=true) { self::log(self::LOG_TRACE, $text, $o, 1, $fPrintCall); }
   
   
   
@@ -197,16 +197,28 @@ class Gb_Log
      * @param integer $level Gb_Log::LOG_DEBUG,INFO,NOTICE,WARNING,ERROR,CRIT,ALERT,EMERG
      * @param string  $text message
      * @param mixed   $o object à dumper
-     * @param integer[optional] $red offset backtrace (0 par défaut: met la ligne de l'appel de la fonction)
+     * @param integer[optional] $debugOffset offset backtrace (0 par défaut: met la ligne de l'appel de la fonction)
+     * @param boolean $fPrintCall 
      */
-  public static function log($level=self::LOG_DEBUG, $text="", $o=null, $red=0)
-  {
-        $vd=debug_backtrace();
-        $vd0=$vd1=$vd[$red];
-        if (isset($vd[$red+1])) {
-            $vd1=$vd[$red+1];
+    public static function log($level=self::LOG_DEBUG, $text="", $o=null, $debugOffset=0, $fPrintCall=0)
+    {
+        if (version_compare(PHP_VERSION, '5.4.0') >= 0) {
+            $vd = debug_backtrace(0, $debugOffset+2);
+        } else {
+            $vd = debug_backtrace(0);
+            // keep only the last 2 levels
+            for ($i = count($vd); $i>($debugOffset+2); $i--) {
+                array_pop($vd);
+            }
         }
-        self::writelog($level, $text, $vd0["file"], $vd0["line"], $vd1["function"], "...", null, $o);
+        
+        // throw away the firsts levels
+        for ($i=0; $i<$debugOffset; $i++) {
+            array_shift($vd);
+        }
+        
+        self::writelog($level, $text, $o, $vd, $fPrintCall);
+        
   }
     
     
@@ -221,7 +233,7 @@ class Gb_Log
      * @param array[optional] $aParam paramètres
      * @return unknown
      */
-  public static function log_function($level, $text, $fName, array $aParam=array())
+  public static function __DELETED_log_function($level, $text, $fName, array $aParam=array())
   {
     $prevtime=microtime(true);
 
@@ -257,18 +269,15 @@ class Gb_Log
   
 
     /**
-     * Fonction privée, appelée par Gb_Log et Gb_Timer
+     * Fonction privée, appelée aussi par Gb_Log et Gb_Timer (donc doit être public)
      *
      * @param integer $level
      * @param string $text
-     * @param string $file
-     * @param integer $line
-     * @param string $fxname
-     * @param array $fxparam
-     * @param mixed $fxreturn
-     * @param mixed $o
+     * @param mixed[optional] $o
+     * @param array[optional] $backtrace backtrace
+     * @param integer[optional] $backtraceDeep
      */
-  public static function writelog($level, $text, $file, $line, $fxname="", $fxparam="", $fxreturn="", $o=null)
+  public static function writelog($level, $text, $o=null, $backtrace=null, $backtraceDeep=0)
   {
     $logFilename=self::getLogFilename();
     if (!is_string($text)) {
@@ -278,11 +287,63 @@ class Gb_Log
     if (isset($o)) {
         if ($o instanceof Exception) {
         } elseif (is_string($o)) {
-            $texto=":".$o;
+            $texto=$o;
         } else {
-            $texto=":".self::dump($o);
+            $texto=self::dump($o);
         }
     }
+    $fHasText = false;
+    if (strlen($text)+strlen($texto) > 0) {
+        $fHasText = true;
+    }
+    
+    // aContext
+    $aContext = array();
+    for ($i=0; $i<$backtraceDeep; $i++) {
+        // level n is the call file/line
+        // level n+1 (if available) is the name of the function that has the log order called from
+        $fxname = ""; 
+        if (isset($backtrace[1])) {
+            $fxname = $backtrace[1]["function"];
+            if (isset($backtrace[1]["class"])) {
+                $fxname = $backtrace[1]["class"].$backtrace[1]["type"].$fxname;
+            }
+            $args = $backtrace[1]["args"];
+        }
+        $line = $backtrace[0]["line"];
+        $file = $backtrace[0]["file"];
+        //$file=substr($file,-30);
+        
+        $args2 = null;
+        if (null !== $args) {
+            $args2 = self::dump_array($args, "%s");
+        }
+        
+        $context = "";
+        if (null !== $file || null !== $fxname) {
+            if (strlen($fxname)) {
+                $context .= "$fxname($args2)";
+            }
+            if (strlen($file)) {
+                if (strlen($context)) {
+                    $context .= " ----- ";
+                }
+                $context .=  $file;
+                if (strlen($line)) { 
+                    $context .= "::$line";
+                }
+            }
+        }
+        
+        if (strlen($context)) {
+            $aContext[$i] = $context;
+        }
+        
+        // next
+        array_pop($backtrace);
+    }
+    
+    
     
     $sLevel=self::$aLevels[$level];
     $timecode=microtime(true)-Gb_Glue::getStartTime();
@@ -291,7 +352,6 @@ class Gb_Log
     $REMOTE_ADDR="";          if (isset($_SERVER["REMOTE_ADDR"]))          $REMOTE_ADDR=         $_SERVER["REMOTE_ADDR"];
     $HTTP_X_FORWARDED_FOR=""; if (isset($_SERVER["HTTP_X_FORWARDED_FOR"])) $HTTP_X_FORWARDED_FOR=$_SERVER["HTTP_X_FORWARDED_FOR"];
     $date=date("dm His ");
-    $file=substr($file,-30);
 
     if ($level>=self::$loglevel_showuser) {
         // montre l'erreur
@@ -332,13 +392,17 @@ class Gb_Log
       if (strlen($REMOTE_USER))
         $sLog.="user=".$REMOTE_USER." ";
 
-      $sLog.=$text.$texto." (";
-
-      if (strlen($file))
-        $sLog.=" file:$file line:$line";
-      if (strlen($fxname))
-        $sLog.=" in $fxname($fxparam) --> $fxreturn";
-      $sLog.=" )\n";
+      $indentLen = strlen($sLog);
+      if ($fHasText) {
+          $sLog.=$text.$texto."\n";
+      }
+      
+      foreach ($aContext as $i=>$context) {
+          if (!(0==$i && !$fHasText)) {
+              $sLog .= str_repeat(" ", $indentLen);
+          }
+          $sLog .= "[$i] $context\n";
+      }
 
       $fd = @fopen($logFilename, "a");
       if ($fd) {
@@ -350,12 +414,16 @@ class Gb_Log
     if ($level>=self::$loglevel_footer) {
          // écrit dans le footer
       $sLog="$sLevel t+$timecode: ";
-      $sLog.=$text.$texto." (";
-      if (strlen($file))
-        $sLog.=" file:$file line:$line";
-      if (strlen($fxname))
-        $sLog.=" in $fxname($fxparam) --> $fxreturn";
-      $sLog.=" )\n";
+      $indentLen = strlen($sLog);
+      if ($fHasText) {
+          $sLog.=$text.$texto."\n";
+      }
+      foreach ($aContext as $i=>$context) {
+          if (!(0==$i && !$fHasText)) {
+              $sLog .= str_repeat(" ", $indentLen);
+          }
+          $sLog .= "[$i] $context\n";
+      }
       Gb_Response::$footer.=$sLog;
     }
 
@@ -368,7 +436,7 @@ class Gb_Log
    * préférer dump
    *
    * @param mixed $var Variable à dumper
-   * @pram string[optional] $sFormat mettre "%s" au lieu de "array(%s)" par défaut
+   * @pram string[optional] $sFormat mettre "%s" pour n'avoir que le contenu du array. Par défaut, c'est "array(%s)".
    * @return string
    */
   public static function dump_array(array $var, $sFormat="array(%s)")

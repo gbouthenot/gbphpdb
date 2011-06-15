@@ -31,7 +31,7 @@ Class Gb_Db extends Zend_Db
      */
     protected $_adapter;
     protected $connArray;                                     // array utilisé par Zend_Db::factory()
-    protected $driver;                                        // Pdo_Mysql ou Pdo_Oci
+    protected $driver;                                        // Pdo_Mysql, Pdo_Oci, Pdo_Sqlite
     protected $dbname;
     protected $charset;
     protected $fTransaction=false;
@@ -107,15 +107,29 @@ Class Gb_Db extends Zend_Db
         if (isset($aIn["dbname"]))                  $name=$aIn["dbname"];
         if (isset($aIn["port"]))                    $port=$aIn["port"];
         if (isset($aIn["charset"]))                 $charset=$aIn["charset"];
-        if     (strtoupper($driver)=="MYSQL")       $driver="Pdo_Mysql";
-        elseif (strtoupper($driver)=="OCI8")        $driver="Pdo_Oci";
-        elseif (strtoupper($driver)=="OCI")         $driver="Pdo_Oci";
-        elseif (strtoupper($driver)=="SQLITE")      $driver="Pdo_Sqlite";
-        elseif (strtoupper($driver)=="PDO_SQLITE")  $driver="Pdo_Sqlite";
-        elseif (strtoupper($driver)=="PDO_OCI")     $driver="Pdo_Oci";
-        elseif (strtoupper($driver)=="PDO_MYSQL")   $driver="Pdo_Mysql";
-        elseif (strtoupper($driver)=="MYSQLI")      $driver="Pdo_Mysql";
-        elseif (strtoupper($driver)=="ORACLE")      $driver="Pdo_Oci";
+        
+        switch (strtoupper($driver)) {
+            case "MYSQL":
+            case "MYSQLI":
+            case "PDO_MYSQL":
+                $driver="Pdo_Mysql"; break;
+
+            case "OCI8":
+            case "OCI":
+            case "ORACLE":
+            case "PDO_OCI":
+                $driver="Pdo_Oci"; break;
+
+            case "SQLITE":
+            case "PDO_SQLITE":
+                $driver="Pdo_Sqlite"; break;
+                
+            case "POSTGRES":
+            case "POSTGRESQL":
+            case "PDO_PGSQL":
+                $driver="Pdo_Pgsql"; break;
+                
+        }
 
         $array=array("username"=>$user, "password"=>$pass, "dbname"=>$name);
         if (strlen($host)) {
@@ -198,25 +212,38 @@ Class Gb_Db extends Zend_Db
         return $ret;
     }
 
-
-  public function getTables()
-  {
+    /**
+     * returns tables and view name
+     */
+    public function getTables()
+    {
         if ($this->tables==null) {
             switch($this->driver) {
                 case "Pdo_Oci":
-                    $sql_getTablesName="
-                        SELECT OWNER || '.' || TABLE_NAME AS \"FULL_NAME\"
+                    $sql_getTablesName=<<<EOF
+                        SELECT OWNER || '.' || TABLE_NAME AS "FULL_NAME"
                         FROM ALL_TABLES
                         WHERE table_name NOT LIKE '%$%'
-                        ORDER BY OWNER, TABLE_NAME";
+                        ORDER BY OWNER, TABLE_NAME
+EOF;
                 break;
 
                 case "Pdo_Mysql":
-                    $sql_getTablesName="
+                    $sql_getTablesName=<<<EOF
                         SELECT CONCAT(TABLE_SCHEMA, '.', TABLE_NAME) AS 'FULL_NAME'
                         FROM information_schema.tables
                         WHERE TABLE_SCHEMA<>'information_schema' AND TABLE_SCHEMA<>'mysql'
-                        ORDER BY TABLE_SCHEMA, TABLE_NAME";
+                        ORDER BY TABLE_SCHEMA, TABLE_NAME
+EOF;
+                break;
+
+                case "Pdo_Pgsql":
+                    $sql_getTablesName=<<<EOF
+                        SELECT TABLE_SCHEMA || '.' || TABLE_NAME AS "FULL_NAME"
+                        FROM information_schema.tables
+                        WHERE TABLE_SCHEMA<>'information_schema' AND TABLE_SCHEMA<>'pg_catalog'
+                        ORDER BY TABLE_SCHEMA, TABLE_NAME
+EOF;
                 break;
             }
 
@@ -224,8 +251,8 @@ Class Gb_Db extends Zend_Db
             $this->tables=$this->retrieve_all($sql_getTablesName, array());
         }
         return $this->tables;
-  }
-  
+      }
+      
     public function getTableDesc($table)
     {
         $sqlTime=self::$sqlTime;
@@ -252,61 +279,121 @@ Class Gb_Db extends Zend_Db
         
         switch($this->driver) {
             case "Pdo_Oci":
-                $sql_getColumns="
-                    SELECT A.COLUMN_NAME, A.DATA_TYPE AS \"TYPE\", A.NULLABLE, C.COMMENTS AS \"COMMENT\", '' AS \"EXTRA\"
-                    FROM ALL_TAB_COLUMNS A
-                    LEFT JOIN ALL_COL_COMMENTS C
-                    ON C.OWNER=A.OWNER AND C.TABLE_NAME=A.TABLE_NAME AND C.COLUMN_NAME=A.COLUMN_NAME 
-                    WHERE A.OWNER=? AND A.TABLE_NAME=?
-                    ORDER BY A.COLUMN_ID";
-                $sql_getPK="
-                    SELECT COLUMN_NAME
-                    FROM all_constraints allcons, all_cons_columns allcols
-                    WHERE allcons.OWNER=? AND allcons.TABLE_NAME=?
-                          AND CONSTRAINT_TYPE='P'
-                          AND allcons.CONSTRAINT_NAME=allcols.CONSTRAINT_NAME
-                    ORDER BY position";
+                $sql_getColumns=<<<EOF
+SELECT A.COLUMN_NAME, A.DATA_TYPE AS "TYPE", A.NULLABLE, C.COMMENTS AS "COMMENT"
+FROM ALL_TAB_COLUMNS A
+LEFT JOIN ALL_COL_COMMENTS C
+          ON C.OWNER=A.OWNER
+         AND C.TABLE_NAME=A.TABLE_NAME
+         AND C.COLUMN_NAME=A.COLUMN_NAME 
+WHERE A.OWNER=?
+  AND A.TABLE_NAME=?
+ORDER BY A.COLUMN_ID
+EOF;
+                $sql_getPK=<<<EOF
+SELECT COLUMN_NAME
+FROM all_constraints allcons, all_cons_columns allcols
+WHERE allcons.OWNER=?
+  AND allcons.TABLE_NAME=?
+  AND CONSTRAINT_TYPE='P'
+  AND allcons.CONSTRAINT_NAME=allcols.CONSTRAINT_NAME
+ORDER BY position
+EOF;
                 // distinct rajouté pour INS_ADM_ETP: plusieurs lignes identiques pour COD_DIP (contraint_name IAE_FK_SPV_03 IAE_FK_SPV_02 IAE_FK_SPV_01)
-                $sql_getFKs="
-                    SELECT DISTINCT cols_src.COLUMN_NAME AS \"COLUMN_NAME\", cols_dst.TABLE_NAME || '.' || cols_dst.COLUMN_NAME AS \"FULL_NAME\"
-                    FROM all_constraints cons_src
-                    JOIN all_cons_columns cols_src ON (cols_src.constraint_name=cons_src.constraint_name)
-                    LEFT JOIN all_cons_columns cols_dst ON (cols_dst.constraint_name=cons_src.r_constraint_name AND cols_dst.position=cols_src.position)
-                    WHERE cons_src.owner=? AND cons_src.table_name=?
-                          AND cons_src.constraint_type='R'
-                    ORDER BY 2";
-                $sql_getOtr="
-                    SELECT cols_src.COLUMN_NAME AS \"COLUMN_NAME\", cons_src.SEARCH_CONDITION AS \"EXTRA\"
-                    FROM all_constraints cons_src
-                    JOIN all_cons_columns cols_src ON (cols_src.constraint_name=cons_src.constraint_name)
-                    WHERE cons_src.owner=? AND cons_src.table_name=?
-                          AND cons_src.constraint_type='C'
-                    ORDER BY 1";
+                $sql_getFKs=<<<EOF
+SELECT DISTINCT cols_src.COLUMN_NAME AS "COLUMN_NAME", cols_dst.TABLE_NAME || '.' || cols_dst.COLUMN_NAME AS "FULL_NAME"
+FROM all_constraints cons_src
+JOIN all_cons_columns cols_src
+     ON (cols_src.constraint_name=cons_src.constraint_name)
+LEFT JOIN all_cons_columns cols_dst
+     ON (cols_dst.constraint_name=cons_src.r_constraint_name
+         AND cols_dst.position=cols_src.position)
+WHERE cons_src.owner=?
+  AND cons_src.table_name=?
+  AND cons_src.constraint_type='R'
+ORDER BY 2
+EOF;
+                $sql_getOtr=<<<EOF
+SELECT cols_src.COLUMN_NAME AS "COLUMN_NAME", cons_src.SEARCH_CONDITION AS "EXTRA"
+FROM all_constraints cons_src
+JOIN all_cons_columns cols_src
+     ON (cols_src.constraint_name=cons_src.constraint_name)
+WHERE cons_src.owner=? AND cons_src.table_name=?
+  AND cons_src.constraint_type='C'
+ORDER BY 1
+EOF;
                 break;
 
             case "Pdo_Mysql":
-                $sql_getColumns=   "
-                    SELECT COLUMN_NAME, COLUMN_TYPE AS 'TYPE', IS_NULLABLE AS 'NULLABLE', COLUMN_COMMENT AS 'COMMENT'
-                    FROM information_schema.columns
-                    WHERE TABLE_SCHEMA=? AND TABLE_NAME=?
-                    ORDER BY ORDINAL_POSITION";
-                $sql_getPK="
-                    SELECT COLUMN_NAME
-                    FROM information_schema.key_column_usage
-                    WHERE TABLE_SCHEMA=? AND TABLE_NAME=?
-                          AND CONSTRAINT_NAME='PRIMARY'
-                    ORDER BY ORDINAL_POSITION";
-                $sql_getFKs="
-                    SELECT kcu.COLUMN_NAME, CONCAT(kcu.REFERENCED_TABLE_NAME, '.', kcu.REFERENCED_COLUMN_NAME) AS 'FULL_NAME'
-                    FROM information_schema.key_column_usage kcu
-                    JOIN information_schema.TABLE_CONSTRAINTS tc
-                         ON CONSTRAINT_TYPE='FOREIGN KEY'
-                         AND kcu.CONSTRAINT_NAME=tc.CONSTRAINT_NAME
-                         AND kcu.TABLE_NAME=tc.TABLE_NAME
-                         AND kcu.TABLE_SCHEMA=tc.TABLE_SCHEMA
-                    WHERE kcu.TABLE_SCHEMA=? AND kcu.TABLE_NAME=?
-                    ORDER BY ORDINAL_POSITION";
+                $sql_getColumns=<<<EOF
+SELECT COLUMN_NAME, COLUMN_TYPE AS 'TYPE', IS_NULLABLE AS 'NULLABLE', COLUMN_COMMENT AS 'COMMENT'
+FROM information_schema.columns
+WHERE TABLE_SCHEMA=?
+  AND TABLE_NAME=?
+ORDER BY ORDINAL_POSITION
+EOF;
+                $sql_getPK=<<<EOF
+SELECT COLUMN_NAME
+FROM information_schema.key_column_usage
+WHERE TABLE_SCHEMA=? AND TABLE_NAME=?
+  AND CONSTRAINT_NAME='PRIMARY'
+ORDER BY ORDINAL_POSITION
+EOF;
+                $sql_getFKs=<<<EOF
+SELECT kcu.COLUMN_NAME, CONCAT(kcu.REFERENCED_TABLE_NAME, '.', kcu.REFERENCED_COLUMN_NAME) AS 'FULL_NAME'
+FROM information_schema.key_column_usage kcu
+JOIN information_schema.table_constraints tc
+     ON CONSTRAINT_TYPE='FOREIGN KEY'
+    AND kcu.CONSTRAINT_NAME=tc.CONSTRAINT_NAME
+    AND kcu.TABLE_NAME=tc.TABLE_NAME
+    AND kcu.TABLE_SCHEMA=tc.TABLE_SCHEMA
+WHERE kcu.TABLE_SCHEMA=? AND kcu.TABLE_NAME=?
+ORDER BY kcu.COLUMN_NAME, ORDINAL_POSITION
+EOF;
             break;
+
+            case "Pdo_Pgsql":
+                // information_schema reference: http://www.postgresql.org/docs/8.4/static/information-schema.html
+                // postgresql does not provide access to table comment in information_schema.
+                // see http://www.alberton.info/postgresql_meta_info.html for a workaround.
+                $sql_getColumns=<<<EOF
+SELECT COLUMN_NAME, DATA_TYPE AS "TYPE", IS_NULLABLE AS "NULLABLE"
+FROM information_schema.columns
+WHERE TABLE_SCHEMA=?
+  AND TABLE_NAME=?
+ORDER BY ORDINAL_POSITION
+EOF;
+                $sql_getPK=<<<EOF
+SELECT kcu.COLUMN_NAME
+FROM information_schema.key_column_usage kcu
+JOIN information_schema.table_constraints tc
+     ON tc.CONSTRAINT_NAME=kcu.CONSTRAINT_NAME
+    AND tc.CONSTRAINT_CATALOG=kcu.CONSTRAINT_CATALOG
+    AND tc.CONSTRAINT_SCHEMA=kcu.CONSTRAINT_SCHEMA
+WHERE kcu.TABLE_SCHEMA=? AND kcu.TABLE_NAME=? AND tc.CONSTRAINT_TYPE='PRIMARY KEY'
+EOF;
+                    $sql_getFKs=<<<EOF
+SELECT kcu.COLUMN_NAME AS "COLUMN_NAME", kcu2.TABLE_SCHEMA || '.' || kcu2.TABLE_NAME || '.' || kcu2.COLUMN_NAME AS "FULL_NAME"
+FROM information_schema.key_column_usage kcu
+JOIN information_schema.table_constraints tc
+     ON tc.CONSTRAINT_NAME=kcu.CONSTRAINT_NAME
+    AND tc.CONSTRAINT_CATALOG=kcu.CONSTRAINT_CATALOG
+    AND tc.CONSTRAINT_SCHEMA=kcu.CONSTRAINT_SCHEMA
+JOIN information_schema.referential_constraints rc
+     ON rc.CONSTRAINT_NAME=kcu.CONSTRAINT_NAME
+    AND rc.CONSTRAINT_CATALOG=kcu.CONSTRAINT_CATALOG
+    AND rc.CONSTRAINT_SCHEMA=kcu.CONSTRAINT_SCHEMA
+JOIN information_schema.key_column_usage kcu2
+     ON kcu2.CONSTRAINT_NAME=rc.UNIQUE_CONSTRAINT_NAME
+    AND kcu2.CONSTRAINT_CATALOG=rc.UNIQUE_CONSTRAINT_CATALOG
+    AND kcu2.CONSTRAINT_SCHEMA=rc.UNIQUE_CONSTRAINT_SCHEMA
+WHERE kcu.TABLE_SCHEMA=?
+  AND kcu.TABLE_NAME=?
+  AND tc.CONSTRAINT_TYPE='FOREIGN KEY'
+EOF;
+            break;
+            
+            
         }
 
 /*        $desc["columns"]=$this->retrieve_all($sql_getColumns, array($towner, $tname), "COLUMN_NAME", ""           );

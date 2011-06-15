@@ -462,7 +462,7 @@ abstract class Gb_Form_Elem_Abstract
     final public function fMandatory($flag=null)
     {   
         if ($flag===null) { return $this->_fMandatory; }
-        if ($flag===false || $flag===true) { $this->_fMandatory=$flag; }
+        if ($flag===false || $flag===true) { $this->_fMandatory=$flag; return $this;}
         else { throw new Gb_Exception("flag $flag not valid"); }
     }
     /**
@@ -473,7 +473,7 @@ abstract class Gb_Form_Elem_Abstract
     final public function fReadOnly($flag=null)
     {   
         if ($flag===null) { return $this->_fReadOnly; }
-        if ($flag===false || $flag===true) { $this->_fReadOnly=$flag; }
+        if ($flag===false || $flag===true) { $this->_fReadOnly=$flag; return $this;}
         else { throw new Gb_Exception("flag $flag not valid"); }
             }
     /**
@@ -484,7 +484,7 @@ abstract class Gb_Form_Elem_Abstract
     final public function javascriptRendered($flag=null)
     {   
         if ($flag===null) { return $this->_javascriptRendered; }
-        if ($flag===false || $flag===true) { $this->_javascriptRendered=$flag; }
+        if ($flag===false || $flag===true) { $this->_javascriptRendered=$flag; return $this;}
         else { throw new Gb_Exception("flag $flag not valid"); }
     }
     /**
@@ -495,7 +495,7 @@ abstract class Gb_Form_Elem_Abstract
     final public function htmlRendered($flag=null)
     {   
         if ($flag===null) { return $this->_htmlRendered; }
-        if ($flag===false || $flag===true) { $this->_htmlRendered=$flag; }
+        if ($flag===false || $flag===true) { $this->_htmlRendered=$flag; return $this;}
         else { throw new Gb_Exception("flag $flag not valid"); }
             }
     /**
@@ -515,7 +515,7 @@ abstract class Gb_Form_Elem_Abstract
      */
     final public function toBackendFunc(array $text=null)
     {   
-        if ($text===null) {         return $this->_toBackendFunc; }
+        if ($text===null) {         return $this->_toBackendFunc; return $this;}
         else { $this->_toBackendFunc=$text; return $this;}
     }
     /**
@@ -525,7 +525,7 @@ abstract class Gb_Form_Elem_Abstract
      */
     final public function fromBackendFunc(array $text=null)
     {   
-        if ($text===null) {         return $this->_fromBackendFunc; }
+        if ($text===null) {         return $this->_fromBackendFunc; return $this;}
         else { $this->_fromBackendFunc=$text; return $this;}
     }
     /**
@@ -535,7 +535,7 @@ abstract class Gb_Form_Elem_Abstract
      */
     final public function validateFunc($text=null)
     {   
-        if ($text===null) {         return $this->_validateFunc; }
+        if ($text===null) {         return $this->_validateFunc; return $this;}
         else { $this->_validateFunc=$text; return $this;}
     }
     /**
@@ -545,7 +545,7 @@ abstract class Gb_Form_Elem_Abstract
      */
     final public function errorMsgCustom($text=null)
     {   
-        if ($text===null) {         return $this->_errorMsgCustom; }
+        if ($text===null) {         return $this->_errorMsgCustom; return $this;}
         else { $this->_errorMsgCustom=$text; return $this;}
     }
     /**
@@ -574,9 +574,8 @@ abstract class Gb_Form_Elem_Abstract
     final public function javascriptEnabled($flag=null)
     {
         if ($flag===null) { return $this->_javascriptEnabled; }
-        if ($flag===false || $flag===true) { $this->_javascriptEnabled=$flag; }
+        if ($flag===false || $flag===true) { $this->_javascriptEnabled=$flag; return $this;}
         else { throw new Gb_Exception("flag $flag not valid"); }
-        return $this;
     }
     /**
      * get/set publicName
@@ -605,11 +604,13 @@ abstract class Gb_Form_Elem_Abstract
      */
     public function errorContainer($text=null)
     {   
-        if ($text===null) { if ($this->_errorContainer!==null) 
-        { return $this->_errorContainer; }
-         else 
-         { return $this->_container; } }
-        else { $this->_errorContainer=$text; return $this;}
+        if ($text===null) {
+            if ($this->_errorContainer!==null) {
+                return $this->_errorContainer;
+            } else {
+                return $this->_container;
+            }
+        } else { $this->_errorContainer=$text; return $this;}
     }
     /**
      * get/set classStatut
@@ -658,8 +659,11 @@ abstract class Gb_Form_Elem_Abstract
      */
     final public function regexp($text=null)
     {   
-        if ($text===null) {         return $this->_regexp; }
-        else { if (isset(self::$_commonRegex[$text])){$text=self::$_commonRegex[$text];} $this->_regexp=$text; return $this;}
+        if ($text===null) {         return $this->_regexp;
+        } else {
+            if ("null"===$text) {$text=null;} elseif (isset(self::$_commonRegex[$text])){$text=self::$_commonRegex[$text];}
+            $this->_regexp=$text; return $this;
+        }
     }
     /**
      * get/set errorMsg and sets classStatut
