@@ -258,7 +258,7 @@ abstract class Gb_Form_Elem_Abstract
     protected function _renderjavascript($js=null)
     {
         $ret = "";
-        if (strlen($js)) {
+        if (!$this->fReadOnly() && strlen($js)) {
             $elemid  = $this->elemId();
             $ret     = "validate_$elemid=function() {\n";
             $ret    .= "    $js\n";

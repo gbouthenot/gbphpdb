@@ -703,7 +703,7 @@ Class Gb_Form2 implements IteratorAggregate
     {
         $aErrs=array();
         foreach (new RecursiveIteratorIterator($this->getIterator()) as $elem) {
-            if (method_exists($elem, "validate")) {
+            if (method_exists($elem, "validate") && !$elem->fReadOnly()) {
                 $val = $elem->validate($this);
                 if (true === $val) {
                     //pas d'erreur
