@@ -186,7 +186,7 @@ class Gb_String
         }
         elseif (substr($d,4,1)=='-') {
             // date au format YYYY-MM-DD
-            $split = split("-",$d);
+            $split = explode("-",$d);
             if (count($split) == 3) {
                 list($y,$m,$d) = $split;
                 $d=substr($d,0,2).'/'.$m.'/'.$y.substr($d,2);
@@ -212,7 +212,7 @@ class Gb_String
         }
         elseif (substr($d,5,1)=='/') {
             // date au format DD/MM/YYYY
-            list($d,$m,$y)=split('/',$d);
+            list($d,$m,$y)=explode('/',$d);
             $d=substr($y,0,4).'-'.$m.'-'.$d.substr($y,4);
         }
         return $d;
@@ -445,7 +445,7 @@ class Gb_String
      */
     public static function appendPrepend($text, $prepend="", $append="")
     {
-        $aText=split("\n", $text);
+        $aText=explode("\n", $text);
         // remove last line if it is empty (ie the last line ended with \n)
         $last=array_pop($aText);
         if (strlen($last)) { $aText[]=$last; }
