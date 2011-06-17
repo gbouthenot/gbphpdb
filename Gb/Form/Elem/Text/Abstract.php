@@ -13,6 +13,9 @@ if (!defined("_GB_PATH")) {
     throw new Exception("gbphpdb roots mismatch");
 }
 
+require_once(_GB_PATH."String.php");
+require_once(_GB_PATH."Form/Elem/Abstract.php");
+
 
 abstract class Gb_Form_Elem_Text_Abstract extends Gb_Form_Elem_Abstract
 {

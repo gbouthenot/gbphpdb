@@ -27,7 +27,8 @@ Class Gb_Form2 implements IteratorAggregate
     // Properties -> these functions are handled by functions named after the properties name i.e. action() sets the _action
     //
     protected $_action;
-    protected $_enctype="www/form-data";
+    protected $_enctype="multipart/form-data";
+    protected $_acceptCharset="utf-8";
     protected $_errors;
     protected $_formHash;
     protected $_hasData;
@@ -76,7 +77,7 @@ Class Gb_Form2 implements IteratorAggregate
         $this->_modifiers=$modifiers;
         
         $availableParams=array(
-            "action", "enctype", "errors", "formHash", "hasData",
+            "action", "enctype", "acceptCharset", "errors", "formHash", "hasData",
             "isLoaded", "isPost", "isValid", "backend",
             "method", "moreDataRead", "renderFormTags", "toStringRendersAs",
             "formTagOpened", "formPostTagIssued", "formTagClosed" ,
@@ -245,7 +246,8 @@ Class Gb_Form2 implements IteratorAggregate
             $method=$this->method();   if (strlen($method))  {$method="method='$method'";}
             $action=$this->action();   if (strlen($action))  {$action="action='$action'";}
             $enctype=$this->enctype(); if (strlen($enctype)) {$enctype="enctype='$enctype'";}
-            $ret="<form $method $action $enctype>";
+            $acceptCharset=$this->acceptCharset(); if (strlen($acceptCharset)) {$acceptCharset="accept-charset='$acceptCharset'";}
+            $ret="<form $method $action $enctype $acceptCharset>";
             $this->formTagOpened(true);
         }
         return $ret;
@@ -350,6 +352,16 @@ Class Gb_Form2 implements IteratorAggregate
     {   
         if ($text===null) {         return $this->_enctype; }
         else { $this->_enctype=$text; return $this;}
+    }
+    /**
+     * get/set accept-charset form attribute
+     * @param string[optional] $text
+     * @return Gb_Form2|String
+     */
+    final public function acceptCharset($text=null)
+    {   
+        if ($text===null) {         return $this->_acceptCharset; }
+        else { $this->_acceptCharset=$text; return $this;}
     }
     /**
      * Get/set errors. Validate if hasData. Else returns null

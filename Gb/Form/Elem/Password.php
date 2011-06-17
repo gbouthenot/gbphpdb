@@ -13,6 +13,8 @@ if (!defined("_GB_PATH")) {
     throw new Exception("gbphpdb roots mismatch");
 }
 
+require_once(_GB_PATH."Form/Elem/Abstract.php");
+
 
 class Gb_Form_Elem_Password extends Gb_Form_Elem_Text_Abstract
 {
