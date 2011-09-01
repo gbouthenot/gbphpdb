@@ -451,7 +451,7 @@ class Gb_Log
         $pr=self::dump_array($arg);
       else
       {
-        $pr=var_export($arg, true);
+        $pr=print_r($arg, true);
         $pr=preg_replace("/^ +/m", "", $pr);                // enlève les espaces en début de ligne
         $pr=preg_replace("/,\n\\)/m", ")", $pr);            // remplace les ,) par )
         $pr=preg_replace("/,$/m", ", ", $pr);               // remplace "," par ", " en fin de ligne
@@ -470,6 +470,51 @@ class Gb_Log
     return sprintf($sFormat, $sLog);
   }
 
+
+
+
+
+
+public static function myErrorHandler($errno, $errstr, $errfile, $errline)
+{echo "exit";exit(1);
+    if (!(error_reporting() & $errno)) {
+        // This error code is not included in error_reporting
+        return;
+    }
+
+    switch ($errno) {
+    case E_USER_ERROR:
+        echo "<b>My ERROR</b> [$errno] $errstr<br />\n";
+        echo "  Fatal error on line $errline in file $errfile";
+        echo ", PHP " . PHP_VERSION . " (" . PHP_OS . ")<br />\n";
+        echo "Aborting...<br />\n";
+        exit(1);
+        break;
+
+    case E_USER_WARNING:
+        echo "<b>My WARNING</b> [$errno] $errstr<br />\n";
+        break;
+
+    case E_USER_NOTICE:
+        echo "<b>My NOTICE</b> [$errno] $errstr<br />\n";
+        break;
+
+    default:
+        echo "Unknown error type: [$errno] $errstr<br />\n";
+        break;
+    }
+
+    /* Don't execute PHP internal error handler */
+    return true;
+}
+
+
+
+
+
+
+
+
   /**
    * Renvoie une description sur une ligne d'une variable (comme print_r, mais sur une ligne)
    *
@@ -480,7 +525,7 @@ class Gb_Log
   {
         if (is_array($var))
             return self::dump_array($var);
-        $pr=var_export($var, true);
+        $pr=print_r($var, true);
         $pr=preg_replace("/^ +/m", "", $pr);                // enlève les espaces en début de ligne
         $pr=preg_replace("/,\n\\)/m", ")", $pr);            // remplace les ,) par )
         $pr=preg_replace("/,$/m", ", ", $pr);               // remplace "," par ", " en fin de ligne

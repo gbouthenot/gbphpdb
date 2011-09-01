@@ -97,7 +97,8 @@ Class Gb_Session
         self::getSessionDir();
         session_start();
     
-        $client=md5("U:".$_SERVER["HTTP_USER_AGENT"]." IP:". $_SERVER["REMOTE_ADDR"]);
+        $agent = isset($_SERVER["HTTP_USER_AGENT"])?$_SERVER["HTTP_USER_AGENT"]:"no agent";
+        $client=md5("U:".$agent." IP:". $_SERVER["REMOTE_ADDR"]);
     
         $sWarning="";
         
@@ -167,7 +168,8 @@ Class Gb_Session
     public static function destroy()
     {
         session_regenerate_id(true);
-        $client=md5("U:".$_SERVER["HTTP_USER_AGENT"]." IP:". $_SERVER["REMOTE_ADDR"]);
+        $agent = isset($_SERVER["HTTP_USER_AGENT"])?$_SERVER["HTTP_USER_AGENT"]:"no agent";
+        $client=md5("U:".$agent." IP:". $_SERVER["REMOTE_ADDR"]);
         $a='abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
         $u=$a{mt_rand(0, 61)}; $u.=$a{mt_rand(0, 61)}; $u.=$a{mt_rand(0, 61)}; $u.=$a{mt_rand(0, 61)}; $u.=$a{mt_rand(0, 61)};
         $uniqId=$u;
