@@ -276,7 +276,58 @@ Class Gb_Form2 implements IteratorAggregate
         if ( ($aElemNames!==null) || ($fRenderScriptTag===null) ) {
             $fRenderScriptTag=false;
         }
-        $ret="";
+        $ret = <<<EOF
+// see http://blog.stevenlevithan.com/archives/faster-trim-javascript
+// for more trim functions
+if (window.gbtrim == undefined)
+window.gbtrim = function(str){return str.replace(/^\s\s*/, '').replace(/\s\s*\$/, '');}
+if (window.remove_accents == undefined)
+window.remove_accents = function(my_string){
+  var new_string = "";
+  var pattern_accent =         new Array("é", "è", "ê", "ë", "ç", "à", "â", "ä", "ì", "î", "ï", "ù", "ò", "ô", "ó", "ö");
+  var pattern_replace_accent = new Array("e", "e", "e", "e", "c", "a", "a", "a", "i", "i", "i", "u", "o", "o", "o", "o");
+  var preg_replace = function (array_pattern, array_pattern_replace, my_string) {
+    var new_string = String (my_string);
+    for (i=0; i<array_pattern.length; i++) {
+      var reg_exp= RegExp(array_pattern[i], "gi");
+      var val_to_replace = array_pattern_replace[i];
+      new_string = new_string.replace (reg_exp, val_to_replace);
+    }
+    return new_string;
+  }
+  if (my_string && my_string!= "") {
+      my_string=my_string.toLowerCase();
+      new_string = preg_replace (pattern_accent, pattern_replace_accent, my_string);
+      return new_string;
+  }
+};
+if (window.gbSetClass == undefined)
+window. gbSetClass = function(id, classname) {
+  if (window.YUI != undefined) {
+    YUI().use('node', function(Y) {
+      Y.one('#' + id).setAttribute("class", classname);
+    });
+  } else {
+    \$(id).className = classname;
+  }
+};
+if (window.gbRemoveError == undefined )
+window.gbRemoveError = function(id) {
+  if (window.YUI != undefined) {
+    YUI().use('node', function(Y) {
+      var div = Y.one('#' + id + '_div span.ERROR');
+      if (div != null) { div.setContent(); }
+      var div = Y.one('#' + id + '_div div.ERROR');
+      if (div != null) { div.setContent(); }
+    });
+  } else {
+    var e=\$(id + '_div').select('div[class=\"ERROR\"]').first(); if (e!=undefined){e.innerHTML='';}
+    var e=\$(id + '_div').select('span[class=\"ERROR\"]').first(); if (e!=undefined){e.innerHTML='';}
+    }
+};
+if (window.\$F == undefined )
+window.\$F = function(id){return document.getElementById(id).value;};
+EOF;
 
         if ($aElemNames===null) {
             foreach ($this as $elemOrGroup) {

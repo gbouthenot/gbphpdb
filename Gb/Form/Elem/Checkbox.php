@@ -41,17 +41,17 @@ class Gb_Form_Elem_Checkbox extends Gb_Form_Elem_Abstract
         $elemid=$this->elemId();
         
         // par défaut, met en classOK, si erreur, repasse en classNOK
-        $ret.=" \$('{$elemid}_div').className='OK';\n";
+        $ret .= " gbSetClass('{$elemid}_div', 'OK');\n";
+
         // enlève le message d'erreur
-        $ret.=" var e=\$('{$elemid}_div').select('div[class=\"ERROR\"]').first(); if (e!=undefined){e.innerHTML='';}\n";
-        $ret.=" var e=\$('{$elemid}_div').select('span[class=\"ERROR\"]').first(); if (e!=undefined){e.innerHTML='';}\n";
-        
-        $ret.="var value=\$F('$elemid');\n";
+        $ret .= "gbRemoveError('{$elemid}');\n";
+                
+        $ret .= "var value=\$F('$elemid');\n";
         
         // traitement fMandatory
         if ($this->fMandatory()) {
               $ret.="if (value!='true' && value!='on') {\n";
-              $ret.=" \$('{$elemid}_div').className='NOK';\n";
+              $ret.=" gbSetClass('{$elemid}_div', 'NOK');\n";
               $ret.="}\n";
         }
         

@@ -76,19 +76,17 @@ class Gb_Form_Elem_Selectmultiple extends Gb_Form_Elem_Abstract
         $elemid=$this->elemId();
         
         // par défaut, met en classOK, si erreur, repasse en classNOK
-        $ret.=" \$('{$elemid}_div').className='OK';\n";
+        $ret .= "gbSetClass('{$elemid}_div', 'OK');\n";
+
         // enlève le message d'erreur
-        $ret.=" var e=\$('{$elemid}_div').select('div[class=\"ERROR\"]').first(); if (e!=undefined){e.innerHTML='';}\n";
-        $ret.=" var e=\$('{$elemid}_div').select('span[class=\"ERROR\"]').first(); if (e!=undefined){e.innerHTML='';}\n";
-        
-        // attention utilise prototype String.strip()
-        $ret.="var value=\$F('{$elemid}');\n";
-        $ret.="console.log(value);\n";
+        $ret .= "gbRemoveError('{$elemid}');\n";
+                
+        $ret .= "var value=\$F('{$elemid}');\n";
         
         // traitement fMandatory
         if ($this->fMandatory()) {
             $ret.="if (value.length==0) {";
-            $ret.=" \$('{$elemid}_div').className='NOK';\n";
+            $ret.=" gbSetClass('{$elemid}_div', 'NOK');\n";
             $ret.="}\n";
         }
 
@@ -107,7 +105,7 @@ class Gb_Form_Elem_Selectmultiple extends Gb_Form_Elem_Abstract
                    $ret.=" var notvalue=\"".addslashes($notValue)."\";\n";
                  }
                  $ret.=" if (bornevalue == notvalue) {";
-                 $ret.=" \$('{$elemid}_div').className='NOK';";
+                 $ret.=" gbSetClass('{$elemid}_div', 'NOK');\n";
                  $ret.="}\n";
             }
         }

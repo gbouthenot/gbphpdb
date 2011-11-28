@@ -34,18 +34,16 @@ class Gb_Form_Elem_Textarea extends Gb_Form_Elem_Abstract
         $elemid=$this->elemId();
         
         // par défaut, met en classOK, si erreur, repasse en classNOK
-        $ret.=" \$('{$elemid}_div').className='OK';\n";
-        // enlève le message d'erreur
-        $ret.=" var e=\$('{$elemid}_div').select('div[class=\"ERROR\"]').first(); if (e!=undefined){e.innerHTML='';}\n";
-        $ret.=" var e=\$('{$elemid}_div').select('span[class=\"ERROR\"]').first(); if (e!=undefined){e.innerHTML='';}\n";
-        
-        // attention utilise prototype String.strip()
-        $ret.="var value=remove_accents(\$F('{$elemid}').strip());\n";
+        $ret .= "gbSetClass('{$elemid}_div', 'OK');\n";
 
+        // enlève le message d'erreur
+        $ret .= "gbRemoveError('{$elemid}');\n";
+                
+        $ret .= "var value=remove_accents(gbtrim(\$F('{$elemid}')));\n";
         // traitement fMandatory
         if ($this->fMandatory()) {
           $ret.="if (value=='') {\n";
-          $ret.=" \$('{$elemid}_div').className='NOK';\n";
+          $ret.=" gbSetClass('{$elemid}_div', 'NOK');\n";
           $ret.="}\n";
         }
 
@@ -58,13 +56,13 @@ class Gb_Form_Elem_Textarea extends Gb_Form_Elem_Abstract
             }
             $ret.="var regexp=$regexp\n";
             $ret.="if (!regexp.test(value)) {\n";
-            $ret.=" \$('{$elemid}_div').className='NOK';\n";
+            $ret.=" gbSetClass('{$elemid}_div', 'NOK');\n";
             $ret.="}\n";
         }
         
         if (!$this->fMandatory()) {
           $ret.="if (value=='') {\n";
-          $ret.=" \$('{$elemid}_div').className='OK';\n";
+          $ret.=" gbSetClass('{$elemid}_div', 'OK');\n";
           $ret.="}\n";
         }
 
