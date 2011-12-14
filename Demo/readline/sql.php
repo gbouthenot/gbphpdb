@@ -1,6 +1,9 @@
 #!/usr/bin/php
 <?php
 
+error_reporting(E_ALL);
+ini_set("display_errors", true);
+
 set_include_path("/home/gbouthen/web/neon/include/".PATH_SEPARATOR.get_include_path());
 //set_include_path("/home/gbouthen/web/neon/include/");
 
@@ -59,6 +62,7 @@ $aOptions["pager"]="/usr/bin/less -niSF";
 $aOptions["pager"]="mcview";
 $aOptions["nopager"]=false;
 $aOptions["tmpfile"]=tempnam("", "sql");
+$aOptions["maxwidth"]=30;
 process_main();
 exit(0);
 
@@ -71,6 +75,7 @@ function init_readline()
     $history=array(
     "show databases",
     "show tables",
+    "maxwidth 0",
     );
     
     foreach ($history as $line) {
@@ -83,22 +88,31 @@ function process_main()
     global $aOptions;
     
     do {
-        $line=myreadline();        
+        $line    = myreadline();
+        $linelow = strtolower($line);        
         if ( strlen(trim($line)) == 0 ) {
             continue;
         }
 
 
-        if ($line=="exit") {
+        if (substr($linelow, 0, 4)=="exit" || substr($linelow, 0, 4)=="quit") {
             return;
         }
         
         readline_add_history($line);
         
-        if ($line=="nopager") {
+        if ($linelow=="nopager") {
             $aOptions["nopager"]=true;
-        } elseif ($line=="pager") {
+        } elseif ($linelow=="pager") {
             $aOptions["nopager"]=false;
+        } elseif (substr($linelow, 0, 9)=="maxwidth ") {
+            $maxwidth = substr($line, 9);
+            if (is_numeric($maxwidth)) {
+                $aOptions["maxwidth"] = (int) $maxwidth;
+                echo "maxwidth set to $maxwidth\n";
+            } 
+        } elseif (substr($linelow, 0, 8)=="maxwidth") {
+                echo "maxwidth = ".$aOptions["maxwidth"]."\n";
         } else {
             $ret=process($line);
     
@@ -106,8 +120,6 @@ function process_main()
         }
     } while (1);
 }
-
-
 
 function myreadline()
 {
@@ -179,6 +191,32 @@ function process($text)
             $ret .= text_format($tableDesc["pk"]);
             $ret .= "\nForeign keys:\n";
             $ret .= text_format($tableDesc["fks"]);
+        } elseif (substr($upper, 0, 7)=="SEARCH ") {
+            $needle = substr($text, 7);
+            $aTables = $db->getTables();
+            foreach ($aTables as $table) {
+                $tableFullName = $table["FULL_NAME"];
+                $aTableDesc    = $db->getTableDesc($tableFullName);
+                $aCols         = $aTableDesc["columns"];
+                $fNeedleInt    = is_numeric($needle);
+                
+                $aWhere=null;
+                foreach ($aCols as $aCol) {
+                    if ($fNeedleInt && strpos(strtolower($aCol["TYPE"]), "int") !== false) {
+                        $aWhere[] = $aCol["COLUMN_NAME"]." = ".((int)$needle);
+                    } elseif (!$fNeedleInt && strpos(strtolower($aCol["TYPE"]), "char") !== false) {
+                        $aWhere[] = $aCol["COLUMN_NAME"]." LIKE '%$needle%'";
+                    }
+                }
+                if (count($aWhere)) {
+                    $sql = "SELECT * FROM $tableFullName WHERE " . join(" OR ", $aWhere);
+                    $data = $db->retrieve_all($sql);
+                    $ret .= $sql."\n";
+                    if (count($data)) {
+                        $ret .= text_format($data)."\n";
+                    }
+                }
+            } // foreach $aTables
         } else {
             $data = $db->retrieve_all($text);
             $ret .= text_format($data);
@@ -195,47 +233,11 @@ function process($text)
 
 function text_format($data)
 {
+    global $aOptions;
+    
     $ret = "";
-    if (count($data)) {
-        $maxwidth=array();
-        foreach ($data as $row){
-            foreach ($row as $colname=>$value) {
-                if (!isset($maxwidth[$colname])) {
-                    $maxwidth[$colname]=0;
-                }
-                $maxwidth[$colname]=max($maxwidth[$colname], strlen($value));
-            }
-        }
-        
-        // En-tête
-        $header="|";
-        $hr="|";
-        foreach ($maxwidth as $colname=>$width) {
-                $maxwidth[$colname]=max($maxwidth[$colname], strlen($colname));
-                $header.=str_pad($colname, $maxwidth[$colname], " ", STR_PAD_BOTH);
-                $hr.=str_repeat("-", $maxwidth[$colname]);
-                $header.="|";
-                $hr.="|";
-        }
-        $top=str_repeat("-", strlen($header))."\n";
-        $header.="\n";
-        $hr.="\n";
-        $ret=$top.$header.$hr;
-        
-        
-        foreach ($data as $row){
-            $ret.="|";
-            foreach ($row as $colname=>$value) {
-                $ret.=str_pad($value, $maxwidth[$colname], " ", STR_PAD_LEFT);
-                $ret.="|";
-            }
-            $ret.="\n";
-        }
-        $ret.=$top;
-    }
-    
+    $ret .= Gb_String::formatTable($data, "text", $aOptions["maxwidth"], "");
     $ret .= count($data)." lines returned.";
-    
     return $ret;
 }
 

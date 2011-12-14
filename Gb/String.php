@@ -360,16 +360,24 @@ class Gb_String
      *
      * @param array $array
      * @param string $format text|html
+     * @param integer[optional] maxColLen default:40, 0 for no limit
+     * @param string[optional] string to use for padding (default " ", set to "" for no padding)
      * @return string
      */
-    public static function formatTable(array $array, $format)
+    public static function formatTable(array $array, $format, $maxColLen=null, $pad=null)
     {
         $format=strtolower($format);
         $ret="";
         if (count($array)==0) {
             return "";        
         }
-        
+        if (null === $maxColLen) {
+            $maxColLen = 40;
+        }
+        if (null === $pad) {
+            $pad = " ";
+        }
+
         // should we also display the key index ?
         $fShowIndex=false;
         $firstkeys=array_keys($array);
@@ -379,53 +387,72 @@ class Gb_String
         }
 
         if ($format=="text") {
+            //
+            // COMPUTE WIDTHS
+            //
             reset($array);
             $firstrowkeys=array_keys(current($array));
                         
             // get the max length of each column
             $max=array();
-            // first the column name
-            $max["index"]=strlen("index");
+            // first the column names
+            $max["index"] = mb_strlen("index", "UTF-8");
             foreach ($firstrowkeys as $number=>$keyname) {
-                $max[$number]=strlen($keyname);
+                $max[$number] = mb_strlen($keyname, "UTF-8");
+                if ($maxColLen) {
+                    $max[$number] = min($max[$number], $maxColLen);
+                }
             }
             
             // then the column values
             foreach ($array as $indexname=>$line) {
-                $max["index"]=max($max["index"], strlen($indexname));
+                $max["index"]=max($max["index"], mb_strlen($indexname, "UTF-8"));
                 foreach ($firstrowkeys as $number=>$keyname) {
-                    $max[$number]=max($max[$number], strlen($line[$keyname]));
+                    $max[$number]=max($max[$number], mb_strlen(str_replace(array("\r","\n","\0"), array("\\r", "\\n", "\\0"), $line[$keyname])), "UTF-8");
+                    if ($maxColLen) {
+                        $max[$number] = min($max[$number], $maxColLen);
+                    }
                 }
             }
             
+            if ($maxColLen) {
+                $max["index"] = min($max["index"], $maxColLen);
+            }
             $indexlen=$max["index"];
+            
+            //
+            // OUTPUT FIRST ROW
+            //
             $rowsep="";
             $rowhead="";
             if ($fShowIndex) {
                 $rowsep.="+";
-                $rowhead.="| ";
-                $rowsep.=str_repeat("-", $indexlen+2);
-                $rowhead.=str_pad("index", $indexlen, " ", STR_PAD_BOTH)." ";          
+                $rowhead.="|".$pad;
+                $rowsep.=str_repeat("-", $indexlen+2*strlen($pad));
+                $rowhead.=str_pad("index", $indexlen, " ", STR_PAD_BOTH).$pad;          
             }
             foreach ($firstrowkeys as $number=>$keyname) {
                 $rowsep.="+";
-                $rowhead.="| ";
+                $rowhead.="|".$pad;
 
                 $len=$max[$number];
-                $rowsep.=str_repeat("-", $len+2);
-                $rowhead.=str_pad($keyname, $len, " ", STR_PAD_BOTH)." ";          
+                $rowsep.=str_repeat("-", $len+2*strlen($pad));
+                $rowhead.=self::mb_str_pad(mb_substr($keyname, 0, $len, "UTF-8"), $len, " ", STR_PAD_BOTH, "UTF-8").$pad;          
             }
             $rowsep.="+\n";
             $rowhead.="|\n";
             
+            //
+            // OUTPUT LINES
+            //
             $ret.=$rowsep.$rowhead.$rowsep;
             foreach ($array as $indexname=>$line) {
                 if ($fShowIndex) {
-                    $ret.="| ".str_pad($indexname, $indexlen, " ", STR_PAD_LEFT)." ";
+                    $ret.="|".$pad.self::mb_str_pad(mb_substr($indexname, 0, $len, "UTF-8"), $indexlen, " ", STR_PAD_LEFT, "UTF-8").$pad;
                 }
                 foreach ($firstrowkeys as $number=>$keyname) {
                     $len=$max[$number];
-                    $ret.="| ".str_pad($line[$keyname], $len, " ", STR_PAD_LEFT)." ";
+                    $ret.="|".$pad.self::mb_str_pad(mb_substr(str_replace(array("\r","\n","\0"), array("\\r", "\\n", "\\0"), $line[$keyname]), 0, $len, "UTF-8"), $len, " ", STR_PAD_LEFT).$pad;
                 }
                 $ret.="|\n";
             }
@@ -479,4 +506,21 @@ class Gb_String
         return DIRECTORY_SEPARATOR.implode(DIRECTORY_SEPARATOR, $absolutes);
         
     }
+    
+    
+    /**
+     * Function ripped from http://php.net/manual/fr/function.str-pad.php
+     * Kari &#34;Haprog&#34; Sderholm 21-Mar-2009 02:43
+     * @param string $input
+     * @param integer $pad_length
+     * @param string  $pad_string
+     * @param integer $pad_type
+     * @param string  $charset
+     * @return string
+     */
+    function mb_str_pad($input, $pad_length, $pad_string=' ', $pad_type=STR_PAD_RIGHT, $charset="UTF-8") {
+        $diff = strlen($input) - mb_strlen($input, $charset);
+        return str_pad($input, $pad_length+$diff, $pad_string, $pad_type);
+    }
+    
 }

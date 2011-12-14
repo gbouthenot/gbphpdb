@@ -357,7 +357,7 @@ EOF;
                 // postgresql does not provide access to table comment in information_schema.
                 // see http://www.alberton.info/postgresql_meta_info.html for a workaround.
                 $sql_getColumns=<<<EOF
-SELECT COLUMN_NAME, DATA_TYPE AS "TYPE", IS_NULLABLE AS "NULLABLE"
+SELECT COLUMN_NAME AS "COLUMN_NAME", DATA_TYPE AS "TYPE", IS_NULLABLE AS "NULLABLE"
 FROM information_schema.columns
 WHERE TABLE_SCHEMA=?
   AND TABLE_NAME=?

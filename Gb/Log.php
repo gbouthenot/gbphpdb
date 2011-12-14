@@ -439,8 +439,9 @@ class Gb_Log
    * @pram string[optional] $sFormat mettre "%s" pour n'avoir que le contenu du array. Par défaut, c'est "array(%s)".
    * @return string
    */
-  public static function dump_array(array $var, $sFormat="array(%s)")
+  public static function dump_array($var, $sFormat="array(%s)")
   {
+      if (null == $var) { return "null"; }
     $sLog="";
     $curnum=0;
     $fShowKey=false;
