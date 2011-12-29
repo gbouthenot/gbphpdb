@@ -49,7 +49,7 @@ class Gb_Ldap
             $this->_shutdown();
             $this->_connect($server, $port);
         }
-        if ( $pass!=$par[2] || $port!=$par[3] ) {echo "z";
+        if ( $pass!=$par[2] || $port!=$par[3] ) {
             $this->_bind($dn, $pass);
         }
         
