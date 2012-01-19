@@ -183,11 +183,11 @@ class Gb_Log
   public static function logError($text="", $o=null, $fPrintCall=true) { self::log(self::LOG_ERROR, $text, $o, 1, $fPrintCall); }
   public static function logException($exception, $o=null, $fPrintCall=true) { self::log(self::LOG_EXCEPTION, $exception, $o, 1, $fPrintCall); }
   public static function logWarning($text="", $o=null, $fPrintCall=true) { self::log(self::LOG_WARNING, $text, $o, 1, $fPrintCall); }
-  public static function logNotice($text="", $o=null, $fPrintCall=true) { self::log(self::LOG_NOTICE, $text, $o, 1, $fPrintCall); }
-  public static function logInfo($text="", $o=null, $fPrintCall=true) { self::log(self::LOG_INFO, $text, $o, 1, $fPrintCall); }
-  public static function logDebug($text="", $o=null, $fPrintCall=true) { self::log(self::LOG_DEBUG, $text, $o, 1, $fPrintCall); }
-  public static function logDump($text="", $o=null, $fPrintCall=true) { self::log(self::LOG_DUMP, $text, $o, 1, $fPrintCall); }
-  public static function logTrace($text="", $o=null, $fPrintCall=true) { self::log(self::LOG_TRACE, $text, $o, 1, $fPrintCall); }
+  public static function logNotice($text="", $o=null, $fPrintCall=false) { self::log(self::LOG_NOTICE, $text, $o, 1, $fPrintCall); }
+  public static function logInfo($text="", $o=null, $fPrintCall=false) { self::log(self::LOG_INFO, $text, $o, 1, $fPrintCall); }
+  public static function logDebug($text="", $o=null, $fPrintCall=false) { self::log(self::LOG_DEBUG, $text, $o, 1, $fPrintCall); }
+  public static function logDump($text="", $o=null, $fPrintCall=false) { self::log(self::LOG_DUMP, $text, $o, 1, $fPrintCall); }
+  public static function logTrace($text="", $o=null, $fPrintCall=false) { self::log(self::LOG_TRACE, $text, $o, 1, $fPrintCall); }
   
   
   
