@@ -394,7 +394,11 @@ class Gb_Log
 
       $indentLen = strlen($sLog);
       if ($fHasText) {
-          $sLog.=$text.$texto."\n";
+          if (strlen($text) && strlen($texto)) {
+              $sLog .= $text." ".$texto."\n";
+          } else {
+              $sLog .= $text.$texto."\n";
+          }
       }
       
       foreach ($aContext as $i=>$context) {

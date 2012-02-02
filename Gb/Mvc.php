@@ -231,8 +231,11 @@ Class Gb_Mvc
         
         $root=$this->_rootUrl;
         $sArgs=implode("/", $args->getAll());
+        if (strlen($sArgs)) {
+            $sArgs .= "/";
+        }
 
-        return $root.$sArgs."/";
+        return $root.$sArgs;
     }
     
     
