@@ -506,6 +506,29 @@ class Gb_String
         return DIRECTORY_SEPARATOR.implode(DIRECTORY_SEPARATOR, $absolutes);
         
     }
+
+    /**
+     * Print a hex dump of a string
+     * 49 4e 46 4f 00 00 00 10 54 61 68 6f 6d 61 00 62     INFO....Tahoma.b
+     * 69 31 33 00 d0 b0 00 00                             i13.....
+     * @param string $string
+     * @return string
+     */
+    public static function dumpBin($string)
+    {
+        $ret=$a=$h="";
+        for ($i=0,$l=min(65536,strlen($string))-1;$i<=$l;$i++) {
+            $c=ord(substr($string,$i,1));
+            $h.=str_pad(dechex($c),2,0,STR_PAD_LEFT)." ";
+            $a.=($c<32)?("."):(utf8_encode(chr($c)));
+            if (($i==$l)||(($i&15)==15)) {
+                $ret.=str_pad(dechex($i&0xfff0),4,0,STR_PAD_LEFT).":  ".str_pad($h,50)."$a\n";
+                $a=$h="";
+            }
+        }
+        return $ret;
+    }
+
     
     
     /**
