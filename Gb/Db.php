@@ -411,6 +411,9 @@ EOF;
                 $cond=$aOtr["EXTRA"];
                 // search column in desc
                 foreach ($desc["columns"] as &$pCol) {
+                    if (empty($pCol["EXTRA"])) {
+                        $pCol["EXTRA"] = "";
+                    }
                     if ($pCol["COLUMN_NAME"]==$col) {
                         $pCol["EXTRA"].=$cond;
                     }
