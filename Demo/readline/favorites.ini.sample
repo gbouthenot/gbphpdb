@@ -1,0 +1,28 @@
+; This file can be in either:
+; current directory/favorites.ini
+; script directory/favorites.ini
+; home directory/.sqlfavorites
+; /etc/.sqlfavorites
+
+[SAMPLE1]
+type = "OCI"
+user = "username"
+pass = "password"
+host = "hostname"
+port = port
+name = "instancename"
+
+[SAMPLE2]
+type = "MYSQL"
+user = "username"
+pass = "password"
+host = "hostname"
+name = "dbname"
+charset = "utf8"
+
+[SAMPLE3]
+type = "POSTGRES"
+user = "username"
+pass = "password"
+host = "hostname"
+name = "schemaname"

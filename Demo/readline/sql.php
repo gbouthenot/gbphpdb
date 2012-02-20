@@ -4,9 +4,9 @@
 error_reporting(E_ALL);
 ini_set("display_errors", true);
 
-require_once "../../Gb/Util.php";
-require_once "../../Gb/Db.php";
-require_once "../../Gb/Cache.php";
+require_once __DIR__ . DIRECTORY_SEPARATOR . "..". DIRECTORY_SEPARATOR . ".." . DIRECTORY_SEPARATOR . "Gb" . DIRECTORY_SEPARATOR . "Util.php";
+require_once __DIR__ . DIRECTORY_SEPARATOR . "..". DIRECTORY_SEPARATOR . ".." . DIRECTORY_SEPARATOR . "Gb" . DIRECTORY_SEPARATOR . "Db.php";
+require_once __DIR__ . DIRECTORY_SEPARATOR . "..". DIRECTORY_SEPARATOR . ".." . DIRECTORY_SEPARATOR . "Gb" . DIRECTORY_SEPARATOR . "Cache.php";
 
 $items = array();
 
@@ -37,7 +37,7 @@ $favoriteName = strtoupper($argv[1]);
 // search the favorites file
 
 // 1 : search in the current directory
-$fname = "favorites.ini";
+$fname = getcwd() . DIRECTORY_SEPARATOR . "favorites.ini";
 if (!is_file($fname) || !is_readable($fname)) {
     // 2 : then the directory of the php script
     $fname = dirname(__FILE__) . DIRECTORY_SEPARATOR . "favorites.ini";
