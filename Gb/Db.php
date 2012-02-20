@@ -37,6 +37,11 @@ Class Gb_Db extends Zend_Db
     protected $fTransaction=false;
     protected $fInitialized=false;
     
+    /**
+     * @var Gb_Cache
+     */
+    protected $_cache = null;
+
     protected $tables;                                        // cache de la liste des tables
     protected $tablesDesc;                                    // cache descriptif table
   
@@ -172,6 +177,26 @@ Class Gb_Db extends Zend_Db
         self::$sqlTime+=microtime(true)-$time;
     }
 
+   /**
+    * set cache backend
+    * @param Gb_Cache $cache
+    * @return Gb_Db provides fluent interface
+    */
+    public function setCache(Gb_Cache $cache)
+    {
+        $this->_cache = $cache;
+        return $this;
+    }
+
+   /**
+    * get cache backend
+    * @return Gb_Cache
+    */
+    public function getCache()
+    {
+        return $this->_cache;
+    }
+
     public function initialize()
     {
         if ($this->fInitialized) {
@@ -214,6 +239,8 @@ Class Gb_Db extends Zend_Db
 
     /**
      * returns tables and view name
+     * result is only cached locally (so new tables can appear without having to clear cache)
+     * @return array(array("FULL_NAME"=>), ...)
      */
     public function getTables()
     {
@@ -251,8 +278,18 @@ EOF;
             $this->tables=$this->retrieve_all($sql_getTablesName, array());
         }
         return $this->tables;
-      }
-      
+    }
+
+    /**
+     * Get table's column details, primary cols and foreign key definition
+     * Result is cached permanently if setCache() has been used, or in an instance variable.
+     * @param string $table
+     * @return array array(
+     *     "columns"=>array(array("COLUMN_NAME"=>, "TYPE"=>, "NULLABLE"=>, "COMMENT"=>, "EXTRA"=>), ...),
+     *     "pk"=>     array(array("COLUMN_NAME"=>), ...),
+     *     "fks"=>    array(array("COLUMN_NAME"=>, "FULL_NAME"=>), ...)
+     * )
+     */
     public function getTableDesc($table)
     {
         $sqlTime=self::$sqlTime;
@@ -271,8 +308,15 @@ EOF;
         }
 
         // renvoie le array caché si dispo
-        if (isset($this->tablesDesc[$towner.".".$tname])) {
-            return $this->tablesDesc[$towner.".".$tname];
+        $cacheKey = $towner.".".$tname;
+        if (null !== $this->_cache) {
+            if (isset($this->_cache->$cacheKey)) {
+                return $this->_cache->$cacheKey;
+            }
+        } else {
+            if (isset($this->tablesDesc[$cacheKey])) {
+                return $this->tablesDesc[$cacheKey];
+            }
         }
 
         $sql_getColumns=$sql_getFKs=$sql_getOtr="";
@@ -280,7 +324,7 @@ EOF;
         switch($this->driver) {
             case "Pdo_Oci":
                 $sql_getColumns=<<<EOF
-SELECT A.COLUMN_NAME, A.DATA_TYPE AS "TYPE", A.NULLABLE, C.COMMENTS AS "COMMENT"
+SELECT A.COLUMN_NAME, A.DATA_TYPE AS "TYPE", A.NULLABLE, C.COMMENTS AS "COMMENT", '' AS "EXTRA"
 FROM ALL_TAB_COLUMNS A
 LEFT JOIN ALL_COL_COMMENTS C
           ON C.OWNER=A.OWNER
@@ -326,7 +370,7 @@ EOF;
 
             case "Pdo_Mysql":
                 $sql_getColumns=<<<EOF
-SELECT COLUMN_NAME, COLUMN_TYPE AS 'TYPE', IS_NULLABLE AS 'NULLABLE', COLUMN_COMMENT AS 'COMMENT'
+SELECT COLUMN_NAME, COLUMN_TYPE AS 'TYPE', IS_NULLABLE AS 'NULLABLE', COLUMN_COMMENT AS 'COMMENT', "" AS 'EXTRA'
 FROM information_schema.columns
 WHERE TABLE_SCHEMA=?
   AND TABLE_NAME=?
@@ -357,7 +401,7 @@ EOF;
                 // postgresql does not provide access to table comment in information_schema.
                 // see http://www.alberton.info/postgresql_meta_info.html for a workaround.
                 $sql_getColumns=<<<EOF
-SELECT COLUMN_NAME AS "COLUMN_NAME", DATA_TYPE AS "TYPE", IS_NULLABLE AS "NULLABLE"
+SELECT COLUMN_NAME AS "COLUMN_NAME", DATA_TYPE AS "TYPE", IS_NULLABLE AS "NULLABLE", '' AS "COMMENT", '' AS "EXTRA"
 FROM information_schema.columns
 WHERE TABLE_SCHEMA=?
   AND TABLE_NAME=?
@@ -411,18 +455,23 @@ EOF;
                 $cond=$aOtr["EXTRA"];
                 // search column in desc
                 foreach ($desc["columns"] as &$pCol) {
-                    if (empty($pCol["EXTRA"])) {
-                        $pCol["EXTRA"] = "";
-                    }
                     if ($pCol["COLUMN_NAME"]==$col) {
                         $pCol["EXTRA"].=$cond;
+                        break; // column found, can stop searching
                     }
                 }
             }
         }
         
+        $cacheKey = $towner.".".$tname;
+
         // cache le résultat
-        $this->tablesDesc[$towner.".".$tname]=$desc;
+        if (null !== $this->_cache) {
+            $this->_cache->$cacheKey = $desc;
+        } else {
+            $this->tablesDesc[$cacheKey] = $desc;
+        }
+
         
         self::$sqlTime=$sqlTime+microtime(true)-$time;
         return $desc;
@@ -1062,13 +1111,12 @@ EOF;
      * Quote an identifier
      *
      * @param string|array|Zend_Db_expr $ident
-     * @param boolean $auto
      * @return string the quoted string
      */
-    public function quoteIdentifier($ident, boolean $auto)
+    public function quoteIdentifier($ident)
     {
         $time=microtime(true);
-        $ret=$this->_adapter->quoteIdentifier($ident, $auto);
+        $ret=$this->_adapter->quoteIdentifier($ident, false);
         self::$sqlTime+=microtime(true)-$time;
         return $ret;
     }

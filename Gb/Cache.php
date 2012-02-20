@@ -193,6 +193,7 @@ Class Gb_Cache
         }
     }
 
+
     /**
      * Marque l'objet comme expiré, c'est à dire qu'au prochain appel, le cache ne sera pas utilisé
      */
@@ -201,6 +202,16 @@ Class Gb_Cache
         $this->cacheEngine->remove($this->cacheID);
         $this->fExpired=true;
     }
+
+
+    /**
+     * clear le cache
+     */
+    public function clear()
+    {
+        $this->values = array();
+    }
+
 
     /**
      * Attempt to recover the old cache data

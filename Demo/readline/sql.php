@@ -4,11 +4,12 @@
 error_reporting(E_ALL);
 ini_set("display_errors", true);
 
-set_include_path("/home/gbouthen/web/neon/include/".PATH_SEPARATOR.get_include_path());
+//set_include_path("/home/gbouthen/web/neon/include/".PATH_SEPARATOR.get_include_path());
 //set_include_path("/home/gbouthen/web/neon/include/");
 
-require_once "Gb/Util.php";
-require_once "Gb/Db.php";
+require_once "../../Gb/Util.php";
+require_once "../../Gb/Db.php";
+require_once "../../Gb/Cache.php";
 
 $items = array();
 
@@ -54,7 +55,9 @@ if (!is_array($dbParams)) {
 }
 
 $db = new Gb_Db($dbParams);
-
+$cacheId = $dbParams["type"].$dbParams["host"].@$dbParams["port"].@$dbParams["name"];
+$cache = new Gb_Cache($cacheId, 0);
+$db->setCache($cache);
 
 
 init_readline();
@@ -73,9 +76,12 @@ exit(0);
 function init_readline()
 {
     $history=array(
+    "clearcache",
+    "search <string|int>",
+    "searchcol columnname",
+    "maxwidth 0",
     "show databases",
     "show tables",
-    "maxwidth 0",
     );
     
     foreach ($history as $line) {
@@ -184,6 +190,9 @@ function process($text)
         if ( $upper=="SHOW TABLES" || $upper=="DESC" ) {
             $data = $db->getTables();
             $ret .= text_format($data);
+        } elseif ($upper=="CLEARCACHE") {
+            $db->getCache()->clear();
+            $ret .= "Cache cleared\n";
         } elseif (substr($upper, 0, 5)=="DESC ") {
             $tableDesc=$db->getTableDesc(substr($text, 5));
             $ret .= text_format($tableDesc["columns"]);
@@ -194,7 +203,16 @@ function process($text)
         } elseif (substr($upper, 0, 7)=="SEARCH ") {
             $needle = substr($text, 7);
             $aTables = $db->getTables();
+            $nbTables = count($aTables);
+            $runTable = 0;
+            $curTime  = time();
             foreach ($aTables as $table) {
+                // progress report every 2 seconds
+                if (time() >= ($curTime + 2)) {
+                    echo "searching $runTable / $nbTables current: $tableFullName\n";
+                    $curTime = time();
+                }
+
                 $tableFullName = $table["FULL_NAME"];
                 $aTableDesc    = $db->getTableDesc($tableFullName);
                 $aCols         = $aTableDesc["columns"];
@@ -203,19 +221,50 @@ function process($text)
                 $aWhere=null;
                 foreach ($aCols as $aCol) {
                     if ($fNeedleInt && strpos(strtolower($aCol["TYPE"]), "int") !== false) {
-                        $aWhere[] = $aCol["COLUMN_NAME"]." = ".((int)$needle);
+                        $aWhere[] = $db->quoteIdentifier($aCol["COLUMN_NAME"])." = ".((int)$needle);
                     } elseif (!$fNeedleInt && strpos(strtolower($aCol["TYPE"]), "char") !== false) {
-                        $aWhere[] = $aCol["COLUMN_NAME"]." LIKE '%$needle%'";
+                        $aWhere[] = $db->quoteIdentifier($aCol["COLUMN_NAME"])." LIKE '%$needle%'";
                     }
                 }
                 if (count($aWhere)) {
                     $sql = "SELECT * FROM $tableFullName WHERE " . join(" OR ", $aWhere);
                     $data = $db->retrieve_all($sql);
-                    $ret .= $sql."\n";
                     if (count($data)) {
+                        $ret .= $sql."\n";
                         $ret .= text_format($data)."\n";
                     }
                 }
+                $runTable++;
+            } // foreach $aTables
+        } elseif (substr($upper, 0, 10)=="SEARCHCOL ") {
+            $needle = substr($text, 10);
+            $aTables = $db->getTables();
+            $nbTables = count($aTables);
+            $runTable = 0;
+            $curTime  = time();
+
+            foreach ($aTables as $table) {
+                // progress report every 2 seconds
+                if (time() >= ($curTime + 2)) {
+                    echo "searching $runTable / $nbTables current: $tableFullName\n";
+                    $curTime = time();
+                }
+
+                $tableFullName = $table["FULL_NAME"];
+                $aTableDesc    = $db->getTableDesc($tableFullName);
+                $aCols         = $aTableDesc["columns"];
+                $aFks          = $aTableDesc["fks"];
+                foreach ($aCols as $aCol) {
+                    if (stripos($aCol["COLUMN_NAME"], $needle) !== false) {
+                        $ret .= $tableFullName . "." . $aCol["COLUMN_NAME"]."\n";
+                    }
+                }
+                foreach ($aFks as $aCol) {
+                    if (stripos($aCol["FULL_NAME"]."*".$aCol["COLUMN_NAME"], $needle) !== false) {
+                        $ret .= $tableFullName . "." . $aCol["COLUMN_NAME"] . " (foreign key: ". $aCol["FULL_NAME"] .")\n";
+                    }
+                }
+                $runTable++;
             } // foreach $aTables
         } else {
             $data = $db->retrieve_all($text);
