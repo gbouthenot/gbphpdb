@@ -4,9 +4,6 @@
 error_reporting(E_ALL);
 ini_set("display_errors", true);
 
-//set_include_path("/home/gbouthen/web/neon/include/".PATH_SEPARATOR.get_include_path());
-//set_include_path("/home/gbouthen/web/neon/include/");
-
 require_once "../../Gb/Util.php";
 require_once "../../Gb/Db.php";
 require_once "../../Gb/Cache.php";
@@ -36,11 +33,36 @@ if ($argc != 2) {
 }
 $favoriteName = strtoupper($argv[1]);
 
+
+// search the favorites file
+
+// 1 : search in the current directory
 $fname = "favorites.ini";
 if (!is_file($fname) || !is_readable($fname)) {
-    echo "error: unable to read file $fname\n";
-    exit(2);
+    // 2 : then the directory of the php script
+    $fname = dirname(__FILE__) . DIRECTORY_SEPARATOR . "favorites.ini";
+    if (!is_file($fname) || !is_readable($fname)) {
+        // 3 : then in the user home directory
+        $fname = getenv('HOME') . DIRECTORY_SEPARATOR . ".sqlfavorites";
+        if (!is_file($fname) || !is_readable($fname)) {
+            // 4 : then in the system /etc
+            $fname = DIRECTORY_SEPARATOR . "etc" . DIRECTORY_SEPARATOR . "sqlfavorites";
+            if (!is_file($fname) || !is_readable($fname)) {
+                echo <<<EOF
+error: unable to read favorites file. search order is :
+ - favorites.ini (in cwd)
+ - favorites.ini (in script path)
+ - ~/.sqlfavorites
+ - /etc/sqlfavorites
+
+EOF;
+                exit(2);
+            }
+        }
+    }
 }
+
+
 
 $aFavorites = parse_ini_file($fname, true);
 if (!isset($aFavorites[$favoriteName])) {
@@ -48,11 +70,14 @@ if (!isset($aFavorites[$favoriteName])) {
     exit(2);
 }
 
+
+
 $dbParams = $aFavorites[$favoriteName];
 if (!is_array($dbParams)) {
     echo "error: favorite $favoriteName in file $fname is not correctly defined\n";
     exit(2);
 }
+
 
 $db = new Gb_Db($dbParams);
 $cacheId = $dbParams["type"].$dbParams["host"].@$dbParams["port"].@$dbParams["name"];
