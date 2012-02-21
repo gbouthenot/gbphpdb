@@ -88,6 +88,7 @@ $db->setCache($cache);
 init_readline();
 $aOptions["pager"]="/usr/bin/less -niSF";
 $aOptions["pager"]="mcview";
+$aOptions["format"]="text";
 $aOptions["nopager"]=false;
 $aOptions["tmpfile"]=tempnam("", "sql");
 $aOptions["maxwidth"]=30;
@@ -105,6 +106,7 @@ function init_readline()
     "search <string|int>",
     "searchcol columnname",
     "maxwidth 0",
+    "format <text|csv>",
     "show databases",
     "show tables",
     );
@@ -136,6 +138,10 @@ function process_main()
             $aOptions["nopager"]=true;
         } elseif ($linelow=="pager") {
             $aOptions["nopager"]=false;
+        } elseif ($linelow=="format text") {
+            $aOptions["format"] = "text";
+        } elseif ($linelow=="format csv") {
+            $aOptions["format"] = "csv";
         } elseif (substr($linelow, 0, 9)=="maxwidth ") {
             $maxwidth = substr($line, 9);
             if (is_numeric($maxwidth)) {
@@ -310,8 +316,18 @@ function text_format($data)
     global $aOptions;
     
     $ret = "";
-    $ret .= Gb_String::formatTable($data, "text", $aOptions["maxwidth"], "");
-    $ret .= count($data)." lines returned.";
+
+    switch (strtoupper($aOptions["format"])) {
+        case "TEXT":
+            $ret .= Gb_String::formatTable($data, "text", $aOptions["maxwidth"], "");
+            $ret .= count($data)." lines returned.";
+            break;
+
+        case "CSV":
+            $ret .= Gb_String::arrayToCsv($data);
+            break;
+    }
+
     return $ret;
 }
 
