@@ -108,7 +108,8 @@ class Gb_Mafu
         if (!($this->fServerConfigured()) || $ret['finished']) {
             return $ret;
         }
-    
+
+        if (0){function apc_fetch(){}}
         // retrieve the upload data from APC
         $status = apc_fetch($this->apcPrefix() . $id);
         if ( !is_array($status) ) {

@@ -25,6 +25,12 @@ function load_extension($name)
 }
 
 
+if(0){
+    // prevent IDE to warn about undefined function
+    function readline_add_history(){}
+    function readline(){}
+}
+
 
 // procces command line arguments
 if ($argc != 2) {
@@ -197,7 +203,7 @@ function pager($text)
         
         // traitement
         $cmd=$aOptions["pager"]." $tmpfname";
-        $abc=passthru($cmd, &$int);
+        passthru($cmd);
         
         unlink($tmpfname);
     }
@@ -238,13 +244,14 @@ function process($text)
             $runTable = 0;
             $curTime  = time();
             foreach ($aTables as $table) {
+                $tableFullName = $table["FULL_NAME"];
+
                 // progress report every 2 seconds
                 if (time() >= ($curTime + 2)) {
                     echo "searching $runTable / $nbTables current: $tableFullName\n";
                     $curTime = time();
                 }
 
-                $tableFullName = $table["FULL_NAME"];
                 $aTableDesc    = $db->getTableDesc($tableFullName);
                 $aCols         = $aTableDesc["columns"];
                 $fNeedleInt    = is_numeric($needle);

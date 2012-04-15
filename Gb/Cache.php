@@ -95,6 +95,7 @@ Class Gb_Cache
      *
      * @param string $cacheID
      * @param integer|string|array[optional] $ttl durée de vie en secondes, ou fichier de référence. Ou array de durée et fichiers. Par défaut 10 secondes.
+     * @param integer $fExpired
      * @param boolean $fActivated use cache (useful for debuging)
      */
     public function __construct($cacheID, $ttl=10, $fExpired=false, $fActivated=true)
