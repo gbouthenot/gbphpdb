@@ -41,6 +41,9 @@ class Gb_Log
     public static $loglevel_file=self::LOG_WARNING;
     public static $loglevel_showuser=self::LOG_CRIT;
     
+    public static $file_prepend = "";
+    public static $file_append  = "";
+    
     protected static $aLevels=array(
         1=>"tr         ",
         2=>"dmp        ",
@@ -120,6 +123,50 @@ class Gb_Log
         }
         return self::$logFilename;
     }
+    
+    
+    
+    
+    /**
+     * Positionne le nom du fichier de log
+     *
+     * @throws Gb_Exception
+     */
+    public static function setLogFilename($fn)
+    {
+        $dirname = dirname($fn);
+        if (!is_dir($dirname)) {
+            throw new Gb_Exception("cannot log : directory does not exist");
+        }
+        $dirname = realpath($dirname);
+        $fullpath = $dirname . DIRECTORY_SEPARATOR . basename($fn);
+        if (file_exists($fullpath) && !is_writable($fullpath)) {
+            throw new Gb_Exception("cannot write log to this file");
+        }
+        if (!file_exists($fullpath)) {
+            if (!is_writable($dirname)) {
+                throw new Gb_Exception("cannot wite log to this directory : $dirname");
+            }
+        }
+        self::$logFilename = $fullpath;
+    }
+    
+
+    
+    protected static $installed = false;
+    public static function installErrorHandlers() {
+        if (false === self::$installed) {
+            set_error_handler(array(__CLASS__, "errorHandler"));
+            set_exception_handler(array(__CLASS__, "exceptionhandler"));
+            register_shutdown_function(array(__CLASS__, "shutdownFunction"));
+            ini_set("display_errors", false);
+            self::$installed = true;
+        }
+    }
+    
+    
+    
+    
   
   /**
    * Loggue dans un fichier
@@ -381,13 +428,22 @@ class Gb_Log
 
       $sLog.=$sLevel." ";
 
-        $plugins=Gb_Glue::getPlugins("Gb_Log");
-        foreach ($plugins as $plugin) {
-            if (is_callable($plugin[0])) {
-                $sLog.=call_user_func_array($plugin[0], $plugin[1]);
-                $sLog.=" ";
-            }
-        }
+      $plugins=Gb_Glue::getPlugins("Gb_Log");
+      foreach ($plugins as $plugin) {
+          if (is_callable($plugin[0])) {
+              $plug = call_user_func_array($plugin[0], $plugin[1]); 
+              if (strlen($plug)) {
+                  $sLog .= $plug . " ";
+              }
+          }
+      }
+      
+      if (strlen(self::$file_prepend)) {
+          $text = self::$file_prepend . $text;
+      }
+      if (strlen(self::$file_append)) {
+          $text = $text . self::$file_append;
+      }
       
       if (strlen($REMOTE_USER))
         $sLog.="user=".$REMOTE_USER." ";
@@ -477,41 +533,55 @@ class Gb_Log
 
 
 
-
-
-
-public static function myErrorHandler($errno, $errstr, $errfile, $errline)
-{echo "exit";exit(1);
-    if (!(error_reporting() & $errno)) {
-        // This error code is not included in error_reporting
-        return;
+    public static function errorHandler($errno, $errstr, $errfile, $errline) {
+        if (in_array($errno, array(E_WARNING, E_NOTICE, E_USER_WARNING, E_USER_NOTICE, E_USER_DEPRECATED, E_DEPRECATED))) {
+            // is only a warning
+            $text = "warning: $errstr";
+            $text .= ", in file $errfile, line $errline";
+            self::writelog(self::LOG_WARNING, $text);
+            return false;
+        } else {
+            // is an error
+            header("HTTP/1.0 500 Application Error");
+            $text = $errstr;
+            echo $text;
+            $text = "error: $text, in file $errfile, line $errline";
+            self::writelog(self::LOG_ERROR, $text);
+        }
     }
 
-    switch ($errno) {
-    case E_USER_ERROR:
-        echo "<b>My ERROR</b> [$errno] $errstr<br />\n";
-        echo "  Fatal error on line $errline in file $errfile";
-        echo ", PHP " . PHP_VERSION . " (" . PHP_OS . ")<br />\n";
-        echo "Aborting...<br />\n";
-        exit(1);
-        break;
 
-    case E_USER_WARNING:
-        echo "<b>My WARNING</b> [$errno] $errstr<br />\n";
-        break;
 
-    case E_USER_NOTICE:
-        echo "<b>My NOTICE</b> [$errno] $errstr<br />\n";
-        break;
 
-    default:
-        echo "Unknown error type: [$errno] $errstr<br />\n";
-        break;
+    public static function shutdownFunction() {
+        $error = error_get_last();
+        if (null !== $error && in_array($error['type'], array(E_CORE_WARNING, E_COMPILE_WARNING))) {
+            // these warnings cannot be handled by errorHandler
+            $text = "shutdown warning: $errstr, in file $errfile, line $errline";
+            self::writelog(self::LOG_WARNING, $text);
+        }
+        if (null !== $error && in_array($error['type'], array(E_ERROR, E_PARSE, E_CORE_ERROR, E_COMPILE_ERROR))) {
+            // these errors cannot be handled by errorHandler
+            $errno  = $error["type"];
+            $errstr = $error["message"];
+            $errfile = $error["file"];
+            $errline = $error["line"];
+            header("HTTP/1.0 500 Application Error");
+            $text = $errstr;
+            echo $text;
+            $text = "fatal error: $text, in file $errfile, line $errline";
+            self::writelog(self::LOG_ERROR, $text);
+        }
     }
-
-    /* Don't execute PHP internal error handler */
-    return true;
-}
+    
+    
+    
+    public static function exceptionHandler(Exception $e) {
+        header("HTTP/1.0 500 Application Exception");
+        echo $e->getMessage();
+        self::writelog(self::LOG_ERROR, $e);
+    }
+  
 
 
 
