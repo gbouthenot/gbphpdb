@@ -155,6 +155,7 @@ abstract class Gb_Form_Elem_Abstract
             
             if ("Gb_Form_Elem_Print" === get_class($this)) {
                 //return $preInput.$value.$postInput;
+                $this->HtmlRendered(true);
                 return $value;
             }
 
