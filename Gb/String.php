@@ -458,7 +458,38 @@ class Gb_String
             }
             $ret.=$rowsep;
         } elseif ($format=="html") {
+            reset($array);
+            $firstrowkeys=array_keys(current($array));
+
+            //
+            // OUTPUT FIRST ROW
+            //
+            $rowhead = "<thead><tr>";
+            if ($fShowIndex) {
+                $rowhead .= "<th>index</th>";
+            }
+            foreach ($firstrowkeys as $number=>$keyname) {
+                $rowhead .= "<th>$keyname</th>";
+            }
+            $rowhead .= "</tr></thead>";
             
+            //
+            // OUTPUT LINES
+            //
+            $tbody = "";
+            foreach ($array as $indexname=>$line) {
+                $tbody .= "<tr>";
+                if ($fShowIndex) {
+                    $tbody .= "<td>$indexname</td>\n";
+                }
+                foreach ($firstrowkeys as $number=>$keyname) {
+                    $val = htmlspecialchars($line[$keyname]);
+                    $tbody .= "<td>$val</td>";;
+                }
+                $tbody .= "</tr>\n";
+            }
+            
+            $ret = "<table>\n$rowhead\n<tbody>\n$tbody</tbody>\n</table>\n";
         }
         
         return $ret;

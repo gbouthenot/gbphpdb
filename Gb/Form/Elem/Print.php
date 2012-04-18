@@ -21,7 +21,7 @@ class Gb_Form_Elem_Print extends Gb_Form_Elem_Abstract
     public function __construct($name, $text)
     {
         $availableParams=array();
-        $aParams=array("javascriptEnabled"=>false, "container"=>"", "value"=>$text, "backendCol"=>false);
+        $aParams=array("javascriptEnabled"=>false, "value"=>$text, "backendCol"=>false);
         return parent::__construct($name, $availableParams, $aParams);
     }
     

@@ -153,6 +153,11 @@ abstract class Gb_Form_Elem_Abstract
             if ($this->disabled()) {$inInput.=" disabled='disabled' "; }
             if ($this->fReadOnly()) {$inInput.=" readonly='readonly' "; }
             
+            if ("Gb_Form_Elem_Print" === get_class($this)) {
+                //return $preInput.$value.$postInput;
+                return $value;
+            }
+
             $inputjs=$this->javascriptEnabled()?$this->getInputJavascript():"";
             $htmlInput=$this->getInput($value, $inInput, $inputjs);
             

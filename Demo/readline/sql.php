@@ -86,7 +86,7 @@ if (!is_array($dbParams)) {
 
 
 $db = new Gb_Db($dbParams);
-$cacheId = $dbParams["type"].$dbParams["host"].@$dbParams["port"].@$dbParams["name"];
+$cacheId = $dbParams["type"].@$dbParams["host"].@$dbParams["port"].@$dbParams["name"];
 $cache = new Gb_Cache($cacheId, 0);
 $db->setCache($cache);
 

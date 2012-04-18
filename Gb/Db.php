@@ -272,6 +272,16 @@ EOF;
                         ORDER BY TABLE_SCHEMA, TABLE_NAME
 EOF;
                 break;
+
+                case "Pdo_Sqlite":
+                    $sql_getTablesName=<<<EOF
+                        SELECT tbl_name AS "FULL_NAME"
+                        FROM sqlite_master
+                        WHERE type="table"
+                        ORDER BY tbl_name
+EOF;
+                    break;
+                
             }
 
 //            $this->tables=$this->retrieve_all($sql_getTablesName, array(), "", "FULL_NAME");
@@ -319,7 +329,7 @@ EOF;
             }
         }
 
-        $sql_getColumns=$sql_getFKs=$sql_getOtr="";
+        $sql_getColumns = $sql_getPK = $sql_getFKs = $sql_getOtr = "";
         
         switch($this->driver) {
             case "Pdo_Oci":
