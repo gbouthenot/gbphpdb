@@ -145,7 +145,7 @@ class Gb_Log
         }
         if (!file_exists($fullpath)) {
             if (!is_writable($dirname)) {
-                throw new Gb_Exception("cannot wite log to this directory : $dirname");
+                throw new Gb_Exception("cannot write log to this directory : $dirname");
             }
         }
         self::$logFilename = $fullpath;

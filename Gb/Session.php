@@ -67,6 +67,24 @@ Class Gb_Session
         return self::$sessionDir;
     }
     
+
+    /**
+     * Positionne le répertoire des sessions
+     *
+     * @throws Gb_Exception
+     */
+    public static function setSessionDir($fn)
+    {
+        $dirname = realpath($fn);
+        if (!is_dir($dirname)) {
+            throw new Gb_Exception("cannot use this directory for sessions : directory does not exist");
+        }
+        if (!is_writable($dirname)) {
+            throw new Gb_Exception("cannot write session to this directory : $dirname");
+        }
+        session_save_path($dirname);
+        self::$sessionDir = $dirname;
+    }
     
     
     
