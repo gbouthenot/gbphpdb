@@ -175,7 +175,7 @@ class Gb_Ldap
         
         $connexion= ldap_connect($server, $port);
         if ($connexion === FALSE) {
-            throw new Gb_Exception("Cannot connect to $server, port $port, errno=".ldap_errno().", errmsg=".ldap_error());
+            throw new Gb_Exception("Cannot connect to $server, port $port, errno=".ldap_errno($connexion).", errmsg=".ldap_error($connexion));
         }
         
         self::$_connexion = $connexion;
@@ -190,7 +190,7 @@ class Gb_Ldap
             $res = ldap_bind(self::$_connexion);
         }
         if (!$res) {
-            throw new Gb_Exception("Cannot bind, errno=".ldap_errno().", errmsg=".ldap_error());
+            throw new Gb_Exception("Cannot bind, errno=".ldap_errno($res).", errmsg=".ldap_error($res));
         }
     }
     
