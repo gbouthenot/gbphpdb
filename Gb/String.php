@@ -272,12 +272,14 @@ class Gb_String
     
     
     /**
-     * Transform an array to CSV format. Replace newlines by " - ".
+     * Transform an array into CSV format. Replace newlines by " - ".
+     * Decodes UTF8 unless $fRawMode is set.
      *
-     * @param array $data array(array("field"=>$value, ...), ...) 
+     * @param array   $data        array(array("field"=>$value, ...), ...) 
+     * @param boolean $fEnableUtf8 set to true for sending UTF8 (default:false:do utf8_decode)
      * @return string
      */
-    public static function arrayToCsv(array $data)
+    public static function arrayToCsv(array $data, $fRawMode=null)
     {
         if (count($data)==0) {
             return "";
@@ -307,7 +309,11 @@ class Gb_String
             $ret.="\n";
         }
         
-        return $ret;
+        if (true === $fEnableUtf8) {
+            return $ret;
+        } else {
+            return utf8_decode($ret);
+        }
     }
 
     /**
