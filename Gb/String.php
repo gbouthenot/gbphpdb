@@ -279,7 +279,7 @@ class Gb_String
      * @param boolean $fEnableUtf8 set to true for sending UTF8 (default:false:do utf8_decode)
      * @return string
      */
-    public static function arrayToCsv(array $data, $fRawMode=null)
+    public static function arrayToCsv(array $data, $fEnableUtf8=null)
     {
         if (count($data)==0) {
             return "";
