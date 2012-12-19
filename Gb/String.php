@@ -375,7 +375,7 @@ class Gb_String
         $format=strtolower($format);
         $ret="";
         if (count($array)==0) {
-            return "";        
+            return "";
         }
         if (null === $maxColLen) {
             $maxColLen = 40;
@@ -414,7 +414,7 @@ class Gb_String
             foreach ($array as $indexname=>$line) {
                 $max["index"]=max($max["index"], mb_strlen($indexname, "UTF-8"));
                 foreach ($firstrowkeys as $number=>$keyname) {
-                    $max[$number]=max($max[$number], mb_strlen(str_replace(array("\r","\n","\0"), array("\\r", "\\n", "\\0"), $line[$keyname])), "UTF-8");
+                    $max[$number]=max($max[$number], mb_strlen(str_replace(array("\r","\n","\0"), array("\\r", "\\n", "\\0"), $line[$keyname]), "UTF-8"));
                     if ($maxColLen) {
                         $max[$number] = min($max[$number], $maxColLen);
                     }
@@ -435,7 +435,7 @@ class Gb_String
                 $rowsep.="+";
                 $rowhead.="|".$pad;
                 $rowsep.=str_repeat("-", $indexlen+2*strlen($pad));
-                $rowhead.=str_pad("index", $indexlen, " ", STR_PAD_BOTH).$pad;          
+                $rowhead.=str_pad("index", $indexlen, " ", STR_PAD_BOTH).$pad;
             }
             foreach ($firstrowkeys as $number=>$keyname) {
                 $rowsep.="+";

@@ -98,6 +98,7 @@ $aOptions["format"]="text";
 $aOptions["nopager"]=false;
 $aOptions["tmpfile"]=tempnam("", "sql");
 $aOptions["maxwidth"]=30;
+$aOptions["logfile"]="";
 process_main();
 exit(0);
 
@@ -112,6 +113,7 @@ function init_readline()
     "search <string|int>",
     "searchcol columnname",
     "maxwidth 0",
+    "logfile /tmp/output.txt",
     "format <text|csv>",
     "show databases",
     "show tables",
@@ -155,10 +157,21 @@ function process_main()
                 echo "maxwidth set to $maxwidth\n";
             } 
         } elseif (substr($linelow, 0, 8)=="maxwidth") {
-                echo "maxwidth = ".$aOptions["maxwidth"]."\n";
+            echo "maxwidth = ".$aOptions["maxwidth"]."\n";
+        } elseif (substr($linelow, 0, 7)=="logfile") {
+            $arg = trim(substr($line, 8));
+            if (strlen($arg) == 0) {
+                $aOptions["logfile"] = "";
+                echo "no logfile\n";
+            } else {
+                $aOptions["logfile"] = $arg;
+                echo "log output set to file " . $arg . "\n";
+            }
         } else {
+            logfile(">" . $line);
             $ret=process($line);
     
+            logfile($ret);
             pager($ret);
         }
     } while (1);
@@ -211,7 +224,17 @@ function pager($text)
 
 
 
+function logfile($text)
+{
+    global $aOptions;
 
+    $logfile = $aOptions["logfile"];
+    if (strlen($logfile)) {
+        $handle = fopen($logfile, "a");
+        fwrite($handle, $text . "\n");
+        fclose($handle);
+    }
+}
 
 
 
