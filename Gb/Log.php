@@ -295,7 +295,7 @@ class Gb_Log
     if (is_callable($fName, false, $sCallName)) // $sCallName reçoit le nom imprimable de la fonction, utile pour les objets
       $ret=call_user_func_array($fName, $aParam);
     else
-      throw(new Gb_Exception("Fonction inexistante"));
+      throw new Gb_Exception("Fonction inexistante");
 
     $time=microtime(true)-$prevtime;
     $sParam=substr(self::dump_array($aParam, "%s"), 0, 50);
