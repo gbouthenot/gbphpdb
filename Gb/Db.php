@@ -1142,7 +1142,7 @@ EOF;
     {
         $time=microtime(true);
         $this->initialize();
-        $ret=$this->_adapter->lastInsertId($tableName, $primaryKey);
+        $ret=(int) $this->_adapter->lastInsertId($tableName, $primaryKey);
         self::$sqlTime+=microtime(true)-$time;
         return $ret;
     }
@@ -1157,6 +1157,7 @@ EOF;
      *
      * @param string $tableName
      * @param string[optionel] $colName
+     * @return integer
      * @throws Gb_Exception
      */
     public function sequenceNext($tableName, $colName="id")
@@ -1171,7 +1172,7 @@ EOF;
             throw new Gb_Exception("erreur sequenceNext($tableName.$colName)");
         }
         self::$sqlTime=$sqlTime+microtime(true)-$time;
-        return $this->_adapter->lastInsertId();
+        return (int) $this->_adapter->lastInsertId();
     }
 
     /**
