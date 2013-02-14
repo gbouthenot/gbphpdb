@@ -324,22 +324,24 @@ Class Gb_Util
             $fnameOut.="-".str_replace(":", "", Gb_String::date_iso()).".csv";
         }
 
-        $len=@filesize($fnameIn);
-        $fhandle=@fopen($fnameIn, "rb");
-        if ($fhandle===FALSE || $len===FALSE) {
-            throw new Gb_Exception("File $fnameIn not found");
+        if (!file_exists($fnameIn) && !is_file($fnameIn) || !is_readable($fnameIn) {
+            throw new Gb_Exception("File $fnameIn not found or not readable");
         }
         
+        $len=@filesize($fnameIn);
         
         ob_end_clean();
+        header('Content-Description: File Transfer');
         header("Content-Type: application/octet-stream");
         header("Content-Length: $len");
         header('Content-Disposition: attachment; filename="'.addslashes($fnameOut).'"');
         header("Content-Encoding: binary");
         header("Connection: close");
         header("Vary: ");
-        fpassthru($fhandle);
-        fclose($fhandle);
+        $ret = readfile($fhandle);
+        if (false === $ret) {
+            throw new Gb_Exception("Error sending $fnameIn");
+        }
         exit(0);
     }
     
