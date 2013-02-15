@@ -324,7 +324,7 @@ Class Gb_Util
             $fnameOut.="-".str_replace(":", "", Gb_String::date_iso()).".csv";
         }
 
-        if (!file_exists($fnameIn) && !is_file($fnameIn) || !is_readable($fnameIn) {
+        if (!file_exists($fnameIn) && !is_file($fnameIn) || !is_readable($fnameIn)) {
             throw new Gb_Exception("File $fnameIn not found or not readable");
         }
         
