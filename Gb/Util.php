@@ -338,7 +338,7 @@ Class Gb_Util
         header("Content-Encoding: binary");
         header("Connection: close");
         header("Vary: ");
-        $ret = readfile($fhandle);
+        $ret = readfile($fnameIn);
         if (false === $ret) {
             throw new Gb_Exception("Error sending $fnameIn");
         }
