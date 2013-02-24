@@ -313,9 +313,10 @@ Class Gb_Util
      * @param string $fnameIn Nom du fichier à envoyer
      * @param string[optional] $fnameOut nom du fichier qui apparait à l'enregistrement (par défaut basename de $fnameIn)
      * @param boolean[optional] $fAddTimestamp true si on ajoute le timestamp au nom de fichier
+     * @param boolean[optional] $fDontExist (default false)
      * @throws Gb_Exception
      */
-    public static function sendFile($fnameIn, $fnameOut=null, $fAddTimestamp=null)
+    public static function sendFile($fnameIn, $fnameOut=null, $fAddTimestamp=null, $fDontExit=null)
     {
         if ($fnameOut===null) {
             $fnameOut=basename($fnameIn);
@@ -330,7 +331,9 @@ Class Gb_Util
         
         $len=@filesize($fnameIn);
         
-        ob_end_clean();
+        // remove output buffering
+        while (ob_get_level()) { ob_end_clean(); }
+
         header('Content-Description: File Transfer');
         header("Content-Type: application/octet-stream");
         header("Content-Length: $len");
@@ -342,7 +345,9 @@ Class Gb_Util
         if (false === $ret) {
             throw new Gb_Exception("Error sending $fnameIn");
         }
-        exit(0);
+        if (!$fDontExit) {
+            exit(0);
+        }
     }
     
 }
