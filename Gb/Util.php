@@ -75,8 +75,14 @@ Class Gb_Util
   {
     Gb_Glue::setStartTime();
 
-    if (Gb_Response::$preventGzip==0)
-      ob_start("ob_gzhandler");
+   /*
+     // removed, cause message conflict with output_gzip
+     // Warning: ob_start(): output handler 'ob_gzhandler' conflicts with 'zlib output compression'
+     // Notice: ob_start(): failed to create buffer
+     if (Gb_Response::$preventGzip==0) {
+       ob_start("ob_gzhandler");
+     }
+   */
 
     error_reporting(E_ERROR);
     if ( Gb_Util::$debug || (Gb_Request::getFormGet("debug") && !self::$forbidDebug) )
