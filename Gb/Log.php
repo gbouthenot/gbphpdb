@@ -198,9 +198,9 @@ class Gb_Log
         $sLog.=" ";
       }
 
-      if (strlen($sLog)<40) {
-        $sLog.=substr("                                                       ",0,40-strlen($sLog));
-      }
+      // padding et limite à 44 caractères
+      $sLog=substr(str_pad($sLog, 44),0, 44);
+
       if (isset($_SESSION[__CLASS__."_uniqId"])) {
         $sLog.="uid=".$_SESSION[__CLASS__."_uniqId"]." ";
       }
@@ -423,8 +423,8 @@ class Gb_Log
       if (strlen($HTTP_X_FORWARDED_FOR))          $sLog.="/".$HTTP_X_FORWARDED_FOR;
       $sLog.=" ";
 
-      // padding et limite à 40 caractères
-      $sLog=substr(str_pad($sLog, 40),0, 40);
+      // padding et limite à 44 caractères
+      $sLog=substr(str_pad($sLog, 44),0, 44);
 
       $sLog.=$sLevel." ";
 
