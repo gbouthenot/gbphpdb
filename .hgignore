@@ -1,3 +1,6 @@
 syntax: glob
 
 Demo/readline/favorites.ini
+.buildpath/
+.project/
+.settings/
