@@ -178,7 +178,11 @@ class Gb_Log
   {
     $REMOTE_USER="";          if (isset($_SERVER["REMOTE_USER"]))              $REMOTE_USER=         $_SERVER["REMOTE_USER"];
     $REMOTE_ADDR="";          if (isset($_SERVER["REMOTE_ADDR"]))              $REMOTE_ADDR=         $_SERVER["REMOTE_ADDR"];
-    $HTTP_X_FORWARDED_FOR=""; if (isset($_SERVER["HTTP_X_FORWARDED_FOR"]))     $HTTP_X_FORWARDED_FOR=$_SERVER["HTTP_X_FORWARDED_FOR"];
+    $HTTP_X_FORWARDED_FOR=""; if (isset($_SERVER["HTTP_X_FORWARDED_FOR"])) {
+      if ($HTTP_X_FORWARDED_FOR != $REMOTE_ADDR) {
+        $HTTP_X_FORWARDED_FOR = $_SERVER["HTTP_X_FORWARDED_FOR"];
+      }
+    }
 
     if (!is_string($sText)) {
       $sText=self::dump($sText);
@@ -398,6 +402,12 @@ class Gb_Log
     $REMOTE_USER="";          if (isset($_SERVER["REMOTE_USER"]))          $REMOTE_USER=         $_SERVER["REMOTE_USER"];
     $REMOTE_ADDR="";          if (isset($_SERVER["REMOTE_ADDR"]))          $REMOTE_ADDR=         $_SERVER["REMOTE_ADDR"];
     $HTTP_X_FORWARDED_FOR=""; if (isset($_SERVER["HTTP_X_FORWARDED_FOR"])) $HTTP_X_FORWARDED_FOR=$_SERVER["HTTP_X_FORWARDED_FOR"];
+    $HTTP_X_FORWARDED_FOR=""; if (isset($_SERVER["HTTP_X_FORWARDED_FOR"])) {
+      if ($_SERVER["HTTP_X_FORWARDED_FOR"] != $REMOTE_ADDR) {
+        $HTTP_X_FORWARDED_FOR = $_SERVER["HTTP_X_FORWARDED_FOR"];
+      }
+    }
+
     $date=date("dm His ");
 
     if ($level>=self::$loglevel_showuser) {
