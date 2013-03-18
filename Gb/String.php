@@ -1,7 +1,7 @@
 <?php
 /**
  * Gb_String
- * 
+ *
  * @author Gilles Bouthenot
  * @version $Revision$
  * @Id $Id$
@@ -34,7 +34,7 @@ class Gb_String
         if ($throw) { throw new Gb_Exception(__CLASS__." r".$revision."<r".$mini); }
         return false;
     }
-    
+
     /**
      * Cette classe ne doit pas être instancée !
      */
@@ -116,7 +116,7 @@ class Gb_String
         }
         return $out;
     }
-    
+
     /**
      * conversion en majuscule, charset ASCII, enlève les accents
      *
@@ -127,7 +127,7 @@ class Gb_String
     {
         return strtoupper(self::removeAccents($s));
     }
-    
+
     /**
      * convert to pure ASCII, (remove accents)
      *
@@ -153,22 +153,22 @@ class Gb_String
         // function from http://www.weirdog.com/blog/php/supprimer-les-accents-des-caracteres-accentues.html
         // htmlentities it
         $s = htmlentities($s, ENT_NOQUOTES, "UTF-8");
-    
-        
+
+
         $s = preg_replace('#&([A-za-z])(?:acute|cedil|circ|grave|orn|ring|slash|th|tilde|uml);#', '\1', $s);
         $s = str_replace("&euro;", "EUR", $s);
         $s = preg_replace('#&([A-za-z]{2})(?:lig);#', '\1', $s); // pour les ligatures e.g. '&oelig;'
         $s = html_entity_decode($s, ENT_NOQUOTES, "UTF-8");
 //        $s = preg_replace('#&[^;]+;#', '', $s); // supprime les autres caractères
 
-        // convert it back to the original charset 
+        // convert it back to the original charset
         if ($source !== "UTF-8") {
                 $s=mb_convert_encoding($s, $source, "UTF-8");
         }
-        
+
         return $s;
     }
-    
+
 
   /**
    * converti, si nécessaire une date au format YYYY-MM-DD en DD/MM/YYYY
@@ -232,7 +232,7 @@ class Gb_String
         } elseif (!is_numeric($time)) {
             $time = self::str_to_time($time);
         }
-        
+
         if (($start !== null) && (!is_numeric($start))) {
             $start = Gb_String::str_to_time($start);
         }
@@ -248,7 +248,7 @@ class Gb_String
             return 0;
         }
     }
-    
+
     /**
      * as php's explode but returns array() instead of array("") if the input string is empty
      *
@@ -269,13 +269,13 @@ class Gb_String
         }
         return $exp;
     }
-    
-    
+
+
     /**
      * Transform an array into CSV format. Replace newlines by " - ".
      * Decodes UTF8 unless $fRawMode is set.
      *
-     * @param array   $data        array(array("field"=>$value, ...), ...) 
+     * @param array   $data        array(array("field"=>$value, ...), ...)
      * @param boolean $fEnableUtf8 set to true for sending UTF8 (default:false:do utf8_decode)
      * @return string
      */
@@ -285,7 +285,7 @@ class Gb_String
             return "";
         }
         $ret="";
-        
+
         // 1ère ligne du csv: les entêtes
         $firstligne=$data[0];
         foreach(array_keys($firstligne) as $ind) {
@@ -293,7 +293,7 @@ class Gb_String
             $ret .= "\"".$ind."\";";
         }
         $ret.="\n";
-        
+
         foreach($data as $ligne) {
             foreach(array_keys($firstligne) as $ind) {
                 $col = $ligne[$ind];
@@ -308,7 +308,7 @@ class Gb_String
             }
             $ret.="\n";
         }
-        
+
         if (true === $fEnableUtf8) {
             return $ret;
         } else {
@@ -324,10 +324,10 @@ class Gb_String
     {
         $days=    floor($time/86400);
         if ($days) { $time -= $days*86400; }
-        
+
         $hours=   floor($time/3600);
         if ($hours) { $time -= $hours*3600; }
-        
+
         $minutes= floor($time/60);
         if ($minutes) { $time -= $minutes*60; }
 
@@ -340,7 +340,7 @@ class Gb_String
         $time_format .= ((!$days)&&(!$hours))?($seconds."s "):("");
         return trim($time_format);
     }
-    
+
     /**
      * Format a number of bytes in Kib/Mib/Gib/Tib
      * @return string
@@ -358,21 +358,27 @@ class Gb_String
         } else {
             $size_format=number_format($bytestotal, 0)." B";
         }
-        return $size_format;        
+        return $size_format;
     }
 
     /**
      * Format an array
      *
      * @param array $array
-     * @param string $format text|html
+     * @param string $format[optional] text(default)|html|csv
      * @param integer[optional] maxColLen default:40, 0 for no limit
      * @param string[optional] string to use for padding (default " ", set to "" for no padding)
      * @return string
      */
-    public static function formatTable(array $array, $format, $maxColLen=null, $pad=null)
+    public static function formatTable(array $array, $format=null, $maxColLen=null, $pad=null)
     {
+        if (null === $format) { $format = "text"; }
         $format=strtolower($format);
+
+        if ('csv' === $format) {
+            return self::arrayToCsv($array);
+        }
+
         $ret="";
         if (count($array)==0) {
             return "";
@@ -398,7 +404,7 @@ class Gb_String
             //
             reset($array);
             $firstrowkeys=array_keys(current($array));
-                        
+
             // get the max length of each column
             $max=array();
             // first the column names
@@ -409,7 +415,7 @@ class Gb_String
                     $max[$number] = min($max[$number], $maxColLen);
                 }
             }
-            
+
             // then the column values
             foreach ($array as $indexname=>$line) {
                 $max["index"]=max($max["index"], mb_strlen($indexname, "UTF-8"));
@@ -420,12 +426,12 @@ class Gb_String
                     }
                 }
             }
-            
+
             if ($maxColLen) {
                 $max["index"] = min($max["index"], $maxColLen);
             }
             $indexlen=$max["index"];
-            
+
             //
             // OUTPUT FIRST ROW
             //
@@ -443,11 +449,11 @@ class Gb_String
 
                 $len=$max[$number];
                 $rowsep.=str_repeat("-", $len+2*strlen($pad));
-                $rowhead.=self::mb_str_pad(mb_substr($keyname, 0, $len, "UTF-8"), $len, " ", STR_PAD_BOTH, "UTF-8").$pad;          
+                $rowhead.=self::mb_str_pad(mb_substr($keyname, 0, $len, "UTF-8"), $len, " ", STR_PAD_BOTH, "UTF-8").$pad;
             }
             $rowsep.="+\n";
             $rowhead.="|\n";
-            
+
             //
             // OUTPUT LINES
             //
@@ -478,7 +484,7 @@ class Gb_String
                 $rowhead .= "<th>$keyname</th>";
             }
             $rowhead .= "</tr></thead>";
-            
+
             //
             // OUTPUT LINES
             //
@@ -494,10 +500,10 @@ class Gb_String
                 }
                 $tbody .= "</tr>\n";
             }
-            
+
             $ret = "<table>\n$rowhead\n<tbody>\n$tbody</tbody>\n</table>\n";
         }
-        
+
         return $ret;
     }
 
@@ -519,8 +525,8 @@ class Gb_String
         }
         return $text3;
     }
-    
-    
+
+
     /**
      * Idem realpath, mais fonctionne aussi sur fichier non existant
      * Inspiré par Sven Arduwie http://fr.php.net/manual/fr/function.realpath.php#84012 , mais retourne chemin absolu
@@ -541,7 +547,7 @@ class Gb_String
             }
         }
         return DIRECTORY_SEPARATOR.implode(DIRECTORY_SEPARATOR, $absolutes);
-        
+
     }
 
     /**
@@ -566,8 +572,8 @@ class Gb_String
         return $ret;
     }
 
-    
-    
+
+
     /**
      * Function ripped from http://php.net/manual/fr/function.str-pad.php
      * Kari &#34;Haprog&#34; Sderholm 21-Mar-2009 02:43
@@ -578,9 +584,9 @@ class Gb_String
      * @param string  $charset
      * @return string
      */
-    function mb_str_pad($input, $pad_length, $pad_string=' ', $pad_type=STR_PAD_RIGHT, $charset="UTF-8") {
+    public static function mb_str_pad($input, $pad_length, $pad_string=' ', $pad_type=STR_PAD_RIGHT, $charset="UTF-8") {
         $diff = strlen($input) - mb_strlen($input, $charset);
         return str_pad($input, $pad_length+$diff, $pad_string, $pad_type);
     }
-    
+
 }
