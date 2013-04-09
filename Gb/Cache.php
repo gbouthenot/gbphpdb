@@ -1,7 +1,7 @@
 <?php
 /**
  * Gb_Cache
- * 
+ *
  * @author Gilles Bouthenot
  * @version $Revision$
  * @Id $Id$
@@ -25,7 +25,7 @@ Class Gb_Cache
     protected static    $nbCacheMiss=0;                // Nombre de cache miss
 
     protected static    $fPluginRegistred=false;
-    
+
     /**
      * Renvoie le nom du repertoire de cache
      * crée le répertoire si besoin
@@ -59,13 +59,13 @@ Class Gb_Cache
     {
         return self::$nbCacheHits;
     }
-    
+
     public static function get_nbCacheMiss()
     {
         return self::$nbCacheMiss;
     }
-    
-    
+
+
     protected $cacheEngine;
     protected $cacheID;
     protected $fUpdated;
@@ -73,7 +73,7 @@ Class Gb_Cache
     protected $cacheHit;
 
     protected $values;
-    
+
     /**
      * Renvoie la revision de la classe ou un boolean si la version est plus petite que précisée, ou Gb_Exception
      *
@@ -88,8 +88,8 @@ Class Gb_Cache
         if ($revision>=$mini) { return true; }
         if ($throw) { throw new Gb_Exception(__CLASS__." r".$revision."<r".$mini); }
         return false;
-    }    
-    
+    }
+
     /**
      * Crée un cacheableObject
      *
@@ -133,7 +133,7 @@ Class Gb_Cache
         } else {
         	$frontend='Core';
         }
-        
+
         $frontendOptions['lifetime']=$lifetime;       // 3600         Durée de vie en secondes, null:validité permanente
 
         // garde uniquement les caractères [a-zA-Z0-9_]
@@ -141,7 +141,7 @@ Class Gb_Cache
         $cacheID2="";
         for ($i=0; $i<$n; $i++) { $c=$cacheID[$i]; $o=ord(strtoupper($c)); if ( ($o>=48 && $o<=57) || ($o>=65 && $o<=90) || $o==95 ) { $cacheID2.=$c; } }
         $cacheID=$cacheID2;
-        
+
         $this->cacheEngine=Zend_Cache::factory(
             $frontend,                                // frontend: Core: par défaut, File: pour le mtime d'un fichier
             'File',                                   // backend: où le cache est stocké: File
@@ -152,13 +152,13 @@ Class Gb_Cache
                 'read_control'=>true,                 // true         Utilisation d'un checksum pour contrôler la validité des données
                 'read_control_type'=>'crc32',         // 'crc32'      Type du checksum: crc32, md5 ou strlen
                 'hashed_directory_level'=>0,          // 0            Profondeur de répertoire à utiliser
-                'hashed_directory_umask'=>0700,       // 0700         umask à utiliser pour la structure de répertoires
+                'hashed_directory_perm'=>0700,        // 0700         umask à utiliser pour la structure de répertoires
                 'file_name_prefix'=>'gb_cache',       // 'zend_cache' Préfixe ajouté aux fichiers. Attention, si vous enregistrez dans
                                                       //              un répertoire générique comme /tmp/, à ce que ce préfixe soit
                                                       //              spécifique à chaque application !
                 )
         );
-        
+
         $this->cacheID=$cacheID;
         if ($fExpired) {
             $this->values=array();
@@ -173,15 +173,15 @@ Class Gb_Cache
                 $this->cacheHit=true;
             }
         }
-        
+
         self::$nbTotal++;
-        
+
         if (!self::$fPluginRegistred)
         {
             Gb_Glue::registerPlugin("Gb_Response_Footer", array(__CLASS__, "GbResponsePlugin"));
             self::$fPluginRegistred=true;
         }
-        
+
     }
 
     /**
@@ -219,7 +219,7 @@ Class Gb_Cache
      * @param boolean $fThrowException if set and the cache data cannot be recovered, throw a Gb_Exception
      * @return boolean success
      * @throws Gb_Exception
-     */    
+     */
     public function recover($fThrowException=null)
     {
         $ret=$this->cacheEngine->load($this->cacheID, true);
@@ -233,18 +233,18 @@ Class Gb_Cache
             return true;
         }
     }
-    
-    
+
+
     public static function cacheHit()
     {
         return self::$cacheHit;
     }
-    
+
     public static function cacheMiss()
     {
         return self::$nbCacheMiss;
     }
-    
+
 
     /**
      * Renvoie un attribut
@@ -297,19 +297,19 @@ Class Gb_Cache
         else      { self::$nbCacheMiss++; }
         return $res;
     }
-    
-    
-    
-    
+
+
+
+
     public static function GbResponsePlugin()
     {
         $ret="";
-      
+
         $nbtotal=self::$nbTotal;
         $nbcachehits=self::$nbCacheHits;
         $nbcachemiss=self::$nbCacheMiss;
         $ret.="Gb_Cache:{ total:$nbtotal hits:$nbcachehits miss:$nbcachemiss }";
         return $ret;
       }
-    
+
 }

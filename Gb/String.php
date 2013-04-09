@@ -287,7 +287,9 @@ class Gb_String
         $ret="";
 
         // 1ère ligne du csv: les entêtes
-        $firstligne=$data[0];
+        $firstligne = array_keys($data);
+        $firstligne = $firstligne[0];
+        $firstligne=$data[$firstligne];
         foreach(array_keys($firstligne) as $ind) {
             $ind = str_replace('"',    '""',   $ind);
             $ret .= "\"".$ind."\";";

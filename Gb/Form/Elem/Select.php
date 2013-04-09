@@ -1,13 +1,14 @@
 <?php
 /**
  * Gb_Form_Elem_Select
- * 
+ *
  * @author Gilles Bouthenot
  * @version $Revision$
  * @Id $Id$
  */
 
 if (!defined("_GB_PATH")) {
+    $a = realpath(dirname(__FILE__).DIRECTORY_SEPARATOR.'..'.DIRECTORY_SEPARATOR.'..').DIRECTORY_SEPARATOR);
     define("_GB_PATH", realpath(dirname(__FILE__).DIRECTORY_SEPARATOR.'..'.DIRECTORY_SEPARATOR.'..').DIRECTORY_SEPARATOR);
 } elseif (_GB_PATH !== realpath(dirname(__FILE__).DIRECTORY_SEPARATOR.'..'.DIRECTORY_SEPARATOR.'..').DIRECTORY_SEPARATOR) {
     throw new Exception("gbphpdb roots mismatch");
@@ -19,8 +20,8 @@ require_once(_GB_PATH."Form/Elem/Abstract.php");
 class Gb_Form_Elem_Select extends Gb_Form_Elem_Abstract
 {
     protected $_args;
-    
-    
+
+
     public function getInput($value, $inInput, $inputJs)
     {
         $value;
@@ -52,22 +53,22 @@ class Gb_Form_Elem_Select extends Gb_Form_Elem_Abstract
         $ret.="</select>\n";
         return $ret;
     }
-    
+
     protected function _renderJavascript($js=null)
     {
         $js = null;
         $args=$this->args();
         $ret="";
         $elemid=$this->elemId();
-        
+
         // par défaut, met en classOK, si erreur, repasse en classNOK
         $ret .= "gbSetClass('{$elemid}_div', 'OK');\n";
 
         // enlève le message d'erreur
         $ret .= "gbRemoveError('{$elemid}');\n";
-                
+
         $ret .= "var value=\$F('{$elemid}');\n";
-        
+
         $aValues="";
         foreach($args as $ordre=>$val) {
             if (is_array($val)) {
@@ -115,7 +116,7 @@ class Gb_Form_Elem_Select extends Gb_Form_Elem_Abstract
         $elemid=$this->elemId();
         return "onchange='javascript:validate_{$elemid}();' onkeyup='javascript:validate_{$elemid}();'";
     }
-    
+
     /*
      * Exemple d'appel: $form->append(new Gb_Form_Elem_Select( "CHOIXFORM", array("backendCol"=>"aca_choixform","fMandatory"=>true,
                                                                       "args"=>array(array('false',"choisissez"), "PE", "CPE"))    ))
@@ -127,8 +128,8 @@ class Gb_Form_Elem_Select extends Gb_Form_Elem_Abstract
         $aParams=array_merge(array("errorMsgMissing"=>"Veuillez faire un choix"), $aParams);
         return parent::__construct($name, $availableParams, $aParams);
     }
-    
-    
+
+
 
 
 
@@ -158,7 +159,7 @@ class Gb_Form_Elem_Select extends Gb_Form_Elem_Abstract
 
         // valeur transmise n'est pas dans la liste
         $found=false;
-        foreach ($args as $val) { 
+        foreach ($args as $val) {
             $thisval=is_array($val)?$val[0]:$val;
             if ($value===$thisval) {
                 $found=1;
@@ -168,19 +169,19 @@ class Gb_Form_Elem_Select extends Gb_Form_Elem_Abstract
 
         if (!$found) {
             return "Choix invalide";
-        }                
-        
+        }
+
         if ($value==='false') {
             // no value selected. if mandatory: ERROR, else OK.
             if ($fMandatory) {
-                return $this->errorMsgMissing();        
+                return $this->errorMsgMissing();
             } else {
                 return true;
             }
         }
-        
+
         $chk=$this->_maxminvalueValidate("=", $value, $notValues, $form); if (strlen($chk)) { return $chk; }
-        
+
         $validateFunc=$this->validateFunc();
         if (strlen($validateFunc)  && strlen($value)) {
             // 1er argument: fonction à appeler
@@ -234,7 +235,7 @@ class Gb_Form_Elem_Select extends Gb_Form_Elem_Abstract
         }
         return "";
     }
-    
+
 
 
 
@@ -245,24 +246,24 @@ class Gb_Form_Elem_Select extends Gb_Form_Elem_Abstract
     /**
      * get/set args
      * @param array[optional] $text
-     * @return Gb_Form_Elem_Select|String 
+     * @return Gb_Form_Elem_Select|String
      */
     public function args(array $text=null)
-    {   
+    {
         if ($text===null) {         return $this->_args; }
         else { $this->_args=$text; return $this;}
     }
-    
 
-    
-    
+
+
+
     /**
      * get/set value
      * @param string[optional] $text
-     * @return Gb_Form_Elem_Select|String 
+     * @return Gb_Form_Elem_Select|String
      */
     public function value($text=null)
-    {   
+    {
         $args=$this->args();
         if ($text===null) {
             $value=$this->rawValue();
@@ -283,7 +284,7 @@ class Gb_Form_Elem_Select extends Gb_Form_Elem_Abstract
             return $this;
         }
     }
-    
+
     public function rawValue($text=null)
     {
         return parent::value($text);

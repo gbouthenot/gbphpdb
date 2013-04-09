@@ -1,7 +1,7 @@
 <?php
 /**
  * Gb_Db
- * 
+ *
  * @author Gilles Bouthenot
  * @version $Revision$
  * @Id $Id$
@@ -36,7 +36,7 @@ Class Gb_Db extends Zend_Db
     protected $charset;
     protected $fTransaction=false;
     protected $fInitialized=false;
-    
+
     /**
      * @var Gb_Cache
      */
@@ -44,7 +44,7 @@ Class Gb_Db extends Zend_Db
 
     protected $tables;                                        // cache de la liste des tables
     protected $tablesDesc;                                    // cache descriptif table
-  
+
     protected static $sqlTime=0;
     protected static $nbInstance_total=0;                    // Nombre de classes gbdb ouvertes au total
     protected static $nbInstance_peak=0;                     // maximum ouvertes simultanément
@@ -52,7 +52,7 @@ Class Gb_Db extends Zend_Db
     protected static $nbRequest=0;                           // Nombre de requetes effectuées
 
     protected static $fPluginRegistred=false;
-    
+
     /**
      * Renvoie la revision de la classe ou un boolean si la version est plus petite que précisée, ou Gb_Exception
      *
@@ -112,7 +112,7 @@ Class Gb_Db extends Zend_Db
         if (isset($aIn["dbname"]))                  $name=$aIn["dbname"];
         if (isset($aIn["port"]))                    $port=$aIn["port"];
         if (isset($aIn["charset"]))                 $charset=$aIn["charset"];
-        
+
         switch (strtoupper($driver)) {
             case "MYSQL":
             case "MYSQLI":
@@ -128,12 +128,12 @@ Class Gb_Db extends Zend_Db
             case "SQLITE":
             case "PDO_SQLITE":
                 $driver="Pdo_Sqlite"; break;
-                
+
             case "POSTGRES":
             case "POSTGRESQL":
             case "PDO_PGSQL":
                 $driver="Pdo_Pgsql"; break;
-                
+
         }
 
         $array=array("username"=>$user, "password"=>$pass, "dbname"=>$name);
@@ -143,7 +143,7 @@ Class Gb_Db extends Zend_Db
         if (strlen($port)) {
             $array["port"]=$port;
         }
-        
+
         try
         {
             $this->_adapter=Zend_Db::factory($driver, $array);
@@ -162,7 +162,7 @@ Class Gb_Db extends Zend_Db
             Gb_Glue::registerPlugin("Gb_Response_Footer", array(__CLASS__, "GbResponsePlugin"));
             self::$fPluginRegistred=true;
         }
-        
+
         $this->driver=$driver;
         $this->dbname=$name;
         $this->connArray=$array;
@@ -224,7 +224,7 @@ Class Gb_Db extends Zend_Db
     public static function GbResponsePlugin()
     {
         $ret="";
-      
+
         $sqltime=self::$sqlTime;
         $dbtotal=self::$nbInstance_total;
         $dbpeak=self::$nbInstance_peak;
@@ -281,7 +281,7 @@ EOF;
                         ORDER BY tbl_name
 EOF;
                     break;
-                
+
             }
 
 //            $this->tables=$this->retrieve_all($sql_getTablesName, array(), "", "FULL_NAME");
@@ -304,7 +304,7 @@ EOF;
     {
         $sqlTime=self::$sqlTime;
         $time=microtime(true);
-        
+
         // détermine towner et tname
         $pos=strpos($table, ".");
         if ($pos!==false) {
@@ -330,7 +330,7 @@ EOF;
         }
 
         $sql_getColumns = $sql_getPK = $sql_getFKs = $sql_getOtr = "";
-        
+
         switch($this->driver) {
             case "Pdo_Oci":
                 $sql_getColumns=<<<EOF
@@ -339,7 +339,7 @@ FROM ALL_TAB_COLUMNS A
 LEFT JOIN ALL_COL_COMMENTS C
           ON C.OWNER=A.OWNER
          AND C.TABLE_NAME=A.TABLE_NAME
-         AND C.COLUMN_NAME=A.COLUMN_NAME 
+         AND C.COLUMN_NAME=A.COLUMN_NAME
 WHERE A.OWNER=?
   AND A.TABLE_NAME=?
 ORDER BY A.COLUMN_ID
@@ -446,8 +446,8 @@ WHERE kcu.TABLE_SCHEMA=?
   AND tc.CONSTRAINT_TYPE='FOREIGN KEY'
 EOF;
             break;
-            
-            
+
+
         }
 
 /*        $desc["columns"]=$this->retrieve_all($sql_getColumns, array($towner, $tname), "COLUMN_NAME", ""           );
@@ -457,7 +457,7 @@ EOF;
         $desc["columns"]=$this->retrieve_all($sql_getColumns, array($towner, $tname));
         $desc["pk"]=     $this->retrieve_all($sql_getPK,      array($towner, $tname));
         $desc["fks"]=    $this->retrieve_all($sql_getFKs,     array($towner, $tname));
-        
+
         if (strlen($sql_getOtr)) {
             $aOtrs=$this->retrieve_all($sql_getOtr,     array($towner, $tname));
             foreach($aOtrs as $aOtr) {
@@ -472,7 +472,7 @@ EOF;
                 }
             }
         }
-        
+
         $cacheKey = $towner.".".$tname;
 
         // cache le résultat
@@ -482,7 +482,7 @@ EOF;
             $this->tablesDesc[$cacheKey] = $desc;
         }
 
-        
+
         self::$sqlTime=$sqlTime+microtime(true)-$time;
         return $desc;
     }
@@ -535,6 +535,7 @@ EOF;
  * @param mixed|array[optional] $bindargurment exemple array("PE2") ou "PE2"
  * @param string[optional] $index Si spécifié, utilise la colonne comme clé
  * @param string[optional] $col Si spécifié, ne renvoie que cette colonne
+ * @param boolean[false] $fKeepIndex Mettre à true pour garder l'index, quand $index est spécifié
  *
  * @return array|string
  * @throws Gb_Exception
@@ -564,18 +565,18 @@ EOF;
  *  renvoie array[0]=123
  *  renvoie array[1]=456
  */
-    public function retrieve_all($sql, $bindargurment=null, $index=null, $col=null)
+    public function retrieve_all($sql, $bindargurment=null, $index=null, $col=null, $fKeepIndex=null)
     {
         $time=microtime(true);
         $this->initialize();
         self::$nbRequest++;
-        
+
         if ( (false === $bindargurment) || (null === $bindargurment)) {
             $bindargurment=array();
         } elseif (!is_array($bindargurment)) {
             $bindargurment = array($bindargurment);
         }
-        
+
         try
         {
             /**
@@ -597,7 +598,6 @@ EOF;
                 // on veut array[index]=valeur de la colonne
                 while ( ($res=$stmt->fetch(Zend_Db::FETCH_ASSOC))!==false ) {
                     $key=$res[$index];
-                    unset($res[$index]);
                     $ret[$key]=$res[$col];
                 }
             }
@@ -611,7 +611,9 @@ EOF;
                 //on veut un array[index]=array(colonnes=>valeur)
                 while ( ($res=$stmt->fetch(Zend_Db::FETCH_ASSOC))!==false ) {
                     $key=$res[$index];
-                    unset($res[$index]);
+                    if (!$fKeepIndex) {
+                        unset($res[$index]);
+                    }
                     $ret[$key]=$res;
                 }
             }
@@ -638,13 +640,13 @@ EOF;
         $time=microtime(true);
         $this->initialize();
         self::$nbRequest++;
-        
+
         if ( (false === $bindargurment) || (null === $bindargurment)) {
             $bindargurment=array();
         } elseif (!is_array($bindargurment)) {
             $bindargurment = array($bindargurment);
         }
-        
+
         try {
             $stmt=$this->_adapter->query($sql, $bindargurment);
 
@@ -694,7 +696,7 @@ EOF;
         }
         return $ret[0];
     }
-    
+
     public function beginTransaction()
     {
         $time=microtime(true);
@@ -721,7 +723,7 @@ EOF;
         $time=microtime(true);
         $ret=$this->_adapter->commit();
         $this->fTransaction=false;
-        
+
         self::$sqlTime+=microtime(true)-$time;
         return $ret;
     }
@@ -866,11 +868,11 @@ EOF;
         return $ret;
     }
 
-    
-    
-    
-    
-    
+
+
+
+
+
 
    /**
      * Insertion. Si l'insertion est impossible, supprime la ligne et la réinsere.
@@ -886,13 +888,13 @@ EOF;
         $time=microtime(true);
         $this->initialize();
         self::$nbRequest++;
-        
+
         $where=array();
         $newdata=array();
         $this->developpeData($table, $data, $newdata, $where);
 //        print_r($where);
 //        print_r($newdata);
-        
+
         // @todo NON NON et NON !!! Essayer d'insérer la ligne plutôt !!!
         try {
             // compte le nombre de lignes correspondantes
@@ -938,8 +940,8 @@ EOF;
         self::$sqlTime=$sqlTime+microtime(true)-$time;
         return $ret;
     }
-    
-    
+
+
     protected function developpeData($table, $data, &$newdata, &$where)
     {
         $sqlTime=self::$sqlTime;
@@ -951,7 +953,7 @@ EOF;
         foreach ($aPk1 as $aPk2) {
             $aPk[]=$aPk2["COLUMN_NAME"];    // transforme en array(xxx, ...)
         }
-        
+
         $newdata=$data;
         // extrait les données de clé primaires contenues dans $data, et les déplace dans $where
         $where=array();
@@ -963,7 +965,7 @@ EOF;
 
         self::$sqlTime=$sqlTime+microtime(true)-$time;
     }
-    
+
    /**
      * @todo: commentaire
      *
@@ -978,7 +980,7 @@ EOF;
         $time=microtime(true);
         $this->initialize();
         self::$nbRequest++;
-        
+
         $where=array();
         $newdata=array();
         $this->developpeData($table, $data, $newdata, $where);
@@ -1014,7 +1016,7 @@ EOF;
         self::$sqlTime=$sqlTime+microtime(true)-$time;
         return $ret;
     }
-    
+
     public function insertOrUpdate($table, array $data)
     {
         if (count($data)==0) { return 0; }
@@ -1022,7 +1024,7 @@ EOF;
         $time=microtime(true);
         $this->initialize();
         self::$nbRequest++;
-        
+
         $where=array();
         $newdata=array();
         $this->developpeData($table, $data, $newdata, $where);
@@ -1058,20 +1060,20 @@ EOF;
         self::$sqlTime=$sqlTime+microtime(true)-$time;
         return $ret;
     }
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
+
+
+
+
+
+
+
     /**
      * Quote une chaîne
      *
@@ -1165,7 +1167,7 @@ EOF;
         $time=microtime(true);
         $this->initialize();
         $sqlTime=self::$sqlTime;
-        
+
         $nb=$this->update($tableName, array( $colName=>new Zend_Db_Expr("LAST_INSERT_ID(".$this->_adapter->quoteIdentifier($colName)."+1)") ));
         if ($nb!=1) {
             self::$sqlTime=$sqlTime+microtime(true)-$time;
