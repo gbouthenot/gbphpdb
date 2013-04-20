@@ -1,7 +1,7 @@
 <?php
 /**
  * Gb_Request
- * 
+ *
  * @author Gilles Bouthenot
  * @version $Revision$
  * @Id $Id$
@@ -33,7 +33,7 @@ class Gb_Request
         if ($throw) { throw new Gb_Exception(__CLASS__." r".$revision."<r".$mini); }
         return false;
     }
-    
+
     /**
      * Enl�ve les slashes des donn�es GET, POST, COOKIE (gpc), si magic_quote_gpc est actif
      *
