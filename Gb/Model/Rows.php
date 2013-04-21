@@ -198,6 +198,19 @@ class Rows implements \IteratorAggregate, \Countable, \ArrayAccess {
                 $this->rel[$relname] = $relat;
             }
             return new Rows($this->db, $relclass, $this->rel[$relname]);
+        } elseif ('belongs_to_json' === $reltype) {
+            if (!isset($this->rel[$relname])) {
+                $relfk    = $relMeta["foreign_key"];
+                $relfk    = array_map(function($row)use($relfk){return $row[$relfk]; }, $this->o);
+                $relfks   = array();
+                array_walk($relfk, function($in) use (&$relfks) {
+                    $relfks = array_merge($relfks, json_decode($in));
+                });
+                $relfks = array_unique($relfks);
+                $relat    = $relclass::getSome($this->db, $relfks);
+                $this->rel[$relname] = $relat->data();
+            }
+            return new Rows($this->db, $relclass, $this->rel[$relname]);
         }
     }
 }

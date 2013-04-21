@@ -277,13 +277,20 @@ class Gb_ModelTest extends PHPUnit_Framework_TestCase
     }
 
 
-    public function testBelongstojson() {
+    public function testGetOneBelongstojson() {
         $questionnaire = Questionnaire::getOne(2);
         $alineas = $questionnaire->rel("alineas");      // 14,15,21,22,29,31,36
         $this->assertSame("QuestionAlinea", get_class($alineas->current()));
         $this->assertEquals(7, count($alineas));
         $this->assertEquals(24, $alineas[29]->question_id);
         $this->assertEquals(26, $questionnaire->rel("alineas")->{31}->question_id);
+    }
+
+
+    public function testGetSomeBelongstojson() {
+        $questionnaires = Questionnaire::getSome(array(2,3));
+        $alineas = $questionnaires->rel("alineas");
+        $this->assertEquals(13, count($alineas));
     }
 
 
