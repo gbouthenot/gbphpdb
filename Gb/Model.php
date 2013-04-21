@@ -90,6 +90,13 @@ class Model {
         return new Rows($db, get_called_class(), $data);
     }
 
+    public static function create() {
+        $args = func_get_args();
+        $db = array_pop($args); if (!$db) {$db = self::$_db; };
+
+        return new Row($db, get_called_class(), null, array());
+    }
+
 
     public function __construct($tablename, $db) {
         $this->_tablename = $tablename;
