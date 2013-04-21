@@ -4,7 +4,6 @@
 require_once "../Gb/Db.php";
 require_once "../Gb/Model.php";
 require_once "../Gb/Model/Rows.php";
-require_once "../Gb/Model/Row.php";
 
 require_once 'Gb_Model/setup.php';
 require_once 'Gb_Model/models.php';
@@ -168,12 +167,13 @@ class Gb_ModelTest extends PHPUnit_Framework_TestCase
         $this->assertEquals(19, $questionnaires[37]->etudiant_id);
 
         $etudiants = $questionnaires->rel("etudiant");
+        $this->assertSame("Author", get_class($etudiants[8]));
         $this->assertSame("bcael2",   $etudiants->{8}->login);
         $this->assertSame("cguille8", $etudiants[19]->login);
 
         // check that the relation is automatically copied
         $questionnaire = $questionnaires[22];
-        $reflection = new ReflectionClass('\Gb\Model\Row');
+        $reflection = new ReflectionClass('\Gb\Model\Model');
         $prop = $reflection->getProperty('rel');
         $prop->setAccessible(true);
         $aRels = $prop->getValue($questionnaire);
@@ -188,6 +188,7 @@ class Gb_ModelTest extends PHPUnit_Framework_TestCase
         $questionnaire = Questionnaire::getOne(20);
         $this->assertEquals(10, $questionnaire->etudiant_id);
         $this->assertSame("vbassano", $questionnaire->rel("etudiant")->login);
+        $this->assertSame("Author", get_class($questionnaire->rel("etudiant")));
     }
 
 
@@ -211,10 +212,12 @@ class Gb_ModelTest extends PHPUnit_Framework_TestCase
         $etudiant = Author::getOne(3);
         $questionnaires = $etudiant->rel("questionnaires");
         $this->assertEquals(1, count($questionnaires));
+        $this->assertSame("Questionnaire", get_class($questionnaires->current()));
 
         // this one has 3 questionnaires
         $questionnaires = Author::getOne(4)->rel("questionnaires");
         $this->assertEquals(3, count($questionnaires));
+        $this->assertSame("Questionnaire", get_class($questionnaires->current()));
     }
 
 
@@ -223,22 +226,24 @@ class Gb_ModelTest extends PHPUnit_Framework_TestCase
         $etudiants = Author::getSome(array(6,7));
         $questionnaires = $etudiants->rel("questionnaires");
         $this->assertEquals(8, count($questionnaires));
+        $this->assertSame("Questionnaire", get_class($questionnaires->current()));
 
         // check that the relation is automatically copied
         $etudiant = $etudiants[6];
-        $reflection = new ReflectionClass('\Gb\Model\Row');
+        $reflection = new ReflectionClass('\Gb\Model\Model');
         $prop = $reflection->getProperty('rel');
         $prop->setAccessible(true);
         $aRels = $prop->getValue($etudiant);
         $this->assertEquals(7, count($aRels["questionnaires"]));
         $this->assertEquals(7, count($etudiant->rel("questionnaires")));
-
+        $this->assertSame("Questionnaire", get_class($etudiant->rel("questionnaires")->current()));
     }
 
 
     public function testBelongstojson() {
         $questionnaire = Questionnaire::getOne(2);
         $alineas = $questionnaire->rel("alineas");      // 14,15,21,22,29,31,36
+        $this->assertSame("QuestionAlinea", get_class($alineas->current()));
         $this->assertEquals(7, count($alineas));
         $this->assertEquals(24, $alineas[29]->question_id);
         $this->assertEquals(26, $questionnaire->rel("alineas")->{31}->question_id);

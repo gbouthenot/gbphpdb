@@ -45,10 +45,10 @@ class Rows implements \Iterator, \Countable, \ArrayAccess {
         $data = $this->o[$key];
 
         $aRels = array();
-        $class = $this->nam;
+        $model = $this->nam;
 
         foreach($this->rel as $relname=>$reldata) {
-            $relMeta = $class::$rels[$relname];
+            $relMeta = $model::$rels[$relname];
             $reltype  = $relMeta["reltype"];
             $relfk = $relMeta["foreign_key"];
             if ('belongs_to' === $reltype) {
@@ -58,7 +58,7 @@ class Rows implements \Iterator, \Countable, \ArrayAccess {
             }
         }
 
-        return new Row($this->db, $this->nam, $data["id"], $data, $aRels);
+        return new $model($this->db, $this->nam, $data["id"], $data, $aRels);
     }
     public function __set($key, $value) {
         $this->o[$key] = $value;
@@ -88,7 +88,8 @@ class Rows implements \Iterator, \Countable, \ArrayAccess {
 
 
     protected function tableRow(array $data) {
-        return new Row($this->db, $this->nam, $data["id"], $data);
+        $model = $this->nam;
+        return new $model($this->db, $this->nam, $data["id"], $data);
     }
 
     public function current() {
@@ -132,11 +133,11 @@ class Rows implements \Iterator, \Countable, \ArrayAccess {
      * @return \Gb\Model\Rows
      */
     public function rel($relname) {
-        $class = $this->nam;
-        if (!isset($class::$rels[$relname])) {
-            throw new \Gb_Exception("relation $relname does not exist for $class");
+        $model = $this->nam;
+        if (!isset($model::$rels[$relname])) {
+            throw new \Gb_Exception("relation $relname does not exist for $model");
         }
-        $relMeta = $class::$rels[$relname];
+        $relMeta = $model::$rels[$relname];
         $relclass = $relMeta["class_name"];
         $reltype  = $relMeta["reltype"];
         if ('belongs_to' === $reltype) {
