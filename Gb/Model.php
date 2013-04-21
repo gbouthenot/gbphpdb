@@ -36,7 +36,7 @@ class Model implements \IteratorAggregate, \ArrayAccess {
             throw new \Gb_Exception("row not found");
         }
         $model = get_called_class();
-        return new $model($db, get_called_class(), $id, $data);
+        return new $model($db, $id, $data);
     }
 
     /**
@@ -96,7 +96,7 @@ class Model implements \IteratorAggregate, \ArrayAccess {
         $db = array_pop($args); if (!$db) {$db = self::$_db; };
 
         $model = get_called_class();
-        return new $model($db, get_called_class(), null, array());
+        return new $model($db, null, array());
     }
 
 
@@ -214,9 +214,8 @@ class Model implements \IteratorAggregate, \ArrayAccess {
      */
     protected $db;
     /**
-     * @var string
+     * @var mixed the primary key value. Used for save()
      */
-    protected $nam;
     protected $id;
     /**
      * @var array
@@ -227,9 +226,8 @@ class Model implements \IteratorAggregate, \ArrayAccess {
      */
     protected $rel;
 
-    public function __construct(\Gb_Db $db, $classname, $id, array $data, array $rel=array()) {
+    public function __construct(\Gb_Db $db, $id, array $data, array $rel=array()) {
         $this->db   = $db;
-        $this->nam  = $classname;
         $this->id   = $id;
         $this->o    = $data;
         $this->rel  = $rel;
@@ -240,9 +238,8 @@ class Model implements \IteratorAggregate, \ArrayAccess {
     }
 
     public function save() {
-        $nam   = $this->nam;
-        $table = $nam::$_tablename;
-        $pk    = $nam::$_pk;
+        $table = static::$_tablename;
+        $pk    = static::$_pk;
         $db    = $this->db;
         $id    = $this->id;
         $this->o["updated_at"] = \Gb_String::date_iso();
@@ -256,9 +253,8 @@ class Model implements \IteratorAggregate, \ArrayAccess {
     }
 
     public function destroy() {
-        $nam   = $this->nam;
-        $table = $nam::$_tablename;
-        $pk    = $nam::$_pk;
+        $table = static::$_tablename;
+        $pk    = static::$_pk;
         $db    = $this->db;
         $id    = $this->id;
         if (null !== $id) {
@@ -326,7 +322,7 @@ class Model implements \IteratorAggregate, \ArrayAccess {
                 $relat    = $relclass::getOne($this->db, $relfk);
                 $this->rel[$relname] = $relat->data();
             }
-            return new $relclass($this->db, $relclass, $this->rel[$relname]["id"], $this->rel[$relname]);
+            return new $relclass($this->db, $this->rel[$relname]["id"], $this->rel[$relname]);
         } elseif ('has_many' === $reltype) {
             if (!isset($this->rel[$relname])) {
                 $relfk    = $relMeta["foreign_key"];
