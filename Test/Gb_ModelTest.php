@@ -236,6 +236,13 @@ class Gb_ModelTest extends PHPUnit_Framework_TestCase
     }
 
 
+    public function testBelongstojson() {
+        $questionnaire = Questionnaire::getOne(2);
+        $alineas = $questionnaire->rel("alineas");      // 14,15,21,22,29,31,36
+        $this->assertEquals(7, count($alineas));
+        $this->assertEquals(24, $alineas[29]->question_id);
+        $this->assertEquals(26, $questionnaire->rel("alineas")->{31}->question_id);
+    }
 
 
 }

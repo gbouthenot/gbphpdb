@@ -2,9 +2,11 @@
 
 namespace Gb\Model;
 
-class Row implements \IteratorAggregate {
+require_once "Gb/String.php";
+
+class Row implements \IteratorAggregate, \ArrayAccess {
     /**
-     * @var Gb_Db
+     * @var \Gb_Db
      */
     protected $db;
     /**
@@ -33,6 +35,36 @@ class Row implements \IteratorAggregate {
         return $this->o;
     }
 
+    public function save() {
+        $nam   = $this->nam;
+        $table = $nam::$_tablename;
+        $pk    = $nam::$_pk;
+        $db    = $this->db;
+        $id    = $this->id;
+        $this->o["updated_at"] = \Gb_String::date_iso();
+        if (null === $id) {
+            $this->o["created_at"] = $this->o["updated_at"];
+            $db->insert($table, $this->o);
+            $this->id = $db->lastInsertId();
+        } else {
+            $db->update($table, $this->o, $db->quoteInto("$pk = ?", $id));
+        }
+    }
+
+    public function destroy() {
+        $nam   = $this->nam;
+        $table = $nam::$_tablename;
+        $pk    = $nam::$_pk;
+        $db    = $this->db;
+        $id    = $this->id;
+        if (null !== $id) {
+            $db->delete($table, $db->quoteInto("$pk = ?", $id));
+        }
+        // after deletion, the data remain in memory, and can be inserted again upon save()
+        $this->id = null;
+    }
+
+
 	/* (non-PHPdoc)
      * @see IteratorAggregate::getIterator()
      */
@@ -55,6 +87,20 @@ class Row implements \IteratorAggregate {
     }
     public function __unset($key) {
         unset($this->o[$key]);
+    }
+
+    // implements ArrayAccess
+    public function offsetSet($key, $value) {
+        return $this->__set($key, $value);
+    }
+    public function offsetExists($key) {
+        return $this->__isset($key);
+    }
+    public function offsetUnset($key) {
+        return $this->__unset($key);
+    }
+    public function offsetGet($key) {
+        return $this->__get($key);
     }
 
     public function __toString() {
@@ -81,6 +127,15 @@ class Row implements \IteratorAggregate {
             if (!isset($this->rel[$relname])) {
                 $relfk    = $relMeta["foreign_key"];
                 $relat    = $relclass::findAll($this->db, array($relfk=>$this->o["id"]));
+                $this->rel[$relname] = $relat->data();
+            }
+            return new Rows($this->db, $relclass, $this->rel[$relname]);
+        } elseif ('belongs_to_json' === $reltype) {
+            if (!isset($this->rel[$relname])) {
+                $relfk    = $relMeta["foreign_key"];
+                $relfk    = $this->o[$relfk];
+                $relfk    = json_decode($relfk);
+                $relat    = $relclass::getSome($this->db, $relfk);
                 $this->rel[$relname] = $relat->data();
             }
             return new Rows($this->db, $relclass, $this->rel[$relname]);
