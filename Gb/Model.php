@@ -15,15 +15,30 @@ require_once \_GB_PATH."Model/Rows.php";
 
 class Model implements \IteratorAggregate, \ArrayAccess {
 
+    /*********************/
+    /**** STATIC PART ****/
+    /*********************/
+
     /**
-     * @var \Gb_Db
+     * @var \Gb_Db the is the default adapter
      */
     protected static $_db;
 
+    /**
+     * Set the default adapter
+     * @param \Gb_Db $db
+     */
     public static function setAdapter(\Gb_Db $db) {
         self::$_db = $db;
     }
 
+    /**
+     * Get one row, by primary key
+     * @param \Gb_Db[optional] $db
+     * @param $id
+     * @throws \Gb_Exception
+     * @return \Gb\Model\Model
+     */
     public static function getOne($id) {
         $args = func_get_args();
         $id = array_pop($args);
@@ -40,7 +55,8 @@ class Model implements \IteratorAggregate, \ArrayAccess {
     }
 
     /**
-     * @param Gb_Db[optional] $db
+     * Get some rows, by primary key
+     * @param \Gb_Db[optional] $db
      * @param array $ids
      * @return \Gb\Model\Rows
      */
@@ -59,6 +75,12 @@ class Model implements \IteratorAggregate, \ArrayAccess {
     }
 
 
+    /**
+     * Get all rows
+     * @param \Gb_Db[optional] $db
+     * @param array $ids
+     * @return \Gb\Model\Rows
+     */
     public static function getAll() {
         $args = func_get_args();
         $db = array_pop($args); if (!$db) {$db = self::$_db; };
@@ -69,14 +91,47 @@ class Model implements \IteratorAggregate, \ArrayAccess {
         return new Rows($db, get_called_class(), $data);
     }
 
-    public static function findAll($cond) {
+    /**
+     * Search lines
+     * @param array|string[optional] $cond array("col"=>"value") or array("col"=>array(1,2)) or "col='value'"
+     * @return \Gb\Model\Rows
+     * @todo implements LIMIT, OFFSET, ORDERBY
+     */
+    public static function findAll($cond=null) {
         $args = func_get_args();
         $cond = array_pop($args);
         $db = array_pop($args); if (!$db) {$db = self::$_db; };
 
+        $sql = self::_find($db, $cond);
+
+        $data = $db->retrieve_all($sql, null, static::$_pk, null, true);
+        return new Rows($db, get_called_class(), $data);
+    }
+
+
+    /**
+     * return the first line
+     * @param array|string[optional] $cond array("col"=>"value") or array("col"=>array(1,2)) or "col='value'"
+     * @return \Gb\Model\Model
+     */
+    public static function findFirst($cond=null) {
+        $args = func_get_args();
+        $cond = array_pop($args);
+        $db = array_pop($args); if (!$db) {$db = self::$_db; };
+
+        $sql = self::_find($db, $cond);
+        $sql .= " LIMIT 1";
+
+        $data = $db->retrieve_one($sql);
+        $model = get_called_class();
+        return new $model($db, $data[static::$_pk], $data);
+    }
+
+
+    public static function _find(\Gb_db $db, $cond) {
         $tablename = static::$_tablename;
         $sql  = " SELECT * FROM $tablename";
-        if (count($cond)) {
+        if (is_array($cond) && count($cond)) {
             $aWhere = array();
             foreach ($cond as $k=>$v) {
                 if (is_array($v)) {
@@ -86,11 +141,17 @@ class Model implements \IteratorAggregate, \ArrayAccess {
                 }
             }
             $sql .= " WHERE " . join(" AND ", $aWhere);
+        } elseif (is_string($cond) && strlen($cond)) {
+            $sql .= " WHERE $cond";
         }
-        $data = $db->retrieve_all($sql, null, static::$_pk, null, true);
-        return new Rows($db, get_called_class(), $data);
+        return $sql;
     }
 
+    /**
+     * returns a blank row
+     * @return \Gb\Model\Model
+     * @todo: implements defaults
+     */
     public static function create() {
         $args = func_get_args();
         $db = array_pop($args); if (!$db) {$db = self::$_db; };
@@ -101,100 +162,6 @@ class Model implements \IteratorAggregate, \ArrayAccess {
 
 
 
-/*
-    public function __construct($tablename, $db) {
-        $this->_tablename = $tablename;
-        $this->_db = $db;
-    }
-
-    public function getById($id) {
-        if (is_array($id)) {
-            $sql = "SELECT * from {$this->_tablename} WHERE id IN ";
-            $aVals = array();
-            foreach($id as $i) {
-                $aVals[] = $this->_db->quote($i);
-            }
-            $sql .= "(" . join(",", $aVals). ")";
-            $res = $this->_db->retrieve_all($sql, null, "id", null, true);
-            return $res;
-        }
-        $sql = "select * from {$this->_tablename} where id = ?";
-        $res = $this->_db->retrieve_one($sql, $id);
-        return $res;
-        //return $this->unjson_one($res);
-    }
-
-    public function length() {
-        $sql = "select count(*) as 'A' from {$this->_tablename}";
-        $res = $this->_db->retrieve_one($sql, null, 'A');
-        return $res;
-    }
-
-    public function search($aPar=null) {
-        $sql = $this->_search($aPar);
-        $res = $this->_db->retrieve_all($sql);
-        return $res;
-        //return $this->unjson_all($res);
-    }
-
-    public function searchFirst($aPar = null) {
-        $sql = $this->_search($aPar);
-        $sql .= " LIMIT 1";
-        $res = $this->_db->retrieve_one($sql);
-        return $res;
-        //return $this->unjson_one($res);
-    }
-
-    protected function _search($aPar=null) {
-        if (null === $aPar) {
-            $aPar = array();
-        }
-        $sql = "select * from {$this->_tablename}";
-        $aWhere = array();
-        foreach ($aPar as $ind=>$val) {
-            $aWhere[] = $this->_db->quoteInto($ind.'=?', $val);
-        }
-        if (count($aWhere)) {
-            $sql .= " WHERE " . join(" AND ", $aWhere);
-        }
-        return $sql;
-    }
-
-    protected function unjson_one($a) {
-        foreach($a as $col=>$val) {
-            if ('_json' === substr($col, -5)) {
-                $a[$col] = json_decode($val);
-            }
-        }
-        return $a;
-    }
-
-    protected function unjson_all($rows) {
-        if (!(is_array($rows) && count($rows)) ) {
-            return;
-        }
-        $firstrow = array_keys($rows);
-        $firstrow = array_keys($rows[$firstrow[0]]);
-        foreach ($firstrow as $col) {
-            if ('_json' === substr($col, -5)) {
-                foreach ($rows as $rowid=>$row) {
-                    $rows[$rowid][$col] = json_decode($row[$col]);
-                }
-            }
-
-        }
-        return $rows;
-    }
-
-    public function adapter() {
-        return $this->_db;
-    }
-
-    public function tablename() {
-        return $this->_tablename;
-    }
-
-*/
 
 
 
@@ -203,9 +170,9 @@ class Model implements \IteratorAggregate, \ArrayAccess {
 
 
 
-
-
-
+    /***********************/
+    /**** INSTANCE PART ****/
+    /***********************/
 
 
 
@@ -218,11 +185,11 @@ class Model implements \IteratorAggregate, \ArrayAccess {
      */
     protected $id;
     /**
-     * @var array
+     * @var array the data
      */
     protected $o;
     /**
-     * @var array
+     * @var array the relations
      */
     protected $rel;
 
@@ -247,6 +214,7 @@ class Model implements \IteratorAggregate, \ArrayAccess {
             $this->o["created_at"] = $this->o["updated_at"];
             $db->insert($table, $this->o);
             $this->id = $db->lastInsertId();
+            $this->o[$pk] = $this->id;
         } else {
             $db->update($table, $this->o, $db->quoteInto("$pk = ?", $id));
         }

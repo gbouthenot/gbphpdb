@@ -201,8 +201,25 @@ class Gb_ModelTest extends PHPUnit_Framework_TestCase
                 throw new Exception("error findAll");
             }
         }
+
+        $questionnaires = Questionnaire::findAll();
+        $this->assertSame(164, count($questionnaires));
+
+        $questionnaires = Author::findAll("login like 'g%'");
+        $this->assertSame(3, count($questionnaires));
+
     }
 
+    public function testFindFirst() {
+        $author = Author::findFirst();
+        $this->assertSame("Author", get_class($author));
+        $author = Author::findFirst("login='ecavalli'");
+        $this->assertSame("Author", get_class($author));
+        $this->assertSame("ecavalli", $author->login);
+        $author = Author::findFirst(array('login'=>'gbouthen'));
+        $this->assertSame("Author", get_class($author));
+        $this->assertSame("gbouthen", $author->login);
+    }
 
 
 
@@ -248,6 +265,7 @@ class Gb_ModelTest extends PHPUnit_Framework_TestCase
         $this->assertEquals(24, $alineas[29]->question_id);
         $this->assertEquals(26, $questionnaire->rel("alineas")->{31}->question_id);
     }
+
 
 
 }
