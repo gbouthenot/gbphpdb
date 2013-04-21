@@ -58,7 +58,7 @@ class Rows implements \Iterator, \Countable, \ArrayAccess {
             }
         }
 
-        return new $model($this->db, $data["id"], $data, $aRels);
+        return new $model($this->db, $data[$model::$_pk], $data, $aRels);
     }
     public function __set($key, $value) {
         $this->o[$key] = $value;
@@ -89,7 +89,7 @@ class Rows implements \Iterator, \Countable, \ArrayAccess {
 
     protected function tableRow(array $data) {
         $model = $this->nam;
-        return new $model($this->db, $data["id"], $data);
+        return new $model($this->db, $data[$model::$_pk], $data);
     }
 
     public function current() {

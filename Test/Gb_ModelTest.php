@@ -205,9 +205,27 @@ class Gb_ModelTest extends PHPUnit_Framework_TestCase
         $questionnaires = Questionnaire::findAll();
         $this->assertSame(164, count($questionnaires));
 
-        $questionnaires = Author::findAll("login like 'g%'");
-        $this->assertSame(3, count($questionnaires));
+        $authors = Author::findAll("login like 'g%'");
+        $this->assertSame(3, count($authors));
 
+        $authors = Author::findAll(null, array("limit"=>2));
+        $this->assertSame(2, count($authors));
+        $firstlogin = $authors->current()->login;
+
+        // should be the same
+        $authors = Author::findAll(null, array("limit"=>1, "offset"=>0));
+        $this->assertSame(1, count($authors));
+        $this->assertSame($firstlogin, $authors->current()->login);
+
+        // should not be the same
+        $authors = Author::findAll(null, array("limit"=>1, "offset"=>1));
+        $this->assertSame(1, count($authors));
+        $this->assertNotSame($firstlogin, $authors->current()->login);
+
+        // test order by
+        $authors = Author::findAll(null, array("limit"=>2, "offset"=>0, "order"=>"login"));
+        $this->assertSame(2, count($authors));
+        $this->assertNotSame($firstlogin, $authors->current()->login);
     }
 
     public function testFindFirst() {

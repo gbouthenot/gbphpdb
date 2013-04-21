@@ -25,6 +25,12 @@ class Model implements \IteratorAggregate, \ArrayAccess {
     protected static $_db;
 
     /**
+     * whenever add created_at / updated_at timestamps
+     * @var boolean
+     */
+    protected static $_timestamps = true;
+
+    /**
      * Set the default adapter
      * @param \Gb_Db $db
      */
@@ -94,19 +100,24 @@ class Model implements \IteratorAggregate, \ArrayAccess {
     /**
      * Search lines
      * @param array|string[optional] $cond array("col"=>"value") or array("col"=>array(1,2)) or "col='value'"
+     * @param array[optional] $options array("order"=>"cola DESC, colb", "limit"=>10, "offset"=>5)
      * @return \Gb\Model\Rows
-     * @todo implements LIMIT, OFFSET, ORDERBY
      */
     public static function findAll($cond=null) {
         $args = func_get_args();
-        $cond = array_pop($args);
-        $db = array_pop($args); if (!$db) {$db = self::$_db; };
+        $db = self::$_db;
+        if (isset($args[0]) && $args[0] instanceof \Gb_Db) {
+            $db = array_shift($args);
+        }
+        $cond = array_shift($args);
+        $options = array_shift($args); if (null===$options){$options=array();}
 
-        $sql = self::_find($db, $cond);
+        $sql = self::_find($db, $cond, $options);
 
         $data = $db->retrieve_all($sql, null, static::$_pk, null, true);
         return new Rows($db, get_called_class(), $data);
     }
+
 
 
     /**
@@ -128,7 +139,14 @@ class Model implements \IteratorAggregate, \ArrayAccess {
     }
 
 
-    public static function _find(\Gb_db $db, $cond) {
+    /**
+     * Return the sql for searching
+     * @param \Gb_Db $db
+     * @param array|string[optional] $cond array("col"=>"value") or array("col"=>array(1,2)) or "col='value'"
+     * @param array[optional] $options array("order"=>"cola DESC, colb", "limit"=>10, "offset"=>5)
+     * @return string
+     */
+    protected static function _find(\Gb_db $db, $cond, $options=array()) {
         $tablename = static::$_tablename;
         $sql  = " SELECT * FROM $tablename";
         if (is_array($cond) && count($cond)) {
@@ -144,6 +162,17 @@ class Model implements \IteratorAggregate, \ArrayAccess {
         } elseif (is_string($cond) && strlen($cond)) {
             $sql .= " WHERE $cond";
         }
+
+        if (isset($options["order"])) {
+            $sql.= " ORDER BY " . $options["order"];
+        }
+        if (isset($options["limit"])) {
+            $sql.= " LIMIT " . $options["limit"];
+            if (isset($options["offset"])) {
+                $sql.= " OFFSET " . $options["offset"];
+            }
+        }
+
         return $sql;
     }
 
@@ -209,9 +238,13 @@ class Model implements \IteratorAggregate, \ArrayAccess {
         $pk    = static::$_pk;
         $db    = $this->db;
         $id    = $this->id;
-        $this->o["updated_at"] = \Gb_String::date_iso();
+        if (static::$_timestamps) {
+            $this->o["updated_at"] = \Gb_String::date_iso();
+            if (null === $id) {
+                $this->o["created_at"] = $this->o["updated_at"];
+            }
+        }
         if (null === $id) {
-            $this->o["created_at"] = $this->o["updated_at"];
             $db->insert($table, $this->o);
             $this->id = $db->lastInsertId();
             $this->o[$pk] = $this->id;
@@ -290,11 +323,11 @@ class Model implements \IteratorAggregate, \ArrayAccess {
                 $relat    = $relclass::getOne($this->db, $relfk);
                 $this->rel[$relname] = $relat->data();
             }
-            return new $relclass($this->db, $this->rel[$relname]["id"], $this->rel[$relname]);
+            return new $relclass($this->db, $this->rel[$relname][$relclass::$_pk], $this->rel[$relname]);
         } elseif ('has_many' === $reltype) {
             if (!isset($this->rel[$relname])) {
                 $relfk    = $relMeta["foreign_key"];
-                $relat    = $relclass::findAll($this->db, array($relfk=>$this->o["id"]));
+                $relat    = $relclass::findAll($this->db, array($relfk=>$this->o[$relclass::$_pk]));
                 $this->rel[$relname] = $relat->data();
             }
             return new Rows($this->db, $relclass, $this->rel[$relname]);
