@@ -1,7 +1,48 @@
 <?php
 namespace Gb\Model;
 
-class Rows implements \Iterator, \Countable, \ArrayAccess {
+class RowIterator implements \Iterator {
+    protected $db;
+    protected $o;
+    protected $nam;
+
+    public function __construct($db, $nam, $o) {
+        $this->db = $db;
+        $this->nam = $nam;
+        $this->o = $o;
+    }
+
+    protected function tableRow(array $data) {
+        $model = $this->nam;
+        return new $model($this->db, $data[$model::$_pk], $data);
+    }
+
+    // implements Iterator
+    public function current() {
+        $data = current($this->o);
+        return $this->tableRow($data);
+    }
+    public function next() {
+        $data = next($this->o);
+        if (false === $data) {
+            return $data;
+        }
+        return $this->tableRow($data);
+    }
+    public function key() {
+        return key($this->o);
+    }
+    public function valid() {
+        return key($this->o) !== null;
+
+    }
+    public function rewind () {
+        return reset($this->o);
+    }
+
+}
+
+class Rows implements \IteratorAggregate, \Countable, \ArrayAccess {
     /**
      * @var Gb_Db
      */
@@ -34,7 +75,8 @@ class Rows implements \Iterator, \Countable, \ArrayAccess {
      * @see IteratorAggregate::getIterator()
      */
     public function getIterator () {
-        return new \ArrayIterator($this->o);
+        //return new \ArrayIterator($this->o);
+        return new RowIterator($this->db, $this->nam, $this->o);
     }
 
     public function __get($key) {
@@ -82,16 +124,16 @@ class Rows implements \Iterator, \Countable, \ArrayAccess {
         return $r;
     }
 
+    // implements Countable
     public function count() {
         return count($this->o);
     }
 
-
+    // implements Iterator (actually it is not "implemented", superceded by IteratorAggregate, but these functions are handy)
     protected function tableRow(array $data) {
         $model = $this->nam;
         return new $model($this->db, $data[$model::$_pk], $data);
     }
-
     public function current() {
         $data = current($this->o);
         return $this->tableRow($data);

@@ -60,7 +60,9 @@ class Gb_ModelTest extends PHPUnit_Framework_TestCase
         $found = false;
         foreach ($authors as $key=>$author) {
             if (43 === $key) {
-                $found = $author->login; break;
+                $found = $author["login"];
+                $found2 = $author->login;
+                if ($found === $found2) { break; } else { $this->assertSame($found, $found2); }
             }
         }
         $this->assertSame("cbarbie6", $found);
@@ -284,6 +286,19 @@ class Gb_ModelTest extends PHPUnit_Framework_TestCase
         $this->assertEquals(26, $questionnaire->rel("alineas")->{31}->question_id);
     }
 
+
+    public function testGetIterator() {
+        $authors = Author::findAll(null, array("limit"=>5));
+        $count = count($authors);
+        $foreach=0; foreach($authors as $author) {$foreach++;}
+        $this->assertSame(5, $count);
+        $this->assertSame(5, $foreach);
+
+        $foreach=0; $inside=0;
+        foreach($authors as $author) {$foreach++; foreach($authors as $author2){$inside++;}}
+        $this->assertSame(5, $foreach);
+        $this->assertSame(25, $inside);
+    }
 
 
 }
