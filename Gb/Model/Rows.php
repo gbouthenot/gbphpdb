@@ -35,6 +35,15 @@ class Rows implements \IteratorAggregate, \Countable, \ArrayAccess {
         return $this->o;
     }
 
+    /**
+     * Return the rows as an associative array
+     * @return array(id=>array(), ...)
+     */
+    public function asArray() {
+        $model = $this->nam;
+        return array_intersect_key($model::$_buffer, array_flip($this->o));
+    }
+
 
 
     /**
@@ -54,8 +63,9 @@ class Rows implements \IteratorAggregate, \Countable, \ArrayAccess {
                 $relfk    = $relMeta["foreign_key"];
                 // for each line, get the foreign key
                 $relfks   = array_map(function($id)use($relfk, $model){return $model::$_buffer[$id][$relfk]; }, $this->o);
-                $relat    = $relclass::getSome($this->db, array_unique($relfks));
-                $this->rel[$relname] = $relat->ids();
+                $relfks   = array_unique($relfks);
+                $relclass::_getSome($this->db, $relfks);
+                $this->rel[$relname] = $relfks;
             }
             return new Rows($this->db, $relclass, $this->rel[$relname]);
         } elseif ('has_many' === $reltype) {
@@ -75,8 +85,9 @@ class Rows implements \IteratorAggregate, \Countable, \ArrayAccess {
                 array_walk($relfks, function($in) use (&$relfks2) {
                     $relfks2 = array_merge($relfks2, json_decode($in));
                 });
-                $relat    = $relclass::getSome($this->db, array_unique($relfks2));
-                $this->rel[$relname] = $relat->ids();
+                $relfks2 = array_unique($relfks2);
+                $relclass::_getSome($this->db, $relfks2);
+                $this->rel[$relname] = $relfks2;
             }
             return new Rows($this->db, $relclass, $this->rel[$relname]);
         }
@@ -122,7 +133,7 @@ class Rows implements \IteratorAggregate, \Countable, \ArrayAccess {
             $relfk = $relMeta["foreign_key"];
             if ('belongs_to' === $reltype) {
                 $pk = $model::$_buffer[$id][$relfk];
-                $aRels[$relname] = $relclass::_getOne($this->db, $pk)->data();
+                $aRels[$relname] = $relclass::_getOne($this->db, $pk)->asArray();
             } elseif ('has_many' === $reltype) {
                 $aRels[$relname] = array_filter($reldata, function($pk) use ($relclass, $relfk, $id) {
                     // keep only the matching lines
