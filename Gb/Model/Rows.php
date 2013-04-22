@@ -1,46 +1,6 @@
 <?php
 namespace Gb\Model;
 
-class RowIterator implements \Iterator {
-    protected $db;
-    protected $o;
-    protected $nam;
-
-    public function __construct($db, $nam, $o) {
-        $this->db = $db;
-        $this->nam = $nam;
-        $this->o = $o;
-    }
-
-    protected function tableRow(array $data) {
-        $model = $this->nam;
-        return new $model($this->db, $data[$model::$_pk], $data);
-    }
-
-    // implements Iterator
-    public function current() {
-        $data = current($this->o);
-        return $this->tableRow($data);
-    }
-    public function next() {
-        $data = next($this->o);
-        if (false === $data) {
-            return $data;
-        }
-        return $this->tableRow($data);
-    }
-    public function key() {
-        return key($this->o);
-    }
-    public function valid() {
-        return key($this->o) !== null;
-
-    }
-    public function rewind () {
-        return reset($this->o);
-    }
-
-}
 
 class Rows implements \IteratorAggregate, \Countable, \ArrayAccess {
     /**
@@ -67,115 +27,15 @@ class Rows implements \IteratorAggregate, \Countable, \ArrayAccess {
         $this->rel  = $rel;
     }
 
-    public function data() {
+    /**
+     * Return the primary keys
+     * @return array:
+     */
+    public function ids() {
         return $this->o;
     }
 
-    public function ids() {
-        return array_keys($this->o);
-    }
 
-	/* (non-PHPdoc)
-     * @see IteratorAggregate::getIterator()
-     */
-    public function getIterator () {
-        //return new \ArrayIterator($this->o);
-        return new RowIterator($this->db, $this->nam, $this->o);
-    }
-
-    public function __get($key) {
-        if (!isset($this->o[$key])) {
-            throw new \Gb_Exception("row not found");
-        }
-
-        $data = $this->o[$key];
-
-        $aRels = array();
-        $model = $this->nam;
-
-        foreach($this->rel as $relname=>$reldata) {
-            $relMeta = $model::$rels[$relname];
-            $reltype  = $relMeta["reltype"];
-            $relfk = $relMeta["foreign_key"];
-            if ('belongs_to' === $reltype) {
-                $aRels[$relname] = $reldata[$data[$relfk]];
-            } elseif ('has_many' === $reltype) {
-                $aRels[$relname] = array_filter($reldata,function($row)use($relfk, $key){return $key == $row[$relfk];});
-            } elseif ('belongs_to_json' === $reltype) {
-                $relclass = $relMeta["class_name"];
-                $aRels[$relname] = $relclass::getSome(json_decode($data[$relfk]))->data();
-            }
-        }
-
-        return new $model($this->db, $data[$model::$_pk], $data, $aRels);
-    }
-    public function __set($key, $value) {
-        $this->o[$key] = $value;
-    }
-    public function __isset($key) {
-        return isset($this->o[$key]);
-    }
-    public function __unset($key) {
-        unset($this->o[$key]);
-    }
-
-    public function __toString() {
-        $r = "{\n";
-        $first = 0;
-        foreach ($this->o as $k=>$v) {
-            $r .= ($first++)?(",\n"):("");
-            $r .= "  ";
-            $r .= '"' . addslashes($k) . '":' . json_encode($v);
-        }
-        $r .= "\n}";
-        return $r;
-    }
-
-    // implements Countable
-    public function count() {
-        return count($this->o);
-    }
-
-    // implements Iterator (actually it is not "implemented", superceded by IteratorAggregate, but these functions are handy)
-    protected function tableRow(array $data) {
-        $model = $this->nam;
-        return new $model($this->db, $data[$model::$_pk], $data);
-    }
-    public function current() {
-        $data = current($this->o);
-        return $this->tableRow($data);
-    }
-    public function next() {
-        $data = next($this->o);
-        if (false === $data) {
-            return $data;
-        }
-        return $this->tableRow($data);
-    }
-    public function key() {
-        return key($this->o);
-    }
-    public function valid() {
-        return key($this->o) !== null;
-
-    }
-    public function rewind () {
-        return reset($this->o);
-    }
-
-    // implements ArrayAccess
-    public function offsetSet($key, $value) {
-        return $this->__set($key, $value);
-    }
-    public function offsetExists($key) {
-        return $this->__isset($key);
-    }
-    public function offsetUnset($key) {
-        return $this->__unset($key);
-    }
-    public function offsetGet($key) {
-        return $this->__get($key);
-    }
 
     /**
      * @param string $relname
@@ -192,34 +52,194 @@ class Rows implements \IteratorAggregate, \Countable, \ArrayAccess {
         if ('belongs_to' === $reltype) {
             if (!isset($this->rel[$relname])) {
                 $relfk    = $relMeta["foreign_key"];
-                $relfks   = array_unique(array_map(function($row)use($relfk){return $row[$relfk]; }, $this->o));
-                $relat    = $relclass::getSome($this->db, $relfks)->data();
-                $this->rel[$relname] = $relat;
+                // for each line, get the foreign key
+                $relfks   = array_map(function($id)use($relfk, $model){return $model::$_buffer[$id][$relfk]; }, $this->o);
+                $relat    = $relclass::getSome($this->db, array_unique($relfks));
+                $this->rel[$relname] = $relat->ids();
             }
             return new Rows($this->db, $relclass, $this->rel[$relname]);
         } elseif ('has_many' === $reltype) {
+            // For all of our lines, find the other rows, referenced by our line
             if (!isset($this->rel[$relname])) {
                 $relfk    = $relMeta["foreign_key"];
-                $relfks   = array_keys($this->o);
-                $relat    = $relclass::findAll($this->db, array($relfk=>$relfks))->data();
-                $this->rel[$relname] = $relat;
+                $relfks   = $this->o;
+                $relat    = $relclass::findAll($this->db, array($relfk=>$relfks));
+                $this->rel[$relname] = $relat->ids();
             }
             return new Rows($this->db, $relclass, $this->rel[$relname]);
         } elseif ('belongs_to_json' === $reltype) {
             if (!isset($this->rel[$relname])) {
                 $relfk    = $relMeta["foreign_key"];
-                $relfk    = array_map(function($row)use($relfk){return $row[$relfk]; }, $this->o);
-                $relfks   = array();
-                array_walk($relfk, function($in) use (&$relfks) {
-                    $relfks = array_merge($relfks, json_decode($in));
+                $relfks   = array_map(function($id)use($relfk, $model){return $model::$_buffer[$id][$relfk]; }, $this->o);
+                $relfks2  = array();
+                array_walk($relfks, function($in) use (&$relfks2) {
+                    $relfks2 = array_merge($relfks2, json_decode($in));
                 });
-                $relfks = array_unique($relfks);
-                $relat    = $relclass::getSome($this->db, $relfks);
-                $this->rel[$relname] = $relat->data();
+                $relat    = $relclass::getSome($this->db, array_unique($relfks2));
+                $this->rel[$relname] = $relat->ids();
             }
             return new Rows($this->db, $relclass, $this->rel[$relname]);
         }
     }
+
+
+
+
+    // implements countable
+    public function count() {
+        return count($this->o);
+    }
+
+    // implements tostring
+    public function __toString() {
+        $r = "{\n";
+        $first = 0;
+        $model = $this->nam;
+        foreach ($this->o as $k) {
+            $r .= ($first++)?(",\n"):("");
+            $r .= "  ";
+            $r .= '"' . addslashes($k) . '":' . $model::_getOne($this->db, $k);
+        }
+        $r .= "\n}";
+        return $r;
+    }
+
+
+
+    // implements StdClass
+    public function __get($id) {
+        if (!in_array($id, $this->o)) {
+            throw new \Gb_Exception("row not found");
+        }
+
+        $aRels = array();
+        $model = $this->nam;
+
+        foreach($this->rel as $relname=>$reldata) {
+            $relMeta = $model::$rels[$relname];
+            $relclass = $relMeta["class_name"];
+            $reltype  = $relMeta["reltype"];
+            $relfk = $relMeta["foreign_key"];
+            if ('belongs_to' === $reltype) {
+                $pk = $model::$_buffer[$id][$relfk];
+                $aRels[$relname] = $relclass::_getOne($this->db, $pk)->data();
+            } elseif ('has_many' === $reltype) {
+                $aRels[$relname] = array_filter($reldata, function($pk) use ($relclass, $relfk, $id) {
+                    // keep only the matching lines
+                    return $relclass::$_buffer[$pk][$relfk] == $id;
+                });
+            } elseif ('belongs_to_json' === $reltype) {
+                // get the json values for the asked row
+                $pks = json_decode($model::$_buffer[$id][$relfk]);
+                $aRels[$relname] = $pks;
+            }
+        }
+
+        return $model::_getOne($this->db, $id, $aRels);
+    }
+    public function __set($id, $value) {
+        throw new \Gb_Exception("Not available");
+    }
+    public function __isset($id) {
+        return in_array($id, $this->o);
+    }
+    public function __unset($id) {
+        $this->o = array_filter($this->o, function($cur)use($id){return $id!==$cur;});
+    }
+
+    // Implements IteratorAggregate
+    public function getIterator () {
+        //return new \ArrayIterator($this->o);
+        return new RowIterator($this->db, $this->nam, $this->o);
+    }
+
+    // implements ArrayAccess
+    public function offsetSet($key, $value) {
+        return $this->__set($key, $value);
+    }
+    public function offsetExists($key) {
+        return $this->__isset($key);
+    }
+    public function offsetUnset($key) {
+        return $this->__unset($key);
+    }
+    public function offsetGet($key) {
+        return $this->__get($key);
+    }
+
+    // implements Iterator (actually it is not "implemented", superceded by IteratorAggregate, but these functions are handy)
+    protected function tableRow($id) {
+        $model = $this->nam;
+        return $model::_getOne($this->db, $id);
+    }
+    public function current() {
+        $id = current($this->o);
+        return $this->tableRow($id);
+    }
+    public function next() {
+        $id = next($this->o);
+        if (false === $id) {
+            return $id;
+        }
+        return $this->tableRow($id);
+    }
+    public function key() {
+        return $this->o[key($this->o)];  // key must be the pk, not the array index
+    }
+    public function valid() {
+        return key($this->o) !== null;
+
+    }
+    public function rewind () {
+        return reset($this->o);
+    }
+
+
 }
 
-?>
+
+
+
+
+
+class RowIterator implements \Iterator {
+    protected $db;
+    protected $o;
+    protected $nam;
+
+    public function __construct($db, $nam, $o) {
+        $this->db = $db;
+        $this->nam = $nam;
+        $this->o = $o;
+    }
+
+    protected function tableRow($id) {
+        $model = $this->nam;
+        return $model::_getOne($this->db, $id);
+    }
+
+    // implements Iterator
+    public function current() {
+        $id = current($this->o);
+        return $this->tableRow($id);
+    }
+    public function next() {
+        $id = next($this->o);
+        if (false === $id) {
+            return $id;
+        }
+        return $this->tableRow($id);
+    }
+    public function key() {
+        return $this->o[key($this->o)]; // key must be the pk, not the array index
+    }
+    public function valid() {
+        return key($this->o) !== null;
+
+    }
+    public function rewind () {
+        return reset($this->o);
+    }
+
+}
+
