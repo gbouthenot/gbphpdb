@@ -80,15 +80,24 @@ class Model implements \IteratorAggregate, \ArrayAccess {
      */
     public static function getSome($ids) {
         $args = func_get_args();
-        $ids = array_pop($args);
+        $ids = array_unique(array_pop($args));
         $db = array_pop($args); if (!$db) {$db = self::$_db; };
 
+        // fetch the rows
+        self::_getSome($db, $ids);
+
+        return new Rows($db, get_called_class(), $ids);
+    }
+
+
+    /*
+     * Fetch the rows that are not in the buffer
+     */
+    public static function _getSome(\Gb_Db $db, array $ids) {
         // get the rows that are not in the buffer
         $ids = array_unique($ids);
         $fetchIds = array_diff($ids, array_keys(static::$_buffer));
         self::fetch($db, $fetchIds); // fetch them
-
-        return new Rows($db, get_called_class(), $ids);
     }
 
 
@@ -301,7 +310,7 @@ class Model implements \IteratorAggregate, \ArrayAccess {
         $this->rel  = $rel;
     }
 
-    public function data() {
+    public function asArray() {
         return $this->o;
     }
 
@@ -399,7 +408,7 @@ class Model implements \IteratorAggregate, \ArrayAccess {
                 $relfk    = $relMeta["foreign_key"];
                 $relfk    = $this->o[$relfk];
                 $relat    = $relclass::getOne($this->db, $relfk);
-                $this->rel[$relname] = $relat->data();
+                $this->rel[$relname] = $relat->asArray();
             }
             return new $relclass($this->db, $this->rel[$relname][$relclass::$_pk], $this->rel[$relname]);
         } elseif ('has_many' === $reltype) {
@@ -415,7 +424,7 @@ class Model implements \IteratorAggregate, \ArrayAccess {
                 $relfk    = $relMeta["foreign_key"];
                 $relfk    = $this->o[$relfk];
                 $relfk    = json_decode($relfk);
-                $relclass::getSome($this->db, $relfk);
+                $relclass::_getSome($this->db, $relfk);
                 $this->rel[$relname] = $relfk;
             }
             return new Rows($this->db, $relclass, $this->rel[$relname]);
