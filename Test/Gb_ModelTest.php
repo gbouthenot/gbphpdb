@@ -8,6 +8,9 @@ require_once "../Gb/Model/Rows.php";
 require_once 'Gb_Model/setup.php';
 require_once 'Gb_Model/models.php';
 
+register_shutdown_function( function(){
+    echo Gb_Response::get_footer();
+});
 
 class Gb_ModelTest extends PHPUnit_Framework_TestCase
 {
@@ -68,11 +71,16 @@ class Gb_ModelTest extends PHPUnit_Framework_TestCase
         $this->assertSame("cbarbie6", $found);
     }
 
+
+
     public function testGetSome()
     {
         $authors = Author::getSome(array(45, 49, 43));
         $this->assertSame(3, count($authors));
         $this->assertSame("ibach", $authors->{49}->login);
+        $this->assertSame("ibach", $authors[49]->login);
+        $this->assertSame("ibach", $authors[49]["login"]);
+        $this->assertSame("ibach", $authors->{49}["login"]);
 
         $aAuthors = JSON_decode((string) $authors, true);
         $this->assertSame(3, count($aAuthors));
@@ -105,14 +113,19 @@ class Gb_ModelTest extends PHPUnit_Framework_TestCase
 
     }
 
+
     public function testGetSome_extended() {
         // fetch a row twice
         $authors = Author::getSome(array(45, 49, 43, 45));
         $this->assertSame(3, count($authors));
 
         // fetch an inexistent row
-        $authors = Author::getSome(array(45, 49, 43, -1));
-        $this->assertSame(3, count($authors));
+        $e = null;
+        try {
+            $authors = Author::getSome(array(45, 49, 43, -1));
+        } catch (Exception $e) {
+        }
+        $this->assertSame("Gb_Exception", get_class($e));
 
         $authors = Author::getSome(array());
         $this->assertSame(0, count($authors));
@@ -134,8 +147,6 @@ class Gb_ModelTest extends PHPUnit_Framework_TestCase
         $this->assertSame("Gb_Exception", get_class($e));
 
     }
-
-
 
     public function testUnknownRel()
     {
@@ -160,8 +171,6 @@ class Gb_ModelTest extends PHPUnit_Framework_TestCase
 
     }
 
-
-
     public function testGetSomeBelongsto()
     {
         $questionnaires = Questionnaire::getSome(array(24,37,22));
@@ -179,6 +188,7 @@ class Gb_ModelTest extends PHPUnit_Framework_TestCase
         $prop = $reflection->getProperty('rel');
         $prop->setAccessible(true);
         $aRels = $prop->getValue($questionnaire);
+        $this->assertArrayHasKey("etudiant", $aRels);
         $this->assertSame("vlave", $aRels["etudiant"]["login"]);
 
         $this->assertSame("bcael2",   $questionnaires->rel("etudiant")->{8}->login);
@@ -192,7 +202,6 @@ class Gb_ModelTest extends PHPUnit_Framework_TestCase
         $this->assertSame("vbassano", $questionnaire->rel("etudiant")->login);
         $this->assertSame("Author", get_class($questionnaire->rel("etudiant")));
     }
-
 
     public function testFindAll()
     {
@@ -242,7 +251,6 @@ class Gb_ModelTest extends PHPUnit_Framework_TestCase
     }
 
 
-
     public function testGetOneHasmany()
     {
         // this student only have one questionnaire
@@ -256,8 +264,6 @@ class Gb_ModelTest extends PHPUnit_Framework_TestCase
         $this->assertEquals(3, count($questionnaires));
         $this->assertSame("Questionnaire", get_class($questionnaires->current()));
     }
-
-
 
     public function testGetSomeHasmany() {
         $etudiants = Author::getSome(array(6,7));
@@ -286,11 +292,24 @@ class Gb_ModelTest extends PHPUnit_Framework_TestCase
         $this->assertEquals(26, $questionnaire->rel("alineas")->{31}->question_id);
     }
 
-
     public function testGetSomeBelongstojson() {
         $questionnaires = Questionnaire::getSome(array(2,3));
         $alineas = $questionnaires->rel("alineas");
         $this->assertEquals(13, count($alineas));
+
+        // check that the relation is automatically copied
+        $questionnaire = $questionnaires[3];
+        $reflection = new ReflectionClass('\Gb\Model\Model');
+        $prop = $reflection->getProperty('rel');
+        $prop->setAccessible(true);
+        $aRels = $prop->getValue($questionnaire);
+        $this->assertEquals(7, count($aRels["alineas"]));
+        $this->assertEquals(7, count($questionnaire->rel("alineas")));
+        $this->assertEquals(7, count($questionnaires[2]->rel("alineas")));
+        $this->assertSame("QuestionAlinea", get_class($questionnaire->rel("alineas")->current()));
+        $q3 = join($questionnaire->rel("alineas")->ids());
+        $q2 = join($questionnaires[2]->rel("alineas")->ids());
+        $this->assertNotSame($q2, $q3);
     }
 
 

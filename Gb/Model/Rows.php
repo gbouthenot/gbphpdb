@@ -71,6 +71,10 @@ class Rows implements \IteratorAggregate, \Countable, \ArrayAccess {
         return $this->o;
     }
 
+    public function ids() {
+        return array_keys($this->o);
+    }
+
 	/* (non-PHPdoc)
      * @see IteratorAggregate::getIterator()
      */
@@ -97,6 +101,9 @@ class Rows implements \IteratorAggregate, \Countable, \ArrayAccess {
                 $aRels[$relname] = $reldata[$data[$relfk]];
             } elseif ('has_many' === $reltype) {
                 $aRels[$relname] = array_filter($reldata,function($row)use($relfk, $key){return $key == $row[$relfk];});
+            } elseif ('belongs_to_json' === $reltype) {
+                $relclass = $relMeta["class_name"];
+                $aRels[$relname] = $relclass::getSome(json_decode($data[$relfk]))->data();
             }
         }
 

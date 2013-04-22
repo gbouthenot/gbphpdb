@@ -71,12 +71,21 @@ class Model implements \IteratorAggregate, \ArrayAccess {
         $ids = array_pop($args);
         $db = array_pop($args); if (!$db) {$db = self::$_db; };
 
+        $ids = array_unique($ids);
         $idsq = array_map(function($val)use($db){return $db->quote($val);}, $ids);
 
         $tablename = static::$_tablename;
         $sql  = " SELECT * FROM $tablename";
         $sql .= " WHERE " . static::$_pk . " IN (" . implode(",", $idsq) . ")";
         $data = $db->retrieve_all($sql, null, static::$_pk, null, true);
+
+        if ( count($data) !== count($ids)) {
+            if (1 === count($ids)) {
+                throw new \Gb_Exception("row not found");
+            }
+            throw new \Gb_Exception(count($data) . " rows retrieved, " . count($ids) . " rows expected.");
+        }
+
         return new Rows($db, get_called_class(), $data);
     }
 
