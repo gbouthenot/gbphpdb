@@ -44,6 +44,13 @@ class Rows implements \IteratorAggregate, \Countable, \ArrayAccess {
         return array_intersect_key($model::$_buffer, array_flip($this->o));
     }
 
+    /**
+     * Return the rows as an associative array
+     * @return array(id=>array(), ...)
+     */
+    public function asJson() {
+      return json_encode($this->asArray());
+    }
 
 
     /**

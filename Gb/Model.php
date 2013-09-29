@@ -104,10 +104,9 @@ class Model implements \IteratorAggregate, \ArrayAccess {
     /**
      * Get all rows
      * @param \Gb_Db[optional] $db
-     * @param array $ids
      * @return \Gb\Model\Rows
      */
-    public static function getAll() {
+    public static function getAll(\Gb_Db $db=null) {
         $args = func_get_args();
         $db = array_pop($args); if (!$db) {$db = self::$_db; };
 
@@ -312,6 +311,9 @@ class Model implements \IteratorAggregate, \ArrayAccess {
 
     public function asArray() {
         return $this->o;
+    }
+    public function asJson() {
+        return json_encode($this->o);
     }
 
     public function save() {
