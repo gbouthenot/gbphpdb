@@ -36,6 +36,7 @@ Class Gb_Db extends Zend_Db
     protected $charset;
     protected $fTransaction=false;
     protected $fInitialized=false;
+    protected $instanceNumber=null;
 
     /**
      * @var Gb_Cache
@@ -50,6 +51,7 @@ Class Gb_Db extends Zend_Db
     protected static $nbInstance_peak=0;                     // maximum ouvertes simultanément
     protected static $nbInstance_current=0;                  // nom d'instances ouvertes en ce moment
     protected static $nbRequest=0;                           // Nombre de requetes effectuées
+    protected static $sqlLog=array();                        // log de toutes les requêtes effectuées, par instance
 
     protected static $fPluginRegistred=false;
 
@@ -152,6 +154,8 @@ Class Gb_Db extends Zend_Db
             throw new Gb_Exception($e->getMessage());
         }
 
+        $this->instanceNumber = self::$nbInstance_total;
+        $this->log("CONNECT TO $host:$name");
         self::$nbInstance_total++;
         self::$nbInstance_current++;
         self::$nbInstance_peak=max(self::$nbInstance_peak, self::$nbInstance_current);
@@ -197,6 +201,14 @@ Class Gb_Db extends Zend_Db
         return $this->_cache;
     }
 
+    /**
+     * Log the request
+     * @param string $str
+     */
+    public function log($str) {
+        self::$sqlLog[$this->instanceNumber][] = $str;
+    }
+
     public function initialize()
     {
         if ($this->fInitialized) {
@@ -232,7 +244,10 @@ Class Gb_Db extends Zend_Db
         $sqltime=Gb_Util::roundCeil($sqltime);
         $ret.="Gb_Db:{ ";
         $ret.="totalInstances:$dbtotal peakInstances:$dbpeak nbrequests:$nbrequest time:{$sqltime}s";
-        $ret.=" }";
+        foreach (self::$sqlLog as $loginstance) {
+            $ret .= "<br />" . implode("\n", $loginstance);
+        }
+        $ret.="<br /> }";
 
         return $ret;
     }
@@ -521,6 +536,7 @@ EOF;
     function exec($sql)
     {
         self::$nbRequest++;
+        $this->log($sql);
         $time=microtime(true);
         $this->initialize();
         $ret=$this->_adapter->getConnection()->exec($sql);
@@ -570,6 +586,8 @@ EOF;
         $time=microtime(true);
         $this->initialize();
         self::$nbRequest++;
+        $this->log($sql);
+
 
         if ( (false === $bindargurment) || (null === $bindargurment)) {
             $bindargurment=array();
@@ -640,6 +658,8 @@ EOF;
         $time=microtime(true);
         $this->initialize();
         self::$nbRequest++;
+        $this->log($sql);
+
 
         if ( (false === $bindargurment) || (null === $bindargurment)) {
             $bindargurment=array();
@@ -743,6 +763,8 @@ EOF;
         $time=microtime(true);
         $this->initialize();
         self::$nbRequest++;
+        $this->log("UPDATE $table");
+
         try {
             $ret=$this->_adapter->update($table, $data, $where);
         } catch (Exception $e) {
@@ -766,6 +788,8 @@ EOF;
         $time=microtime(true);
         $this->initialize();
         self::$nbRequest++;
+        $this->log("DELETE $table");
+
         try {
             $ret=$this->_adapter->delete($table, $where);
         } catch (Exception $e) {
@@ -790,6 +814,8 @@ EOF;
         $time=microtime(true);
         $this->initialize();
         self::$nbRequest++;
+        $this->log("INSERT $table");
+
         try {
             $ret=$this->_adapter->insert($table, $data);
         } catch (Exception $e) {
@@ -824,6 +850,8 @@ EOF;
         $time=microtime(true);
         $this->initialize();
         self::$nbRequest++;
+        $this->log("REPLACE $table");
+
         try {
             // compte le nombre de lignes correspondantes
             $select=$this->_adapter->select();
@@ -888,6 +916,8 @@ EOF;
         $time=microtime(true);
         $this->initialize();
         self::$nbRequest++;
+        $this->log("INSERTORDELETEINSERT $table");
+
 
         $where=array();
         $newdata=array();
@@ -980,6 +1010,8 @@ EOF;
         $time=microtime(true);
         $this->initialize();
         self::$nbRequest++;
+        $this->log("INSERTORUPDATENOTWORKING $table");
+
 
         $where=array();
         $newdata=array();
@@ -1024,6 +1056,8 @@ EOF;
         $time=microtime(true);
         $this->initialize();
         self::$nbRequest++;
+        $this->log("INSERTORUPDATE $table");
+
 
         $where=array();
         $newdata=array();
@@ -1190,6 +1224,8 @@ EOF;
         $time=microtime(true);
         $this->initialize();
         self::$nbRequest++;
+        $this->log("SEQUENCECURRENT $tableName");
+
         $sql="SELECT ".$this->_adapter->quoteIdentifier($colName)." FROM ".$this->_adapter->quoteIdentifier($tableName);
         $stmt=$this->_adapter->query($sql);
         $res=$stmt->fetch(Zend_Db::FETCH_NUM);
