@@ -591,4 +591,25 @@ class Gb_String
         return str_pad($input, $pad_length+$diff, $pad_string, $pad_type);
     }
 
+    /**
+     * Friendler (more tolerant) json_decode
+     * Handles spaces, not-quoted object index and comments
+     * usage same as the official json_decode
+     */
+    public static function json_decode(/* $json, $assoc=false, $depth=512, $options=0 */)
+    {
+        $p = func_get_args();
+        // from: 1franck
+        // Sometime, i need to allow comments in json file. So i wrote a small func to clean comments in a json string before decoding it:
+        // (replaced double quotes by single quotes)
+        $p[0] = preg_replace('#(/\*([^*]|[\r\n]|(\*+([^*/]|[\r\n])))*\*+/)|([\s\t](//).*)#', '', $p[0]);
+
+        // from: phpdoc at badassawesome dot com:
+        // I added a 3rd regex to the json_decode_nice function by "colin.mollenhour.com" to handle a trailing comma in json definition.
+        $p[0] = str_replace(array("\n","\r"),"", $p[0]);
+        $p[0] = preg_replace('/([{,]+)(\s*)([^"]+?)\s*:/','$1"$3":', $p[0]);
+        $p[0] = preg_replace('/(,)\s*}$/','}', $p[0]);
+        return call_user_func_array('\json_decode', $p);
+    }
+
 }
