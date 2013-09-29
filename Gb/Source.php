@@ -1,7 +1,7 @@
 <?php
 /**
  * Gb_Form
- * 
+ *
  * @author Gilles Bouthenot
  * @version $Revision$
  * @Id $Id$
@@ -24,9 +24,9 @@ class Gb_Source
     protected $_files;
 
     protected $_aOptions;
-    
+
     protected $_includePath;
-    
+
     protected $_defaultOptions;
 
     /**
@@ -44,7 +44,7 @@ class Gb_Source
         if ($throw) { throw new Gb_Exception(__CLASS__." r".$revision."<r".$mini); }
         return false;
     }
-    
+
     /**
      * Constructor
      * @param array[optional] $aOptions default options
@@ -56,7 +56,7 @@ class Gb_Source
             "expand_tab"=> true,                    // replace \t by spaces
             "tab_size"=>4,                          // number of spaces
             "strip_whitelines"=>true,              // strip space-only lines
-            "strip_trailing_spaces"=>true,         // strip spaces at the end of all lines 
+            "strip_trailing_spaces"=>true,         // strip spaces at the end of all lines
             "require_once_expand"=>true,           // Remove "require_once" and insert the file with the current options
             "require_once_expand_silent"=>false,   // Don't replace requires_once by a comment.
             "require_once_dont_expand"=>array(),   // List of files not to expand
@@ -69,7 +69,7 @@ class Gb_Source
         $this->_files=array();
         $this->_includePath=explode(PATH_SEPARATOR, get_include_path());
     }
-    
+
     /**
      * Reset default options
      * @return Gb_Source Provides a fluent interface
@@ -79,7 +79,7 @@ class Gb_Source
         $this->_aOptions=$this->_defaultOptions;
         return $this;
     }
-    
+
     /**
      * Set options
      * @return Gb_Source Provides a fluent interface
@@ -91,7 +91,7 @@ class Gb_Source
         }
         return $this;
     }
-    
+
     /**
      * Get default options
      * @return array;
@@ -100,7 +100,7 @@ class Gb_Source
     {
         return $this->_aOptions;
     }
-    
+
     /**
      * Set include path
      *  @return Gb_Source Provides a fluent interface
@@ -109,8 +109,8 @@ class Gb_Source
     {
         $this->_includePath=$path;
     }
-    
-    
+
+
     /**
      * returns include path
      * @return array
@@ -119,8 +119,8 @@ class Gb_Source
     {
         return $this->_includePath;
     }
-    
-    
+
+
     /**
      * Add a php file
      * @param string $filename
@@ -147,7 +147,7 @@ class Gb_Source
             throw new Gb_Exception("File $filename cannot be found");
         }
         $realpath=realpath($realfilename);
-        
+
         // look if the file is already in the stack
         $fAlreadyThere=false;
         foreach ($this->_files as $file) {
@@ -155,7 +155,7 @@ class Gb_Source
                 $fAlreadyThere=true;
             }
         }
-        
+
         if (!$fAlreadyThere) {
             $aOptions2=$this->getOptions();
             if (is_array($aOptions)) {
@@ -187,17 +187,17 @@ class Gb_Source
         $a2=array_slice($into, $pos);
         return array_merge($a1, $a2);
     }
-    
+
     public function render()
     {
         $gloret="";
-        
+
         // $this->_files may dynamically expand
         $isPhp=false;
         for ($run_file=0; $run_file<count($this->_files); $run_file++) {
             $file=$this->_files[$run_file];
             list($type, $realpath, $aOptions) = $file;
-            
+
             if ($type==="PHP_FILE") {
                 if (!$isPhp) {
                     $gloret.="<?php\n";
@@ -210,7 +210,7 @@ class Gb_Source
         }
         return $gloret;
     }
-    
+
     protected function _renderPhpFile($realpath, $aOptions, $position)
     {
         $filecon=file_get_contents($realpath, false);
@@ -224,29 +224,33 @@ class Gb_Source
         }
         $fileout=$this->_processPhp($tokens, $aOptions);
 
+        /*
         if (substr($fileout, 0, 1)!=="\n") {
             $fileout="\n".$fileout;
         }
+        */
+
+        // file must end with a newline
         if (substr($fileout, -1)!=="\n") {
             $fileout.="\n";
         }
 
         return $fileout;
     }
-    
+
     protected function _tokenize($source)
     {
         return token_get_all($source);
     }
-    
-    
+
+
     protected function _stripRequireOnce(array &$tokens, $aKeep=array())
     {
         $aRequires=array();
         $tokens2=array();
         $total=count($tokens);
         for ($i=0; $i<$total; $i++) {
-            $token=$tokens[$i];            
+            $token=$tokens[$i];
             if (is_string($token)) {
                 $tokens2[]=$token;
             } else {
@@ -280,7 +284,7 @@ class Gb_Source
         $tokens=$tokens2;
         return $aRequires;
     }
-    
+
 
     protected function _processPhp($tokens, $aOptions)
     {
@@ -292,8 +296,9 @@ class Gb_Source
             } else {
                 // token array
                 list($id, $text) = $token;
-        
-                switch ($id) { 
+                $tokentype = token_name($id); // for debug only
+
+                switch ($id) {
                     case T_COMMENT: case T_DOC_COMMENT:
                         if ($aOptions["strip_comments"]) {
                             $ret=preg_replace('/[ \t]+$/', '', $ret); // removes previous spaces or tab
@@ -302,7 +307,12 @@ class Gb_Source
                         $ret.=$text;
                         break;
 
-                    case T_OPEN_TAG: case T_CLOSE_TAG:        // "<?php" or "? >"
+                    case T_OPEN_TAG:                        // "<?php" or "<?"
+                        $ret.=$text;
+                        break;
+
+                    case T_CLOSE_TAG:                       // "? >"
+                        $ret.=$text;
                         break;
 
                     case T_COMMENT: case T_DOC_COMMENT:
@@ -315,7 +325,7 @@ class Gb_Source
 
                     //case T_REQUIRE_ONCE:
                     //    break;
-                       
+
                     case "Gb_Source comment":
                         if (!$aOptions["require_once_expand_silent"]) {
                             $id=T_COMMENT;
@@ -327,7 +337,7 @@ class Gb_Source
                             }
                         }
                         break;
-                       
+
                     default:
                         // anything else -> output "as is"
                         $ret.=$text;
@@ -335,7 +345,7 @@ class Gb_Source
                 }
             }
         }
-        
+
         if ($aOptions["strip_trailing_spaces"]) {
             $ret=preg_replace('/^(\s)+$/m', '', $ret);
         }
@@ -355,7 +365,7 @@ class Gb_Source
             $ret=str_replace(str_repeat(" ", $aOptions["tab_size"]), " ", $ret);
             //$ret=preg_replace('/^'.str_repeat(" ", $aOptions["tab_size"]).'/m', ' ', $ret);
         }
-        
+
         return $ret;
     }
 
