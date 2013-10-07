@@ -275,14 +275,18 @@ class Gb_String
      * Transform an array into CSV format. Replace newlines by " - ".
      * Decodes UTF8 unless $fRawMode is set.
      *
-     * @param array   $data        array(array("field"=>$value, ...), ...)
-     * @param boolean $fEnableUtf8 set to true for sending UTF8 (default:false:do utf8_decode)
+     * @param array             $data        array(array("field"=>$value, ...), ...) 
+     * @param boolean[optional] $fEnableUtf8 set to true for sending UTF8 (default:false:do utf8_decode)
+     * @param string[optional]  $arrayMode   "FIRST" (default) or a string used to implode array
      * @return string
      */
-    public static function arrayToCsv(array $data, $fEnableUtf8=null)
+    public static function arrayToCsv(array $data, $fEnableUtf8=null, $arrayMode=null)
     {
         if (count($data)==0) {
             return "";
+        }
+        if (null === $arrayMode) {
+            $arrayMode = "FIRST";
         }
         $ret="";
 
@@ -298,7 +302,7 @@ class Gb_String
 
         foreach($data as $ligne) {
             foreach(array_keys($firstligne) as $ind) {
-                $col = $ligne[$ind];
+                $col = self::splat($ligne[$ind], $arrayMode);
                 $col = str_replace('"',    '""',   $col);
                 $col = str_replace("\r",   "\n",   $col);
                 $col = str_replace("\n\n", "\n",   $col);
@@ -364,21 +368,41 @@ class Gb_String
     }
 
     /**
+     * Used by ArrayToCsv and formatTable
+     * @param mixed $col
+     * @param string $arrayMode
+     * @return string
+     */
+    protected static function splat($col, $arrayMode) {
+        if (is_array($col)) {
+            if ("FIRST" === $arrayMode) {
+                $ind2 = array_keys($col);
+                $col = (isset($ind2[0])) ? ($col[$ind2[0]]) : "";
+            } else {
+                $col = implode($arrayMode, $col);
+            }
+        }
+
+        return $col;
+    }    
+    
+    /**
      * Format an array
      *
      * @param array $array
      * @param string $format[optional] text(default)|html|csv
      * @param integer[optional] maxColLen default:40, 0 for no limit
      * @param string[optional] string to use for padding (default " ", set to "" for no padding)
+     * @param string[optional]  $arrayMode   "FIRST" (default) or a string used to implode array cols
      * @return string
      */
-    public static function formatTable(array $array, $format=null, $maxColLen=null, $pad=null)
+    public static function formatTable(array $array, $format=null, $maxColLen=null, $pad=null, $arrayMode=null)
     {
         if (null === $format) { $format = "text"; }
         $format=strtolower($format);
 
         if ('csv' === $format) {
-            return self::arrayToCsv($array);
+            return self::arrayToCsv($array, null, $arrayMode);
         }
 
         $ret="";
@@ -390,6 +414,9 @@ class Gb_String
         }
         if (null === $pad) {
             $pad = " ";
+        }
+        if (null === $arrayMode) {
+            $arrayMode = "FIRST";
         }
 
         // should we also display the key index ?
@@ -422,7 +449,8 @@ class Gb_String
             foreach ($array as $indexname=>$line) {
                 $max["index"]=max($max["index"], mb_strlen($indexname, "UTF-8"));
                 foreach ($firstrowkeys as $number=>$keyname) {
-                    $max[$number]=max($max[$number], mb_strlen(str_replace(array("\r","\n","\0"), array("\\r", "\\n", "\\0"), $line[$keyname]), "UTF-8"));
+                    $col = self::splat($line[$keyname], $arrayMode);
+                    $max[$number]=max($max[$number], mb_strlen(str_replace(array("\r","\n","\0"), array("\\r", "\\n", "\\0"), $col)), "UTF-8");
                     if ($maxColLen) {
                         $max[$number] = min($max[$number], $maxColLen);
                     }
@@ -466,7 +494,9 @@ class Gb_String
                 }
                 foreach ($firstrowkeys as $number=>$keyname) {
                     $len=$max[$number];
-                    $ret.="|".$pad.self::mb_str_pad(mb_substr(str_replace(array("\r","\n","\0"), array("\\r", "\\n", "\\0"), $line[$keyname]), 0, $len, "UTF-8"), $len, " ", STR_PAD_LEFT).$pad;
+                    $col = self::splat($line[$keyname], $arrayMode); 
+
+                    $ret.="|".$pad.self::mb_str_pad(mb_substr(str_replace(array("\r","\n","\0"), array("\\r", "\\n", "\\0"), $col), 0, $len, "UTF-8"), $len, " ", STR_PAD_LEFT).$pad;
                 }
                 $ret.="|\n";
             }
@@ -497,7 +527,7 @@ class Gb_String
                     $tbody .= "<td>$indexname</td>\n";
                 }
                 foreach ($firstrowkeys as $number=>$keyname) {
-                    $val = htmlspecialchars($line[$keyname]);
+                    $val = htmlspecialchars(self::splat($line[$keyname], $arrayMode));
                     $tbody .= "<td>$val</td>";;
                 }
                 $tbody .= "</tr>\n";
