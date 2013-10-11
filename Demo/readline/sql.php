@@ -83,7 +83,33 @@ if (!is_array($dbParams)) {
     echo "error: favorite $favoriteName in file $fname is not correctly defined\n";
     exit(2);
 }
+if (isset($dbParams["user"]) && $dbParams["user"]==="?") {
+    $user = readline("User: ");
+    if (strlen($user)===0) {
+        exit(2);
+    }
+    $dbParams["user"] = $user;
+    unset($user);
+}
+if (isset($dbParams["pass"]) && $dbParams["pass"]==="?") {
+    // read from standard input without displaying content.
+    // Other ways to to it, including windows: https://blog.dsl-platform.com/hiding-input-from-console-in-php/
+    // turn off echo
+    system("/bin/stty -echo");
 
+    echo "Password: ";
+    $pass = trim(fgets(STDIN));
+    echo "\n";
+
+    // turn echo back on
+    system("/bin/stty echo");
+
+    if (strlen($pass)===0) {
+        exit(2);
+    }
+    $dbParams["pass"] = $pass;
+    unset($pass);
+}
 
 $db = new Gb_Db($dbParams);
 $cacheId = $dbParams["type"].@$dbParams["host"].@$dbParams["port"].@$dbParams["name"];
