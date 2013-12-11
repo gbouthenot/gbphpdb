@@ -136,16 +136,16 @@ class Gb_Log
     {
         $dirname = dirname($fn);
         if (!is_dir($dirname)) {
-            throw new Gb_Exception("cannot log : directory does not exist");
+            throw new Gb_Exception("cannot log : directory $dirname does not exist");
         }
         $dirname = realpath($dirname);
         $fullpath = $dirname . DIRECTORY_SEPARATOR . basename($fn);
         if (file_exists($fullpath) && !is_writable($fullpath)) {
-            throw new Gb_Exception("cannot write log to this file");
+            throw new Gb_Exception("cannot write log to file $fullpath");
         }
         if (!file_exists($fullpath)) {
             if (!is_writable($dirname)) {
-                throw new Gb_Exception("cannot write log to this directory : $dirname");
+                throw new Gb_Exception("cannot write log to directory $dirname");
             }
         }
         self::$logFilename = $fullpath;
