@@ -1,7 +1,7 @@
 <?php
 /**
  * Gb_Form_Elem_Hidden
- * 
+ *
  * @author Gilles Bouthenot
  * @version $Revision$
  * @Id $Id$

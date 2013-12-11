@@ -59,7 +59,7 @@ class Gb_TimerTest extends PHPUnit_Framework_TestCase
         $this->assertGreaterThan($old, $this->Gb_Timer->get());
         $this->Gb_Timer->reset();
         $this->assertLessThan($old, $this->Gb_Timer->get());
-        
+
     }
 
 

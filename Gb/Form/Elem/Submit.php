@@ -1,7 +1,7 @@
 <?php
 /**
  * Gb_Form_Elem_Submit
- * 
+ *
  * @author Gilles Bouthenot
  * @version $Revision$
  * @Id $Id$
@@ -19,7 +19,7 @@ require_once(_GB_PATH."Form/Elem/Abstract.php");
 class Gb_Form_Elem_Submit extends Gb_Form_Elem_Abstract
 {
     protected $_onclick;
-    
+
     public function __construct($name, array $aParams=array())
     {
         $availableParams=array("onclick");
@@ -27,7 +27,7 @@ class Gb_Form_Elem_Submit extends Gb_Form_Elem_Abstract
         $aParams["backendCol"]=false;
         return parent::__construct($name, $availableParams, $aParams);
     }
-    
+
     public function getInput($value, $inInput, $inputJs)
     {
         $elemid=$this->elemId();
@@ -36,21 +36,21 @@ class Gb_Form_Elem_Submit extends Gb_Form_Elem_Abstract
 
         $onclick=$this->onclick();
         if (strlen($onclick)) { $onclick="onclick='".htmlspecialchars($onclick, ENT_QUOTES)."'"; }
-        
+
         return "<input type='submit' class='submit' name='{$elemid}' $value $inInput $inputJs $onclick />";
     }
-    
 
-    
+
+
     /**
      * get/set onclick
      * @param string[optional] $text
-     * @return Gb_Form_Elem_Submit|String 
+     * @return Gb_Form_Elem_Submit|String
      */
     public final function onclick($text=null)
-    {   
+    {
         if ($text===null) {         return $this->_onclick; }
         else { $this->_onclick=$text; return $this;}
     }
-    
+
 }

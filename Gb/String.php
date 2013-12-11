@@ -275,7 +275,7 @@ class Gb_String
      * Transform an array into CSV format. Replace newlines by " - ".
      * Decodes UTF8 unless $fRawMode is set.
      *
-     * @param array             $data        array(array("field"=>$value, ...), ...) 
+     * @param array             $data        array(array("field"=>$value, ...), ...)
      * @param boolean[optional] $fEnableUtf8 set to true for sending UTF8 (default:false:do utf8_decode)
      * @param string[optional]  $arrayMode   "FIRST" (default) or a string used to implode array
      * @return string
@@ -384,8 +384,8 @@ class Gb_String
         }
 
         return $col;
-    }    
-    
+    }
+
     /**
      * Format an array
      *
@@ -494,7 +494,7 @@ class Gb_String
                 }
                 foreach ($firstrowkeys as $number=>$keyname) {
                     $len=$max[$number];
-                    $col = self::splat($line[$keyname], $arrayMode); 
+                    $col = self::splat($line[$keyname], $arrayMode);
 
                     $ret.="|".$pad.self::mb_str_pad(mb_substr(str_replace(array("\r","\n","\0"), array("\\r", "\\n", "\\0"), $col), 0, $len, "UTF-8"), $len, " ", STR_PAD_LEFT).$pad;
                 }

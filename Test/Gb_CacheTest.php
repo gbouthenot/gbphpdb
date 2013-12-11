@@ -70,7 +70,7 @@ class Gb_CacheTest extends PHPUnit_Framework_TestCase
         $test2=new Gb_Cache("test2");
         $test2->test2Property="test2Value";
         $this->assertEquals($test2->test2Property, "test2Value");
-        
+
         // détruit l'objet, le recrée et vérifie que les propriétés sont toujours là
         unset($this->CacheableObject);
         $this->assertFalse(isset($this->CacheableObject));
@@ -92,7 +92,7 @@ class Gb_CacheTest extends PHPUnit_Framework_TestCase
         $this->assertTrue(isset($testFile->testFileProperty));
         $this->assertEquals($testFile->testFileProperty, "testFileValue");
         unset($testFile);
-        
+
         // met à jour le fichier, l'objet ne doit plus être rensigné
         file_put_contents("testfile", "");
         $testFile=new Gb_Cache("testFile", "testfile");
@@ -122,7 +122,7 @@ class Gb_CacheTest extends PHPUnit_Framework_TestCase
         $this->assertTrue( isset($this->CacheableObject->testProperty) );
     }
 
-    
+
     /**
      * Tests CacheableObject->__empty()
      */
@@ -131,7 +131,7 @@ class Gb_CacheTest extends PHPUnit_Framework_TestCase
         $this->assertTrue(  empty($this->CacheableObject->testDontExist) );
         $this->assertFalse( empty($this->CacheableObject->testProperty) );
     }
-    
+
 
     /**
      * Tests CacheableObject->__unset()
@@ -142,12 +142,12 @@ class Gb_CacheTest extends PHPUnit_Framework_TestCase
         unset($this->CacheableObject->testProperty);
         $this->assertNull(     $this->CacheableObject->testProperty);
     }
-    
+
     public function test_class()
     {
         $tc=new tstclass();
         $this->assertEquals("private public privatestatic publicstatic", $tc->getall());
-        
+
         $tccache=new Gb_Cache('testtstclass', 30);
         if (empty($tccache->value)) {
             $tccache->value=$tc;
@@ -156,10 +156,10 @@ class Gb_CacheTest extends PHPUnit_Framework_TestCase
         $this->assertEquals("private public privatestatic publicstatic", $tccache->value->getall());
         unset($tccache);
         unset($tc);
-        
+
         $tccache2=new Gb_Cache('testtstclass', 30);
         $this->assertEquals("private public privatestatic publicstatic", $tccache2->value->getall());
-        
+
     }
 }
 
@@ -170,7 +170,7 @@ class tstclass
     public  $pub;
     private static $prvstat;
     public  static $pubstat;
-    
+
     function __construct()
     {
         $this->prv="private";
@@ -178,7 +178,7 @@ class tstclass
         self::$prvstat="privatestatic";
         self::$pubstat="publicstatic";
     }
-    
+
     function getall()
     {
         return $this->prv." ".$this->pub." ".self::$prvstat." ".self::$pubstat;

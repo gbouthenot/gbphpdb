@@ -1,7 +1,7 @@
 <?php
 /**
  * Gb_Form_Iterator
- * 
+ *
  * @author Gilles Bouthenot
  * @version $Revision$
  * @Id $Id$
@@ -18,13 +18,13 @@ class Gb_Form_Iterator implements RecursiveIterator, Countable
 {
     protected $_parent;
     protected $_keys;
-    
+
     public function __construct($parent)
     {
         $this->_parent=$parent;
         $this->_keys=$parent->getKeys();
     }
-    
+
 // implements Iterator START
     public function current()
     {
@@ -49,7 +49,7 @@ class Gb_Form_Iterator implements RecursiveIterator, Countable
         reset($this->_keys);
     }
 // implements Iterator END
-    
+
 // implements RecursiveIterator START
     public function hasChildren()
     {
@@ -62,7 +62,7 @@ class Gb_Form_Iterator implements RecursiveIterator, Countable
         return $this->_parent->$key->getIterator();
     }
 // implements RecursiveIterator END
-    
+
 // implements Countable START
     public function count()
     {

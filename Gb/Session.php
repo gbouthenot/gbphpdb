@@ -1,7 +1,7 @@
 <?php
 /**
  * Gb_Session
- * 
+ *
  * @author Gilles Bouthenot
  * @version $Revision$
  * @Id $Id$
@@ -22,10 +22,10 @@ require_once(_GB_PATH."Log.php");
 Class Gb_Session
 {
     public static $sessionDir="";           // Répertoire des sessions par défaut session_path/PROJECTNAME/sessions
-    
+
     protected static $grandTimeOutMinutes;
-    
-    
+
+
     /**
      * Renvoie la revision de la classe ou un boolean si la version est plus petite que précisée, ou Gb_Exception
      *
@@ -41,7 +41,7 @@ Class Gb_Session
         if ($throw) { throw new Gb_Exception(__CLASS__." r".$revision."<r".$mini); }
         return false;
     }
-    
+
    /**
    * Renvoie le nom du repertoire de la session
    * crée le répertoire si besoin
@@ -66,7 +66,7 @@ Class Gb_Session
         }
         return self::$sessionDir;
     }
-    
+
 
     /**
      * Positionne le répertoire des sessions
@@ -85,9 +85,9 @@ Class Gb_Session
         session_save_path($dirname);
         self::$sessionDir = $dirname;
     }
-    
-    
-    
+
+
+
     public static function getUniqId()
     {
         if (isset($_SESSION["Gb_Session"]))
@@ -95,10 +95,10 @@ Class Gb_Session
         else
             return "";
     }
-    
-    
-    
-    
+
+
+
+
    /**
     * Démarre une session sécurisée (id changeant, watch ip et l'user agent)
     * Mettre echo Gb_Session::session_start() au début du script.
@@ -114,12 +114,12 @@ Class Gb_Session
         session_name(Gb_Glue::getProjectName()."_PHPID");
         self::getSessionDir();
         session_start();
-    
+
         $agent = isset($_SERVER["HTTP_USER_AGENT"])?$_SERVER["HTTP_USER_AGENT"]:"no agent";
         $client=md5("U:".$agent." IP:". $_SERVER["REMOTE_ADDR"]);
-    
+
         $sWarning="";
-        
+
         $curSession=array();
         if (isset($_SESSION["Gb_Session"])) {
             $curSession=$_SESSION["Gb_Session"];
@@ -128,8 +128,8 @@ Class Gb_Session
         if (empty($curSession["uniqId"]))       { $curSession["uniqId"]="";       }
         if (empty($curSession["grandTimeout"])) { $curSession["grandTimeout"]=0;  }
         if (empty($curSession["relTimeout"]))   { $curSession["relTimeout"]=0;    }
-            
-    
+
+
 // j'enlève parce que ca engendre une dépendance sur Gb_Request
 //        $uniqId=Gb_Request::getForm("uniqId");
 //        if( strlen($uniqId) && $uniqId != $curSession["uniqId"] )
@@ -156,7 +156,7 @@ Class Gb_Session
             $sWarning.="<b>Votre session a expiré";
             $sWarning.=" Pour protéger votre confidentialité, veuillez vous réidentifier.</b><br />\n";
         }
-    
+
         if (strlen($curSession["uniqId"])==0)
         { // premier appel de la session: initialisation  du client
             $curSession=self::destroy();
@@ -166,23 +166,23 @@ Class Gb_Session
             //Gb_Log::logDebug("session_regenerate_id() uniqId={$curSession['uniqId']}");
             session_regenerate_id(true);
         }
-    
+
         $curSession["relTimeout"]=$time+60*$relTimeOutMinutes;
-        
+
         Gb_Glue::registerPlugin("Gb_Log", array(__CLASS__, "GbLogPlugin"));
-        
+
         $_SESSION["Gb_Session"]=$curSession;
-    
+
         //$gto=Gb_String::date_fr($curSession['grandTimeout']);
         //$rto=Gb_String::date_fr($curSession['relTimeout']);
         //Gb_Log::logDebug("Session is uniqId={$curSession['uniqId']} client={$curSession['client']} grandTimeout=$gto relTimeout=$rto}");
 
         return $sWarning;
     }
-  
-  
-  
-  
+
+
+
+
     public static function destroy()
     {
         session_regenerate_id(true);
@@ -196,18 +196,18 @@ Class Gb_Session
         $curSession["uniqId"]=$uniqId;
         $curSession["client"]=$client;
         $curSession["grandTimeout"]=$time+60*self::$grandTimeOutMinutes;
-        
+
         $_SESSION=array();
         $_SESSION["Gb_Session"]=$curSession;
-        
+
         //$gto=Gb_String::date_fr($curSession['grandTimeout']);
         //Gb_Log::logInfo("Session created uniqId={$uniqId} client={$client} grandTimeout=$gto");
         return $curSession;
     }
-    
-    
-    
-    
+
+
+
+
     public static function GbLogPlugin()
     {
         $uniqId=self::getUniqId();
@@ -215,7 +215,7 @@ Class Gb_Session
         return $uniqId;
     }
 
-    
+
     /**
      * Renvoie la valeur SESSION, sans slash ou default si elle n'est pas définie
      *
@@ -259,5 +259,5 @@ Class Gb_Session
     {
         return empty($_SESSION[$key]);
     }
-    
+
 }

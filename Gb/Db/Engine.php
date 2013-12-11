@@ -1,7 +1,7 @@
 <?php
 /**
  * Gb_Db_Engine
- * 
+ *
  * @author Gilles Bouthenot
  * @version $Revision$
  * @Id $Id$
@@ -36,7 +36,7 @@ Class Gb_Db_Engine
         if ($throw) { throw new Gb_Exception(__CLASS__." r".$revision."<r".$mini); }
         return false;
     }
-      
+
     /**
      * constructeur
      *
@@ -74,7 +74,7 @@ Class Gb_Db_Engine
         return $this;
     }
 
-    
+
     private $_tmpParams;
     /**
      * Returns parameters asked by the request
@@ -88,7 +88,7 @@ Class Gb_Db_Engine
         array_walk_recursive($request, array(__CLASS__, "_paramWalker"));
         return $this->_tmpParams;
     }
-    
+
     /**
      * Execute
      * @param array $request
@@ -100,9 +100,9 @@ Class Gb_Db_Engine
         return $this->_exec_array($request, $bindParams);
     }
 
-    
-    
-    
+
+
+
     /**
      * Execute array
      * @param array $array
@@ -128,11 +128,11 @@ Class Gb_Db_Engine
         } else {
             throw new Gb_Exception("Unknown request type '$type'");
         }
-        
+
         return $data;
     }
-    
-    
+
+
     protected function _exec_union($array, array $params)
     {
         $data=array();
@@ -145,7 +145,7 @@ Class Gb_Db_Engine
                 $data=array_merge($data, $this->_aTmpData[$key]);
             }
         }
-        return $data;    
+        return $data;
     }
 
     /**
@@ -163,7 +163,7 @@ Class Gb_Db_Engine
             throw new Exception("Join syntax must be array('[LEFT ]JOIN', array(...), array('SELECT', 'host', 'sql'))");
         }
         $left=$this->_exec_array($array[1], $params);
-        
+
         $righthost=$array[2][1];
         $rightsql=$array[2][2];
         $data=array();
@@ -214,7 +214,7 @@ Class Gb_Db_Engine
         }
         $left=$this->_exec_array($array[1], $params);
         $right=$this->_exec_array($array[2], $params);
-        $match=$array[3];   
+        $match=$array[3];
 
         $data=array();
 
@@ -235,12 +235,12 @@ Class Gb_Db_Engine
                     $data[]=array_merge($left_line, $found_line);
                 }
             }
-            
+
         }
 
         return $data;
     }
-    
+
     /**
      * Return select result
      *
@@ -257,7 +257,7 @@ Class Gb_Db_Engine
         }
         return $db->retrieve_all($sql, array());
     }
-    
+
     /**
      * @param string $host
      * @return Gb_Db
@@ -272,7 +272,7 @@ Class Gb_Db_Engine
         }
     }
 
-    
+
     private function _paramWalker($item, $key)
     {   if ($key==2 && is_string($item)) {
             $out=null;
@@ -285,5 +285,5 @@ Class Gb_Db_Engine
             }
         }
     }
-    
+
 }

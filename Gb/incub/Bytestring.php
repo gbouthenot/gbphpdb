@@ -16,9 +16,9 @@ class Bytestring
             $this->str = $chars;
         }
     }
-    
 
-    
+
+
     /**
      * Append one value
      * @param integer|array $values
@@ -31,7 +31,7 @@ class Bytestring
         if (!is_array($values)) {
             $values = array($values);
         }
-        
+
         foreach ($values as $value) {
             if ($width>4) {
                 throw new Gb_Exception("unhandled width");
@@ -52,7 +52,7 @@ class Bytestring
         return $this;
     }
 
-    
+
     /**
      * Append one value
      * @param integer|array $value
@@ -69,7 +69,7 @@ class Bytestring
         if (!is_array($values)) {
             $values = array($values);
         }
-        
+
         foreach ($values as $value) {
             if ($width>=1) {
                 $this->_appendByte($value&0xff);
@@ -86,9 +86,9 @@ class Bytestring
         }
         return $this;
     }
-    
-    
-    
+
+
+
     /**
      * Append byte (values)
      * @param integer|array $values
@@ -99,7 +99,7 @@ class Bytestring
         if (!is_array($values)) {
             $values = array($values);
         }
-        
+
         foreach ($values as $value) {
             $this->_str .= chr($value);
         }
@@ -123,8 +123,8 @@ class Bytestring
         }
         return $this;
     }
-    
-    
+
+
     /**
      * Returns a binary string
      */
@@ -133,7 +133,7 @@ class Bytestring
         return $this->_str;
     }
 
-    
-    
-    
+
+
+
 }

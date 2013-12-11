@@ -5,7 +5,7 @@
  * @author Andre DeMarre
  * @package FixedBitNotation
  */
- 
+
 /**
  * The FixedBitNotation class is for binary to text conversion. It
  * can handle many encoding schemes, formally defined or not, that
@@ -40,7 +40,7 @@ class FixedBitNotation
   {
     // Ensure validity of $chars
     if (!is_string($chars) || ($charLength = strlen($chars)) < 2) {
-      $chars = 
+      $chars =
   '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ-,';
       $charLength = 64;
     }
@@ -102,7 +102,7 @@ class FixedBitNotation
     $padFinalGroup = $this->_padFinalGroup;
     $padCharacter = $this->_padCharacter;
 
-    // Generate encoded output; 
+    // Generate encoded output;
     // each loop produces one encoded character
     for ($c = 0; $c < $byteCount * 8 / $bitsPerCharacter; $c++) {
 
@@ -120,12 +120,12 @@ class FixedBitNotation
           if ($rightPadFinalBits) $oldBits <<= $newBitCount;
           $encodedString .= $chars[$oldBits];
           if ($padFinalGroup) {
-            // Array of the lowest common multiples of 
+            // Array of the lowest common multiples of
             // $bitsPerCharacter and 8, divided by 8
             $lcmMap = array(1 => 1, 2 => 1, 3 => 3, 4 => 1,
               5 => 5, 6 => 3, 7 => 7, 8 => 1);
             $bytesPerGroup = $lcmMap[$bitsPerCharacter];
-            $pads = $bytesPerGroup * 8 / $bitsPerCharacter 
+            $pads = $bytesPerGroup * 8 / $bitsPerCharacter
               - ceil((strlen($rawString) % $bytesPerGroup)
               * 8 / $bitsPerCharacter);
             $encodedString .= str_repeat($padCharacter[0], $pads);
@@ -215,11 +215,11 @@ class FixedBitNotation
 
       if (!isset($charmap[$encodedString[$c]]) && !$caseSensitive) {
         // Encoded character was not found; try other case
-        if (isset($charmap[$cUpper 
+        if (isset($charmap[$cUpper
           = strtoupper($encodedString[$c])])) {
           $charmap[$encodedString[$c]] = $charmap[$cUpper];
 
-        } elseif (isset($charmap[$cLower 
+        } elseif (isset($charmap[$cLower
           = strtolower($encodedString[$c])])) {
           $charmap[$encodedString[$c]] = $charmap[$cLower];
         }
@@ -231,14 +231,14 @@ class FixedBitNotation
 
         // Get the new bits ready
         if ($bitsNeeded > $bitsPerCharacter) {
-          // New bits aren't enough to complete a byte; shift them 
+          // New bits aren't enough to complete a byte; shift them
           // left into position
-          $newBits = $charmap[$encodedString[$c]] << $bitsNeeded 
+          $newBits = $charmap[$encodedString[$c]] << $bitsNeeded
             - $bitsPerCharacter;
           $bitsWritten += $bitsPerCharacter;
 
         } elseif ($c != $lastNotatedIndex || $rightPadFinalBits) {
-          // Zero or more too many bits to complete a byte; 
+          // Zero or more too many bits to complete a byte;
           // shift right
           $newBits = $charmap[$encodedString[$c]] >> $unusedBitCount;
           $bitsWritten = 8; //$bitsWritten += $bitsNeeded;
@@ -258,7 +258,7 @@ class FixedBitNotation
           if ($c != $lastNotatedIndex) {
             // Start the next byte
             $bitsWritten = $unusedBitCount;
-            $byte = ($charmap[$encodedString[$c]] 
+            $byte = ($charmap[$encodedString[$c]]
               ^ ($newBits << $unusedBitCount)) << 8 - $bitsWritten;
           }
         }

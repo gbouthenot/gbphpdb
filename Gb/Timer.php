@@ -1,7 +1,7 @@
 <?php
 /**
  * Gb_Timer
- * 
+ *
  * @author Gilles Bouthenot
  * @version $Revision$
  * @Id $Id$
@@ -29,7 +29,7 @@ Class Gb_Timer
   protected static $nbInstance_current=0;         // nom d'instances ouvertes en ce moment
 
   protected static $fPluginRegistred=false;
-  
+
     /**
      * Renvoie la revision de la classe ou un boolean si la version est plus petite que précisée, ou Gb_Exception
      *
@@ -45,8 +45,8 @@ Class Gb_Timer
         if ($throw) { throw new Gb_Exception(__CLASS__." r".$revision."<r".$mini); }
         return false;
     }
-    
-  
+
+
   /**
    * Initialise le timer.
    *
@@ -60,13 +60,13 @@ Class Gb_Timer
     self::$nbInstance_total++;
     self::$nbInstance_current++;
     self::$nbInstance_peak=max(self::$nbInstance_peak, self::$nbInstance_current);
-    
+
     if (!self::$fPluginRegistred)
     {
         Gb_Glue::registerPlugin("Gb_Response_Footer", array(__CLASS__, "GbResponsePlugin"));
         self::$fPluginRegistred=true;
     }
-    
+
   }
 
   public function __destruct()
@@ -153,12 +153,12 @@ Class Gb_Timer
     public static function GbResponsePlugin()
     {
       $ret="";
-      
+
       $timetotal=self::$nbInstance_total;
       $timepeak=self::$nbInstance_peak;
       $ret.="Gb_Timer:{ total:$timetotal peak:$timepeak }";
-      
+
       return $ret;
     }
-  
+
 }

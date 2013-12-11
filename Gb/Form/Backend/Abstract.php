@@ -1,7 +1,7 @@
 <?php
 /**
  * Gb_Form_Backend_Interface
- * 
+ *
  * @author Gilles Bouthenot
  * @version $Revision$
  * @Id $Id$
@@ -25,7 +25,7 @@ abstract class Gb_Form_Backend_Abstract
      * @var Gb_Form2
      */
     protected $_parent;
-    
+
     /**
      * @var array
      */
@@ -35,7 +35,7 @@ abstract class Gb_Form_Backend_Abstract
     protected $_moreDataInsert=array();
     protected $_moreDataUpdate=array();
     protected $_dbColFormat="_DBCOL_";
-    
+
     /**
      * Link parent to Gb_Form2. Applies modificators specified with $aModifiers in the constructor.
      * @param Gb_Form2 $parent
@@ -49,7 +49,7 @@ abstract class Gb_Form_Backend_Abstract
         }
         return $this;
     }
-    
+
 
     public function __construct(array $aParams=null, array $aModifiers=null)
     {
@@ -69,7 +69,7 @@ abstract class Gb_Form_Backend_Abstract
         }
 
     }
-    
+
     /**
      * Remplit les valeurs depuis la base. Remplit hasData
      *
@@ -132,6 +132,6 @@ abstract class Gb_Form_Backend_Abstract
         if ($text===null) {         return $this->_dbColFormat; }
         else { $this->_dbColFormat=$text; return $this;}
     }
-    
+
 
 }

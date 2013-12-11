@@ -1,7 +1,7 @@
 <?php
 /**
  * Gb_Emailverif
- * 
+ *
  * @author Gilles Bouthenot
  * @version $Revision$
  * @Id $Id$
@@ -33,11 +33,11 @@ Class Gb_Emailverif
      * @var Gb_Db
      */
     protected $_db;
-    
+
     protected $_hoursValidity;
     protected $_salt;
     protected $_table;
-    
+
     /**
      * Renvoie la revision de la classe ou un boolean si la version est plus petite que pr�cis�e, ou Gb_Exception
      *
@@ -53,9 +53,9 @@ Class Gb_Emailverif
         if ($throw) { throw new Gb_Exception(__CLASS__." r".$revision."<r".$mini); }
         return false;
     }
-    
-    
-    
+
+
+
     /**
      * Constructeur
      *
@@ -84,8 +84,8 @@ Class Gb_Emailverif
         }
         return $md5.$code;
     }
-    
-    
+
+
     /**
      * V�rifie si un mail a �t� valid�
      *
@@ -100,7 +100,7 @@ Class Gb_Emailverif
         $aRow=$this->_db->retrieve_one("SELECT 1 FROM mail_confirm WHERE mco_emailhash=? AND mco_date>?", array($hash, $maxtime));
         if ($aRow) { return true; } else { return false; }
     }
-    
+
     /**
      * Enregistre un code de validation
      *
@@ -110,18 +110,18 @@ Class Gb_Emailverif
     public function submitValidationCode($code)
     {
         if (strlen($code)!=34) { return false; }
-        
+
         $code=$this->decryptValidationCode($code);
         if ($code===false) { return false; }
-        
+
         $security=$_SERVER['REMOTE_ADDR']." ".$_SERVER['HTTP_USER_AGENT'];
         $this->_db->delete("mail_confirm", array($this->_db->quoteInto("mco_emailhash=?", $code)));
         $this->_db->insert("mail_confirm", array("mco_emailhash"=>$code, "mco_date"=>new Zend_Db_Expr("NOW()"), "mco_ip"=>$security));
         return true;
     }
-    
-    
-    
+
+
+
     protected function decryptValidationCode($text)
     {
         $code="00";
@@ -132,13 +132,13 @@ Class Gb_Emailverif
         if ($code === $emb) { return $this->myxor(substr($text, 0, 32), $this->_salt);}
         else                { return false;}
     }
-    
+
     protected function emailToHash($email)
     {
         $email=Gb_String::mystrtoupper($email);
         return md5($email);
     }
-    
+
     protected function myxor($a, $b)
     {
         if (strlen($a) != strlen($b)) { throw new Exception("xor: pas de meme taille"); }

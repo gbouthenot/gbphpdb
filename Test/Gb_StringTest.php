@@ -34,14 +34,14 @@ class Gb_StringTest extends PHPUnit_Framework_TestCase
         // TODO Auto-generated constructor
     }
 
-    
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
+
     /**
      * Tests Gb_String::getRevision()
      */
@@ -56,7 +56,7 @@ class Gb_StringTest extends PHPUnit_Framework_TestCase
 
         $up = Gb_String::getRevision(999999, false);
         $this->assertFalse($up);
-        
+
         try {
             Gb_String::getRevision(999999, true);
         } catch (Gb_Exception $e) {
@@ -65,7 +65,7 @@ class Gb_StringTest extends PHPUnit_Framework_TestCase
         }
         $this->fail();
     }
-    
+
     /**
      * Tests Gb_String::str_to_time()
      */
@@ -80,7 +80,7 @@ class Gb_StringTest extends PHPUnit_Framework_TestCase
         }
         $this->fail();
     }
-    
+
     /**
      * Tests Gb_String::random()
      */
@@ -97,9 +97,9 @@ class Gb_StringTest extends PHPUnit_Framework_TestCase
 
         $up = Gb_String::random(5, "a");
         $this->assertEquals("aaaaa", $up);
-    
+
     }
-    
+
     /**
      * Tests Gb_String::create_nom()
      */
@@ -107,7 +107,7 @@ class Gb_StringTest extends PHPUnit_Framework_TestCase
         $this->assertEquals("Anamaria",  Gb_String::create_nom("Anamaria Lufa"));
         $this->assertEquals("Ana Maria", Gb_String::create_nom("Ana Maria Lufa"));
     }
-    
+
     /**
      * Tests Gb_String::mystrtoupper()
      */
@@ -116,24 +116,24 @@ class Gb_StringTest extends PHPUnit_Framework_TestCase
         $up = Gb_String::mystrtoupper($up);
         $this->assertEquals("LA FORET BRULE ?", $up);
     }
-    
+
     /**
      * Tests Gb_String::removeAccents()
      */
     public function testRemoveAccents() {
         $up = Gb_String::removeAccents("La cafetière a-t-elle coûté 5 € ?");
         $this->assertEquals("La cafetiere a-t-elle coute 5 EUR ?", $up);
-        
+
         $up = Gb_String::removeAccents("ÁÀÂÄÃÅÇÉÈÊËÍÏÎÌÑÓÒÔÖÕÚÙÛÜÝáàâäãåçéèêëíìîïñóòôöõúùûüýÿ");
                    $this->assertEquals("AAAAAACEEEEIIIINOOOOOUUUUYaaaaaaceeeeiiiinooooouuuuyy", $up);
-        
+
         $up = Gb_String::removeAccents('àáâãäçèéêëìíîïñòóôõöùúûüýÿÀÁÂÃÄÇÈÉÊËÌÍÎÏÑÒÓÔÕÖÙÚÛÜÝ');
                    $this->assertEquals('aaaaaceeeeiiiinooooouuuuyyAAAAACEEEEIIIINOOOOOUUUUY', $up);
-        
+
         $up = Gb_String::removeAccents('^e ? "double"'." 'simple' ? ! * / \\ & &eacute;");
                    $this->assertEquals('^e ? "double"'." 'simple' ? ! * / \\ & &eacute;", $up);
     }
-    
+
     /**
      * Tests Gb_String::date_fr()
      */
@@ -143,7 +143,7 @@ class Gb_StringTest extends PHPUnit_Framework_TestCase
         $this->assertEquals("15/02/1977",          Gb_String::date_fr("15/02/1977"));
         $this->assertEquals("15/02/1977",          Gb_String::date_fr("1977-02-15"));
     }
-    
+
     /**
      * Tests Gb_String::date_iso()
      */
@@ -153,7 +153,7 @@ class Gb_StringTest extends PHPUnit_Framework_TestCase
         $this->assertEquals("1977-02-15",          Gb_String::date_iso("15/02/1977"));
         $this->assertEquals("1977-02-15",          Gb_String::date_iso("1977-02-15"));
     }
-    
+
     /**
      * Tests Gb_String::date_isIntoInterval()
      */
@@ -167,9 +167,9 @@ class Gb_StringTest extends PHPUnit_Framework_TestCase
 
         $up = Gb_String::date_isIntoInterval("2011-01-01", "31/12/2037");
         $this->assertEquals(0, $up);
-        
+
     }
-    
+
     /**
      * Tests Gb_String::explode()
      */
@@ -182,9 +182,9 @@ class Gb_StringTest extends PHPUnit_Framework_TestCase
 
         $up = Gb_String::explode("/", "");
         $this->assertSame(array(), $up);
-        
+
     }
-    
+
     /**
      * Tests Gb_String::arrayToCsv()
      */
@@ -199,9 +199,9 @@ class Gb_StringTest extends PHPUnit_Framework_TestCase
 
         $up = Gb_String::arrayToCsv(array(array("a"=>"1", "b"=>"2"), array("a"=>10, "b"=>20)));
         $this->assertEquals("\"a\";\"b\";\n\"1\";\"2\";\n\"10\";\"20\";\n", $up);
-        
+
     }
-    
+
     /**
      * Tests Gb_String::formatTime()
      */
@@ -215,49 +215,49 @@ class Gb_StringTest extends PHPUnit_Framework_TestCase
         $up = Gb_String::formatTime(4*86400 + 3*3600 + 2*60  +1);
         $this->assertEquals("4d 3h", $up);
     }
-    
+
     /**
      * Tests Gb_String::formatSize()
      */
     public function testFormatSize() {
         // TODO Auto-generated Gb_StringTest2::testFormatSize()
         $this->markTestIncomplete ( "formatSize test not implemented" );
-        
+
         Gb_String::formatSize(/* parameters */);
-    
+
     }
-    
+
     /**
      * Tests Gb_String::formatTable()
      */
     public function testFormatTable() {
         // TODO Auto-generated Gb_StringTest2::testFormatTable()
         $this->markTestIncomplete ( "formatTable test not implemented" );
-        
+
         Gb_String::formatTable(/* parameters */);
-    
+
     }
-    
+
     /**
      * Tests Gb_String::appendPrepend()
      */
     public function testAppendPrepend() {
         // TODO Auto-generated Gb_StringTest2::testAppendPrepend()
         $this->markTestIncomplete ( "appendPrepend test not implemented" );
-        
+
         Gb_String::appendPrepend(/* parameters */);
-    
+
     }
-    
+
     /**
      * Tests Gb_String::realpath()
      */
     public function testRealpath() {
         // TODO Auto-generated Gb_StringTest2::testRealpath()
         $this->markTestIncomplete ( "realpath test not implemented" );
-        
+
         Gb_String::realpath(/* parameters */);
-    
+
     }
 
 }

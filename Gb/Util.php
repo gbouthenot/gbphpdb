@@ -1,7 +1,7 @@
 <?php
 /**
  * Gb_Util
- * 
+ *
  * @author Gilles Bouthenot
  * @version $Revision$
  * @Id $Id$
@@ -52,7 +52,7 @@ Class Gb_Util
         if ($throw) { throw new Gb_Exception(__CLASS__." r".$revision."<r".$mini); }
         return false;
     }
-    
+
 
   /**
    * Cette classe ne doit pas être instancée
@@ -60,7 +60,7 @@ Class Gb_Util
   private function __construct()
   {
   }
-  
+
 
   /**
    * Initialise gzip, error_reporting, APPELLE main(), affiche le footer et quitte
@@ -103,11 +103,11 @@ Class Gb_Util
         if (Gb_Util::$debug || Gb_Response::$show_footer) {
       Gb_Response::send_footer();
         }
-        
+
         Gb_Response::close_page();
     exit(0);
   }
-  
+
 
   /**
    * Combine deux arrays
@@ -143,7 +143,6 @@ Class Gb_Util
         $a2=array_slice($into, $pos);
         return array_merge($a1, $a2);
     }
-  
 
 
 
@@ -152,12 +151,13 @@ Class Gb_Util
 
 
 
-  
 
 
-  
-  
-    
+
+
+
+
+
   /**
    * Inclut et execute un fichier et retourne le résultat dans une chaine
    *
@@ -191,7 +191,7 @@ Class Gb_Util
   }
 
 
-  
+
 
 
   public static function roundCeil($num, $nbdigits=3)
@@ -242,10 +242,10 @@ Class Gb_Util
             }
             $ret.=" Peak memory: {$mem}";
         }
-        
+
         return $ret;
       }
-  
+
 
 
 
@@ -257,7 +257,7 @@ Class Gb_Util
            // add support of sys_get_temp_dir for PHP4/5, use the following code:
            // Based on http://www.phpit.net/
            // article/creating-zip-tar-archives-dynamically-php/2/
-    
+
             if ( function_exists('sys_get_temp_dir')) {
                 self::$_tmpdir=sys_get_temp_dir();
             } else {
@@ -290,7 +290,7 @@ Class Gb_Util
     /**
      * Envoie une chaine et quitte
      * ATTENTION, possible bug si strlen ne renvoit pas le nombre d'octets de la chaine...
-     * 
+     *
      * @param string $data
      * @param string[optional] $fnameOut nom du fichier qui apparait à l'enregistrement
      * @param boolean[optional] $fAddTimestamp true si on ajoute le timestamp au nom de fichier
@@ -315,7 +315,7 @@ Class Gb_Util
 
     /**
      * Envoie un fichier dont on donne le nom et quitte
-     * 
+     *
      * @param string $fnameIn Nom du fichier à envoyer
      * @param string[optional] $fnameOut nom du fichier qui apparait à l'enregistrement (par défaut basename de $fnameIn)
      * @param boolean[optional] $fAddTimestamp true si on ajoute le timestamp au nom de fichier
@@ -334,9 +334,9 @@ Class Gb_Util
         if (!file_exists($fnameIn) && !is_file($fnameIn) || !is_readable($fnameIn)) {
             throw new Gb_Exception("File $fnameIn not found or not readable");
         }
-        
+
         $len=@filesize($fnameIn);
-        
+
         // remove output buffering
         while (ob_get_level()) { ob_end_clean(); }
 
@@ -355,6 +355,6 @@ Class Gb_Util
             exit(0);
         }
     }
-    
+
 }
 

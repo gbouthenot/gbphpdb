@@ -1,7 +1,7 @@
 <?php
 /**
  * Gb_Glue
- * 
+ *
  * @author Gilles Bouthenot
  * @version $Revision$
  * @Id $Id$
@@ -38,7 +38,7 @@ class Gb_Glue
         if ($throw) { throw new Gb_Exception(__CLASS__." r".$revision."<r".$mini); }
         return false;
     }
-        
+
     /**
      * Ajoute un plugin
      *
@@ -50,10 +50,10 @@ class Gb_Glue
     {
         self::$_plugins[$sClass][]=array($fname, $aParam);
     }
-    
-    
-    
-    
+
+
+
+
     /**
      * R�initialise tous les plugins pour une classe donn�e, ou globalement
      *
@@ -67,10 +67,10 @@ class Gb_Glue
             self::$_plugins[$sClass]=array();
         }
     }
-    
-    
-    
-    
+
+
+
+
     /**
      * renvoie les plugins enregistr�s � une classe donn�e
      *
@@ -85,10 +85,10 @@ class Gb_Glue
             return array();
         }
     }
-    
-    
-    
-    
+
+
+
+
   /**
    * Renvoie le nom du projet, par d�faut le r�pertoire du script php
    *
@@ -103,7 +103,7 @@ class Gb_Glue
       $d="/";
       $php_self=$_SERVER["PHP_SELF"];
       $php_self=str_replace("\\", "/", $php_self);
-      
+
       // 1: [////]   2: le r�pertoire    3: /    4:nomfich.php[/]
       $matches=null;
       preg_match("@^($d*)(.*)($d+)(.+$d*)$@", $php_self, $matches);
@@ -137,14 +137,14 @@ class Gb_Glue
     {
         return self::$_starttime;
     }
-    
-    
-    
-    
+
+
+
+
     public static function setStartTime()
     {
         self::$_starttime=microtime(true);
     }
-    
+
 }
 ?>

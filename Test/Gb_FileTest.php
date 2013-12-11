@@ -21,9 +21,9 @@ class Gb_FileTest extends PHPUnit_Framework_TestCase
     protected function setUp()
     {
         parent::setUp();
-        
+
         $tmpdir=Gb_Util::sys_get_temp_dir();
-        
+
         $this->sourcefsname=$tmpdir.DIRECTORY_SEPARATOR."testabd1234.1_2-1.tmp";
         file_put_contents($this->sourcefsname, "TEST");
 
@@ -67,7 +67,7 @@ class Gb_FileTest extends PHPUnit_Framework_TestCase
         if (!$ok) {
             $this->fail("not exception");
         }
-        
+
     }
 
 

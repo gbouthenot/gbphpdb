@@ -1,7 +1,7 @@
 <?php
 /**
  * Gb_File
- * 
+ *
  * @author Gilles Bouthenot
  * @version $Revision$
  * @Id $Id$
@@ -21,7 +21,7 @@ require_once(_GB_PATH."String.php");
 
 Class Gb_File
 {
-    
+
     /**
      * @var Gb_Db
      */
@@ -30,7 +30,7 @@ Class Gb_File
     protected $_fileroot;
     protected $_category;
     protected $_tableName;
-    
+
     /**
      * Renvoie la revision de la classe ou un boolean si la version est plus petite que pr�cis�e, ou Gb_Exception
      *
@@ -46,7 +46,7 @@ Class Gb_File
         if ($throw) { throw new Gb_Exception(__CLASS__." r".$revision."<r".$mini); }
         return false;
     }
-    
+
     /**
      * Constructeur Pour uploader les fichiers dans /var/lib/php5/files/c2i:
      *
@@ -55,7 +55,7 @@ Class Gb_File
      * @param string $tableName
      * @param string $category "c2i" si null, tous fichiers autorisés et upload désactivé
      * @param string[optional] $tmpdir "/var/lib/php5/files/tmp" si null alors upload désactivé
-     * 
+     *
      * @throws Gb_Exception
      */
     public function __construct($fileroot, Gb_Db $db=null, $tableName="fichier", $category=null, $tmpdir=null)
@@ -82,13 +82,13 @@ Class Gb_File
                 throw new Gb_Exception("tmp $tmpdir is not a writable !");
             }
         }
-        
+
         $this->_db=$db;
         $this->_fileroot=$fileroot;
         $this->_tmpdir=$tmpdir;
         $this->_category=$category;
     }
-    
+
     /**
      * Renvoie un fichier ou false si non existant
      *
@@ -115,25 +115,25 @@ Class Gb_File
         $fsname.=$this->_fileroot.DIRECTORY_SEPARATOR;
         $fsname.=$aFile["fs_folder"].DIRECTORY_SEPARATOR;
         $fsname.=$aFile["fs_name"];
-        
+
         $aFile["osname"]=$fsname;
 
         return $aFile;
     }
-    
-    
+
+
     public function purgeTempDir()
     {
         /** @todo à implémenter*/
     }
-    
+
 
     /**
      * Déplace un fichier uploadé dans dans tmpdir
      *
      * @param string $fname nom temporaire du fichier uploadé (source, donné par $_FILES[n]["tmp_name"])
      * @param string $prefix[optional] préfixe du nom de fichier utilisté
-     * 
+     *
      * @return string nom complet du fichier
      * @throws Gb_Exception
      */
@@ -146,11 +146,11 @@ Class Gb_File
         if ($res===false) {
             throw new Gb_Exception("impossible de déplacer le fichier");
         }
-     
+
         return $tmpfname;
     }
-    
-    
+
+
     /**
      * Déplace le fichier et l'ajoute à la bdd
      *
@@ -159,19 +159,19 @@ Class Gb_File
      * @param string $targetFolder exemple "124/567" (toujours des / )
      * @param string $targetPrefix "toto"
      * @param string[optional] $comment
-     * 
-     * @return 
-     * 
+     *
+     * @return
+     *
      * @throws Gb_Exception
      */
     public function store($fname, $sourceFname, $targetFolder, $targetPrefix, $comment=null)
     {
         $targetFolder=trim($targetFolder, DIRECTORY_SEPARATOR);
-        
+
         if (!file_exists($fname) || !is_readable($fname)) {
             throw new Gb_Exception("Erreur fichier introuvable ($fname)");
         }
-        
+
         // crée le répertoire destination
         $fsfolder=$this->_fileroot;
         foreach (explode("/", $targetFolder) as $folder) {
@@ -182,7 +182,7 @@ Class Gb_File
                 }
             }
         }
-        
+
         // obtient la taille du fichier
         $length=filesize($fname);
         if ($length === false) {
@@ -190,12 +190,12 @@ Class Gb_File
         }
 
         list($nonExt, $ext)=$this->_sanitize($sourceFname);
-        
+
         // obtient le numéro du fichier
         $fileid=$this->_db->sequenceNext($this->_tableName."_seq");
-        
+
         $newfName=$targetPrefix."{".$fileid."}".$nonExt.$ext;
-        
+
         // insertion du fichier dans la base de donnée --> récupère $fileid
         $this->_db->insert(
             $this->_tableName,
@@ -209,8 +209,8 @@ Class Gb_File
                 "fic_commentaire"=>$comment
             )
         );
-        
-        
+
+
         $newFullname=$fsfolder.DIRECTORY_SEPARATOR.$newfName;
         if (rename($fname, $newFullname)!== true) {
             throw new Gb_Exception("impossible de renommer $fname en $newFullname");
@@ -219,9 +219,9 @@ Class Gb_File
 
         return $fileid;
     }
-    
-    
-    
+
+
+
     public function delete($id)
     {
         $id=(int) $id;
@@ -237,10 +237,10 @@ Class Gb_File
             $this->_tableName,
             $this->_db->quoteInto("fic_code=?",$id)
         );
-        
+
     }
-    
-    
+
+
     /**
      * transforme un nom de fichier en deux chaines: nom (64 car max), et extension (16 car max), commence par un point
      *
@@ -251,7 +251,7 @@ Class Gb_File
     {
         $auto="0123456789abcdefghijklmnopqrstuvwxyz_-";
         $fname=strtolower(Gb_String::mystrtoupper($fname));
-        
+
         // trouve l'extension de $fname
         $pos=strrpos($fname, ".");
         if ($pos===false) {
@@ -267,12 +267,12 @@ Class Gb_File
         $f=$nonExt;
         $f2=""; for ($i=0; $i<strlen($f); $i++) { if ( strpos($auto, $f[$i]) !==false ){ $f2.=$f[$i];} else { $f2.="_"; } }
         $nonExt=$f2;
-    
+
         $nonExt=substr($nonExt, 0, 64);
         $ext=substr($ext, 0, 16);
-        
+
         return array($nonExt,$ext);
     }
-    
-    
+
+
 }

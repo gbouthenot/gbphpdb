@@ -1,7 +1,7 @@
 <?php
 /**
  * Gb_Mafu
- * 
+ *
  * @author Gilles Bouthenot
  * @version $Revision$
  * @Id $Id$
@@ -36,7 +36,7 @@ class Gb_Mafu
         if ($throw) { throw new Gb_Exception(__CLASS__." r".$revision."<r".$mini); }
         return false;
     }
-    
+
     public function __construct()
     {
         if (function_exists('apc_fetch') && ini_get('apc.enabled') && ini_get('apc.rfc1867')) {
@@ -81,7 +81,7 @@ class Gb_Mafu
         return $files2;
     }
 
-    
+
     public function getUploadStatus($id=null)
     {
         if ($id===null) {

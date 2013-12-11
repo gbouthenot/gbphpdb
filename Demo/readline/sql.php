@@ -144,7 +144,7 @@ function init_readline()
     "show databases",
     "show tables",
     );
-    
+
     foreach ($history as $line) {
         readline_add_history($line);
     }
@@ -153,10 +153,10 @@ function init_readline()
 function process_main()
 {
     global $aOptions;
-    
+
     do {
         $line    = myreadline();
-        $linelow = strtolower($line);        
+        $linelow = strtolower($line);
         if ( strlen(trim($line)) == 0 ) {
             continue;
         }
@@ -165,9 +165,9 @@ function process_main()
         if (substr($linelow, 0, 4)=="exit" || substr($linelow, 0, 4)=="quit") {
             return;
         }
-        
+
         readline_add_history($line);
-        
+
         if ($linelow=="nopager") {
             $aOptions["nopager"]=true;
         } elseif ($linelow=="pager") {
@@ -181,7 +181,7 @@ function process_main()
             if (is_numeric($maxwidth)) {
                 $aOptions["maxwidth"] = (int) $maxwidth;
                 echo "maxwidth set to $maxwidth\n";
-            } 
+            }
         } elseif (substr($linelow, 0, 8)=="maxwidth") {
             echo "maxwidth = ".$aOptions["maxwidth"]."\n";
         } elseif (substr($linelow, 0, 7)=="logfile") {
@@ -196,7 +196,7 @@ function process_main()
         } else {
             logfile(">" . $line);
             $ret=process($line);
-    
+
             logfile($ret);
             pager($ret);
         }
@@ -206,7 +206,7 @@ function process_main()
 function myreadline()
 {
     $line_pre="";
-    
+
     do {
         if (strlen($line_pre)) {
             $line = readline("");
@@ -235,15 +235,15 @@ function pager($text)
         echo $text."\n";
     } else {
         $tmpfname = $aOptions["tmpfile"];
-        
+
         $handle = fopen($tmpfname, "w");
         fwrite($handle, $text);
         fclose($handle);
-        
+
         // traitement
         $cmd=$aOptions["pager"]." $tmpfname";
         passthru($cmd);
-        
+
         unlink($tmpfname);
     }
 }
@@ -304,7 +304,7 @@ function process($text)
                 $aTableDesc    = $db->getTableDesc($tableFullName);
                 $aCols         = $aTableDesc["columns"];
                 $fNeedleInt    = is_numeric($needle);
-                
+
                 $aWhere=null;
                 foreach ($aCols as $aCol) {
                     if ($fNeedleInt && strpos(strtolower($aCol["TYPE"]), "int") !== false) {
@@ -370,7 +370,7 @@ function process($text)
 function text_format($data)
 {
     global $aOptions;
-    
+
     $ret = "";
 
     switch (strtoupper($aOptions["format"])) {

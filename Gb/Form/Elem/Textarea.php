@@ -1,7 +1,7 @@
 <?php
 /**
  * Gb_Form_Elem_Textarea
- * 
+ *
  * @author Gilles Bouthenot
  * @version $Revision$
  * @Id $Id$
@@ -19,26 +19,26 @@ require_once(_GB_PATH."Form/Elem/Abstract.php");
 
 class Gb_Form_Elem_Textarea extends Gb_Form_Elem_Abstract
 {
-    
+
     public function getInput($value, $inInput, $inputJs)
     {
         $elemid=$this->elemId();
         return "<textarea id='{$elemid}' name='{$elemid}' $inInput $inputJs>".htmlspecialchars($value)."</textarea>";
     }
-    
+
 
     protected function _renderJavascript($js=null)
     {
         $js = null;
         $ret="";
         $elemid=$this->elemId();
-        
+
         // par défaut, met en classOK, si erreur, repasse en classNOK
         $ret .= "gbSetClass('{$elemid}_div', 'OK');\n";
 
         // enlève le message d'erreur
         $ret .= "gbRemoveError('{$elemid}');\n";
-                
+
         $ret .= "var value=remove_accents(gbtrim(\$F('{$elemid}')));\n";
         // traitement fMandatory
         if ($this->fMandatory()) {
@@ -59,7 +59,7 @@ class Gb_Form_Elem_Textarea extends Gb_Form_Elem_Abstract
             $ret.=" gbSetClass('{$elemid}_div', 'NOK');\n";
             $ret.="}\n";
         }
-        
+
         if (!$this->fMandatory()) {
           $ret.="if (value=='') {\n";
           $ret.=" gbSetClass('{$elemid}_div', 'OK');\n";
@@ -75,16 +75,16 @@ class Gb_Form_Elem_Textarea extends Gb_Form_Elem_Abstract
         $elemid=$this->elemId();
         return "onchange='javascript:validate_{$elemid}();' onkeyup='javascript:validate_{$elemid}();'";
     }
-    
-    
+
+
     public function __construct($name, array $aParams=array())
     {
         $availableParams=array("regexp");
         $aParams=array_merge(array("errorMsgMissing"=>"Texte non rempli"), $aParams);
         return parent::__construct($name, $availableParams, $aParams);
     }
-    
-    
+
+
     /**
      * Valide l'élément
      * En cas d'erreur, $this->setErrorMsg pour chaque $nom incorrect
@@ -128,5 +128,5 @@ class Gb_Form_Elem_Textarea extends Gb_Form_Elem_Abstract
 
         return true;
     }
-    
+
 }

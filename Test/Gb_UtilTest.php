@@ -64,7 +64,7 @@ class Gb_UtilTest extends PHPUnit_Framework_TestCase
             Gb_Util::include_file("doesnotexist");
         } catch (Gb_Exception $e) {
             $e;
-            return;  
+            return;
         }
         $this->fail("Exception non attrapée");
     }
@@ -81,42 +81,42 @@ class Gb_UtilTest extends PHPUnit_Framework_TestCase
     	$this->assertEquals((string)120000, (string)Gb_Util::roundCeil(120000  ,3));
     	$this->assertEquals((string)121000, (string)Gb_Util::roundCeil(120000.1,3));
     	$this->assertEquals((string)130000, (string)Gb_Util::roundCeil(129999.9,3));
-    	
+
     	$this->assertEquals((string)1400, (string)Gb_Util::roundCeil(1400,2));
     	$this->assertEquals((string)1500, (string)Gb_Util::roundCeil(1400.01,2));
     	$this->assertEquals((string)1400, (string)Gb_Util::roundCeil(1400,3));
     	$this->assertEquals((string)1410, (string)Gb_Util::roundCeil(1400.01,3));
-    	
+
     	$this->assertEquals((string)140, (string)Gb_Util::roundCeil(140,2));
     	$this->assertEquals((string)150, (string)Gb_Util::roundCeil(140.01,2));
     	$this->assertEquals((string)140, (string)Gb_Util::roundCeil(140,3));
     	$this->assertEquals((string)141, (string)Gb_Util::roundCeil(140.01,3));
-    	
+
     	$this->assertEquals((string)14, (string)Gb_Util::roundCeil(14,2));
     	$this->assertEquals((string)15, (string)Gb_Util::roundCeil(14.01,2));
     	$this->assertEquals((string)14, (string)Gb_Util::roundCeil(14,3));
     	$this->assertEquals((string)14.1, (string)Gb_Util::roundCeil(14.01,3));
-    	
+
     	$this->assertEquals((string)1.4, (string)Gb_Util::roundCeil(1.4,2));
     	$this->assertEquals((string)1.5, (string)Gb_Util::roundCeil(1.401,2));
     	$this->assertEquals((string)1.4, (string)Gb_Util::roundCeil(1.4,3));
     	$this->assertEquals((string)1.41, (string)Gb_Util::roundCeil(1.401,3));
-    	
+
     	$this->assertEquals((string)0.14, (string)Gb_Util::roundCeil(.14,2));
     	$this->assertEquals((string)0.15, (string)Gb_Util::roundCeil(.1401,2));
     	$this->assertEquals((string)0.14, (string)Gb_Util::roundCeil(.14,3));
     	$this->assertEquals((string)0.141, (string)Gb_Util::roundCeil(.1401,3));
-    	
+
     	$this->assertEquals((string)0.014, (string)Gb_Util::roundCeil(.014,2));
     	$this->assertEquals((string)0.015, (string)Gb_Util::roundCeil(.01401,2));
     	$this->assertEquals((string)0.014, (string)Gb_Util::roundCeil(.014,3));
     	$this->assertEquals((string)0.0141, (string)Gb_Util::roundCeil(.01401,3));
-    	
+
     	$this->assertEquals((string)0.0014, (string)Gb_Util::roundCeil(.0014,2));
     	$this->assertEquals((string)0.0015, (string)Gb_Util::roundCeil(.001401,2));
     	$this->assertEquals((string)0.0014, (string)Gb_Util::roundCeil(.0014,3));
     	$this->assertEquals((string)0.00141, (string)Gb_Util::roundCeil(.001401,3));
-    	
+
     	$this->assertEquals((string)0.00014, (string)Gb_Util::roundCeil(.00014,2));
     	$this->assertEquals((string)0.00015, (string)Gb_Util::roundCeil(.0001401,2));
     	$this->assertEquals((string)0.00014, (string)Gb_Util::roundCeil(.00014,3));

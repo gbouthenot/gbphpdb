@@ -1,7 +1,7 @@
 <?php
 /**
  * Gb_Form_Elem_Radio
- * 
+ *
  * @author Gilles Bouthenot
  * @version $Revision$
  * @Id $Id$
@@ -20,8 +20,8 @@ class Gb_Form_Elem_Radio extends Gb_Form_Elem_Abstract
 {
     protected $_args;
     protected $_buttonsFormat="_RADIOTEXT_: _RADIOINPUT_";
-    
-    
+
+
     public function getInput($value, $inInput, $inputJs)
     {
         $value;
@@ -30,11 +30,11 @@ class Gb_Form_Elem_Radio extends Gb_Form_Elem_Abstract
         $elemid    = $this->elemId();
         $elemidEsc = htmlspecialchars($elemid, ENT_QUOTES);
         $ret="";
-        
+
         //
         // todo : $inInput, $inputJs
-        // 
-        
+        //
+
         foreach ($aValues as $ordre=>$aOption){
           $sVal=htmlspecialchars(is_array($aOption)?$aOption[0]:$aOption, ENT_QUOTES);
           $sLib=htmlspecialchars(is_array($aOption)?(isset($aOption[1])?$aOption[1]:$aOption[0]):$aOption, ENT_QUOTES);
@@ -54,7 +54,7 @@ class Gb_Form_Elem_Radio extends Gb_Form_Elem_Abstract
               $format = $this->_buttonsFormat;
               $format = str_replace("_RADIOTEXT_", $sLib, $format);
               $format = str_replace("_RADIOINPUT_", $button, $format);
-              
+
               $ret.="<label>".$format."</label>\n";
           }
           $ordre++;
@@ -64,22 +64,22 @@ class Gb_Form_Elem_Radio extends Gb_Form_Elem_Abstract
         }
         return $ret;
     }
-    
+
     protected function _renderJavascript($js=null)
     {
         $js = null;
         $args=$this->args();
         $ret="";
         $elemid=$this->elemId();
-        
+
         // par défaut, met en classOK, si erreur, repasse en classNOK
         $ret .= "gbSetClass('{$elemid}_div', 'OK');\n";
 
         // enlève le message d'erreur
         $ret .= "gbRemoveError('{$elemid}');\n";
-                
+
         $ret .= "var value=\$F('{$elemid}');\n";
-        
+
         // traitement fMandatory
         if ($this->fMandatory()) {
             $aValues="";
@@ -120,7 +120,7 @@ class Gb_Form_Elem_Radio extends Gb_Form_Elem_Abstract
         $elemid=$this->elemId();
         return "onchange='javascript:validate_{$elemid}();' onkeyup='javascript:validate_{$elemid}();'";
     }
-    
+
     /*
      * Exemple d'appel: $form->append(new Gb_Form_Elem_Select( "CHOIXFORM", array("backendCol"=>"aca_choixform","fMandatory"=>true,
                                                                       "args"=>array(array('false',"choisissez"), "PE", "CPE"))    ))
@@ -132,8 +132,8 @@ class Gb_Form_Elem_Radio extends Gb_Form_Elem_Abstract
         $aParams=array_merge(array("errorMsgMissing"=>"Veuillez faire un choix"), $aParams);
         return parent::__construct($name, $availableParams, $aParams);
     }
-    
-    
+
+
 
 
 
@@ -163,7 +163,7 @@ class Gb_Form_Elem_Radio extends Gb_Form_Elem_Abstract
 
         // valeur transmise n'est pas dans la liste
         $found=false;
-        foreach ($args as $val) { 
+        foreach ($args as $val) {
             $thisval=is_array($val)?$val[0]:$val;
             if ($value===$thisval) {
                 $found=1;
@@ -173,14 +173,14 @@ class Gb_Form_Elem_Radio extends Gb_Form_Elem_Abstract
 
         if (!$found) {
             return "Choix invalide";
-        }                
-        
-        if ($value==='false' && $fMandatory) {
-            return $this->errorMsgMissing();        
         }
-        
+
+        if ($value==='false' && $fMandatory) {
+            return $this->errorMsgMissing();
+        }
+
         $chk=$this->_maxminvalueValidate("=", $value, $notValues, $form); if (strlen($chk)) { return $chk; }
-        
+
         $validateFunc=$this->validateFunc();
         if (strlen($validateFunc)  && strlen($value)) {
             // 1er argument: fonction à appeler
@@ -234,7 +234,7 @@ class Gb_Form_Elem_Radio extends Gb_Form_Elem_Abstract
         }
         return "";
     }
-    
+
 
 
 
@@ -245,24 +245,24 @@ class Gb_Form_Elem_Radio extends Gb_Form_Elem_Abstract
     /**
      * get/set args
      * @param array[optional] $text
-     * @return Gb_Form_Elem_Select|String 
+     * @return Gb_Form_Elem_Select|String
      */
     public function args(array $text=null)
-    {   
+    {
         if ($text===null) {         return $this->_args; }
         else { $this->_args=$text; return $this;}
     }
-    
 
-    
-    
+
+
+
     /**
      * get/set value
      * @param string[optional] $text
-     * @return Gb_Form_Elem_Select|String 
+     * @return Gb_Form_Elem_Select|String
      */
     public function value($text=null)
-    {   
+    {
         $args=$this->args();
         if ($text===null) {
             $value=$this->rawValue();
@@ -283,7 +283,7 @@ class Gb_Form_Elem_Radio extends Gb_Form_Elem_Abstract
             return $this;
         }
     }
-    
+
     public function rawValue($text=null)
     {
         return parent::value($text);
@@ -292,12 +292,12 @@ class Gb_Form_Elem_Radio extends Gb_Form_Elem_Abstract
      * get/set buttonsFormat (default to "_RADIOTEXT_: _RADIOINPUT_")
      * @param string[optional] $text
      * @param string[optional] "append" (default)/"prepend"/"set"
-     * @return Gb_Form_Elem_Abstract|String 
+     * @return Gb_Form_Elem_Abstract|String
      */
     public function buttonsFormat($text=null)
-    {   
+    {
         if ($text===null) {         return $this->_buttonsFormat; }
         else { $this->_buttonsFormat=$text; return $this;}
     }
-    
+
 }

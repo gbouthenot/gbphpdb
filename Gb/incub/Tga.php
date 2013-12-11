@@ -14,20 +14,20 @@ Class Tga
      * @var Memory
      */
     protected $_data;
-    
+
     protected $_header;
-    
+
     public function __construct($filename)
     {
         // $tgastr = @file_get_contents($filename);
         // if (false === $tgastr) { throw new Exception("cannot load $filename"); }
-        
+
     	$adr = 0;
-    	
+
         $this->_data = new Memory();
         $this->_data->bload($filename, $adr);
 
-/*        
+/*
         for ($i=0; $i<32; $i++) {
             $chars = $this->_data->peekChars($i,1);
             echo str_pad(base_convert(ord($chars), 10, 16), 2, 0, STR_PAD_LEFT)." ";
@@ -59,30 +59,30 @@ Class Tga
             "bits"           => $d->peekIntIntel($adr +16, 1),    // image bits per pixel 8,16,24,32
             "descriptor"     => $d->peekIntIntel($adr +17, 1),    // image descriptor bits (vh flip bits) If Bit 5 is set, the image will be upside down (like BMP)
         );
-        
-        
+
+
         if (3 != $header["imagetype"]) {
         	throw new Exception("unsupported TGA imagetype");
-        } 
+        }
         if (8 != $header["bits"]) {
         	throw new Exception("unsupported TGA bits");
-        } 
-        
+        }
+
         $this->_header = $header;
         //print_r($header);
     }
-    
-    
+
+
     public function getPixel($x, $y)
     {
         $width     = $this->_header["width"];
-        $identsize = $this->_header["identsize"]; 
+        $identsize = $this->_header["identsize"];
 
         $offset = 18;
         $offset += $identsize;
         $offset += $y * $width;
         $offset += $x;
-        
+
         return $this->_data->peekIntsMsb($offset);
     }
 }

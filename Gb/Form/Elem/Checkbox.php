@@ -1,7 +1,7 @@
 <?php
 /**
  * Gb_Form_Elem_Checkbox
- * 
+ *
  * @author Gilles Bouthenot
  * @version $Revision$
  * @Id $Id$
@@ -19,8 +19,8 @@ require_once(_GB_PATH."Form/Elem/Abstract.php");
 class Gb_Form_Elem_Checkbox extends Gb_Form_Elem_Abstract
 {
     protected $_args;
-    
-    
+
+
     public function getInput($value, $inInput, $inputJs)
     {
         if ($value) {
@@ -33,28 +33,28 @@ class Gb_Form_Elem_Checkbox extends Gb_Form_Elem_Abstract
         $ret.="<input type='checkbox' $value id='$elemid' name='$elemid' $inInput $inputJs />";
         return $ret;
     }
-    
+
     protected function _renderJavascript($js=null)
     {
         $js = null;
         $ret="";
         $elemid=$this->elemId();
-        
+
         // par défaut, met en classOK, si erreur, repasse en classNOK
         $ret .= " gbSetClass('{$elemid}_div', 'OK');\n";
 
         // enlève le message d'erreur
         $ret .= "gbRemoveError('{$elemid}');\n";
-                
+
         $ret .= "var value=\$F('$elemid');\n";
-        
+
         // traitement fMandatory
         if ($this->fMandatory()) {
               $ret.="if (value!='true' && value!='on') {\n";
               $ret.=" gbSetClass('{$elemid}_div', 'NOK');\n";
               $ret.="}\n";
         }
-        
+
         $ret2=parent::_renderJavascript($ret);
         return $ret2;
     }
@@ -68,16 +68,16 @@ class Gb_Form_Elem_Checkbox extends Gb_Form_Elem_Abstract
             return "";
         }
     }
-    
-    
+
+
     public function __construct($name, array $aParams=array())
     {
         $availableParams=array("args", "notValue");
         $aParams=array_merge(array("errorMsgMissing"=>"Cette case doit être cochée", "value"=>false), $aParams);
         return parent::__construct($name, $availableParams, $aParams);
     }
-    
-    
+
+
 
 
 
@@ -130,10 +130,10 @@ class Gb_Form_Elem_Checkbox extends Gb_Form_Elem_Abstract
     /**
      * get/set args
      * @param array[optional] $text
-     * @return Gb_Form_Elem_Checkbox|String 
+     * @return Gb_Form_Elem_Checkbox|String
      */
     public function args(array $text=null)
-    {   
+    {
         if ($text===null) {         return $this->_args; }
         else { $this->_args=$text; return $this;}
     }
@@ -141,7 +141,7 @@ class Gb_Form_Elem_Checkbox extends Gb_Form_Elem_Abstract
     /**
      * get/set value
      * @param string[optional] $text
-     * @return Gb_Form_Elem_Checkbox|String 
+     * @return Gb_Form_Elem_Checkbox|String
      */
     public function value($text=null)
     {
@@ -150,8 +150,8 @@ class Gb_Form_Elem_Checkbox extends Gb_Form_Elem_Abstract
         }
         return parent::value($text);
     }
-    
 
-    
-    
+
+
+
 }

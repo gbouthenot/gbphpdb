@@ -1,7 +1,7 @@
 <?php
 /**
  * Gb_Args
- * 
+ *
  * @author Gilles Bouthenot
  * @version $Revision$
  * @Id $Id$
@@ -19,7 +19,7 @@ require_once(_GB_PATH."Exception.php");
 Class Gb_Args
 {
     protected $_args;
-    
+
     /**
      * Renvoie la revision de la classe ou un boolean si la version est plus petite que précisée, ou Gb_Exception
      *
@@ -34,9 +34,9 @@ Class Gb_Args
         if ($revision>=$mini) { return true; }
         if ($throw) { throw new Gb_Exception(__CLASS__." r".$revision."<r".$mini); }
         return false;
-    }    
-    
-    
+    }
+
+
     /**
      * @param array|string|Gb_Args[optional]  $params
      */
@@ -56,8 +56,8 @@ Class Gb_Args
             throw new Gb_Exception("invalid params given");
         }
     }
-    
-    
+
+
     public function get($name=null)
     {
         if ($name===null) {
@@ -67,7 +67,7 @@ Class Gb_Args
                 return null;
             }
         }
-        
+
         $num=count($this->_args);
         for ($i=0; $i<$num-1; $i++) {
             $current=$this->_args[$i];
@@ -95,7 +95,7 @@ Class Gb_Args
                 return null;
             }
         }
-        
+
         $value=null;
         $num=count($this->_args);
         $args2=array();
@@ -128,7 +128,7 @@ Class Gb_Args
         $this->_args=$args2;
         return $this;
     }
-    
+
     /**
      * @return array
      */

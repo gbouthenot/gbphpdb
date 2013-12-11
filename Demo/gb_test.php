@@ -17,9 +17,9 @@ function main()
 {
 	Gb_Response::$head["author"]=array("name", "Gilles Bouthenot");
 	Gb_Response::send_headers(1);
-	
+
 	echo "this is main\n";
-	
+
 	echo "url is: ".$_SERVER['PHP_SELF'].Gb_Util::url_debug("&")."\n";
 
 	Gb_Log::log(Gb_Log::LOG_DEBUG, "*** FOOTER ***:");
@@ -30,14 +30,14 @@ function main()
     print_r($date);
     //print_r($dbProt->getTablesName());
     echo "Fin de connexion\n";
-    
+
     echo "Connexion avec Gb_Db --> Pdo_Oci\n";
     $dbProt=new Gb_Db(array("type"=>"Pdo_Oci",    "host"=>"", "name"=>"PROTHEE99",      "user"=>"gbouthenot", "pass"=>"***REMOVED***"));
     $date=$dbProt->retrieve_one("SELECT SYSDATE FROM DUAL");
     print_r($date);
     print_r($dbProt->getTables());
     echo "Fin de connexion\n";
-	
+
 	$c=array(0=>"a", "b"=>array(0=>"c", "d"=>"e"));
 	$d=array("a", "b", "c", 3=>"d", 5=>"e");
 
@@ -71,7 +71,7 @@ function main()
 	$t1=new Gb_Timer("Timer A");
 	$t2=new Gb_Timer();
 	$t3=new Gb_Timer();
-	
+
 
 	$ret1=$t1->get();$ret2=$t2->get();$ret3=$t3->get(null);  echo ($ret1>0&&$ret1<1&&$ret2>0&&$ret2<1&&$ret3>0&&$ret3<1?"OK":"ERROR")." t1: $ret1 t2: $t2 t3: $t3\n";
 	$t1->logTimer();
@@ -91,47 +91,47 @@ function main()
 	$ret=Gb_Util::roundCeil(120000  ,3);   echo ("$ret"==="120000"  ?"OK":"ERROR")." $ret\n";
 	$ret=Gb_Util::roundCeil(120000.1,3);   echo ("$ret"==="121000"  ?"OK":"ERROR")." $ret\n";
 	$ret=Gb_Util::roundCeil(129999.9,3);   echo ("$ret"==="130000"  ?"OK":"ERROR")." $ret\n";
-	
+
 	$ret=Gb_Util::roundCeil(1400,2);       echo ("$ret"==="1400"    ?"OK":"ERROR")." $ret\n";
 	$ret=Gb_Util::roundCeil(1400.01,2);    echo ("$ret"==="1500"    ?"OK":"ERROR")." $ret\n";
 	$ret=Gb_Util::roundCeil(1400,3);       echo ("$ret"==="1400"    ?"OK":"ERROR")." $ret\n";
 	$ret=Gb_Util::roundCeil(1400.01,3);    echo ("$ret"==="1410"    ?"OK":"ERROR")." $ret\n";
-	
+
 	$ret=Gb_Util::roundCeil(140,2);        echo ("$ret"==="140"     ?"OK":"ERROR")." $ret\n";
 	$ret=Gb_Util::roundCeil(140.01,2);     echo ("$ret"==="150"     ?"OK":"ERROR")." $ret\n";
 	$ret=Gb_Util::roundCeil(140,3);        echo ("$ret"==="140"     ?"OK":"ERROR")." $ret\n";
 	$ret=Gb_Util::roundCeil(140.01,3);     echo ("$ret"==="141"     ?"OK":"ERROR")." $ret\n";
-	
+
 	$ret=Gb_Util::roundCeil(14,2);         echo ("$ret"==="14"      ?"OK":"ERROR")." $ret\n";
 	$ret=Gb_Util::roundCeil(14.01,2);      echo ("$ret"==="15"      ?"OK":"ERROR")." $ret\n";
 	$ret=Gb_Util::roundCeil(14,3);         echo ("$ret"==="14"      ?"OK":"ERROR")." $ret\n";
 	$ret=Gb_Util::roundCeil(14.01,3);      echo ("$ret"==="14.1"    ?"OK":"ERROR")." $ret\n";
-	
+
 	$ret=Gb_Util::roundCeil(1.4,2);        echo ("$ret"==="1.4"     ?"OK":"ERROR")." $ret\n";
 	$ret=Gb_Util::roundCeil(1.401,2);      echo ("$ret"==="1.5"     ?"OK":"ERROR")." $ret\n";
 	$ret=Gb_Util::roundCeil(1.4,3);        echo ("$ret"==="1.4"     ?"OK":"ERROR")." $ret\n";
 	$ret=Gb_Util::roundCeil(1.401,3);      echo ("$ret"==="1.41"    ?"OK":"ERROR")." $ret\n";
-	
+
 	$ret=Gb_Util::roundCeil(.14,2);        echo ("$ret"==="0.14"    ?"OK":"ERROR")." $ret\n";
 	$ret=Gb_Util::roundCeil(.1401,2);      echo ("$ret"==="0.15"    ?"OK":"ERROR")." $ret\n";
 	$ret=Gb_Util::roundCeil(.14,3);        echo ("$ret"==="0.14"    ?"OK":"ERROR")." $ret\n";
 	$ret=Gb_Util::roundCeil(.1401,3);      echo ("$ret"==="0.141"   ?"OK":"ERROR")." $ret\n";
-	
+
 	$ret=Gb_Util::roundCeil(.014,2);       echo ("$ret"==="0.014"   ?"OK":"ERROR")." $ret\n";
 	$ret=Gb_Util::roundCeil(.01401,2);     echo ("$ret"==="0.015"   ?"OK":"ERROR")." $ret\n";
 	$ret=Gb_Util::roundCeil(.014,3);       echo ("$ret"==="0.014"   ?"OK":"ERROR")." $ret\n";
 	$ret=Gb_Util::roundCeil(.01401,3);     echo ("$ret"==="0.0141"  ?"OK":"ERROR")." $ret\n";
-	
+
 	$ret=Gb_Util::roundCeil(.0014,2);      echo ("$ret"==="0.0014"  ?"OK":"ERROR")." $ret\n";
 	$ret=Gb_Util::roundCeil(.001401,2);    echo ("$ret"==="0.0015"  ?"OK":"ERROR")." $ret\n";
 	$ret=Gb_Util::roundCeil(.0014,3);      echo ("$ret"==="0.0014"  ?"OK":"ERROR")." $ret\n";
 	$ret=Gb_Util::roundCeil(.001401,3);    echo ("$ret"==="0.00141" ?"OK":"ERROR")." $ret\n";
-	
+
 	$ret=Gb_Util::roundCeil(.00014,2);     echo ("$ret"==="0.00014" ?"OK":"ERROR")." $ret\n";
 	$ret=Gb_Util::roundCeil(.0001401,2);   echo ("$ret"==="0.00015" ?"OK":"ERROR")." $ret\n";
 	$ret=Gb_Util::roundCeil(.00014,3);     echo ("$ret"==="0.00014" ?"OK":"ERROR")." $ret\n";
 	$ret=Gb_Util::roundCeil(.0001401,3);   echo ("$ret"==="0.000141"?"OK":"ERROR")." $ret\n";
-	
+
 
 	$t3->reset();
 	$t3->logTimer(Gb_Log::LOG_DEBUG, "reset");
@@ -140,7 +140,7 @@ function main()
 	Gb_Log::log(Gb_Log::LOG_DEBUG, "début des tests : Gb_Db");
 	$dbGE=new Gb_Db(array("driver"=>"Pdo_Mysql", "host"=>"5.157.252.127", "user"=>"test", "pass"=>"***REMOVED***", "name"=>"horde"));
 	$t3->logTimer(Gb_Log::LOG_DEBUG, "new Gb_Db");
-	
+
 	$dbGE->beginTransaction();
 //	$dbGE->delete("horde_prefs", array());
 //	$dbGE->insert("horde_prefs", array("pref_uid"=>"root", "pref_scope"=>"scope1", "pref_name"=>"name1", "pref_value"=>"value1"));
@@ -152,10 +152,10 @@ function main()
 //	$dbGE->replace("horde_prefs", array("pref_value"=>"toto"), array($dbGE->quoteInto("pref_name=?","last_login")));
 
 //	$dbGE->replace("horde_prefs", array("pref_value"=>"toto", "pref_scope"=>"scope2"), array("pref_uid='root'", "pref_name='last_login'"));
-	
+
 	$sql="select * FROM horde_prefs WHERE pref_uid=?";
 	$sqlparam=array('root');
-	
+
 	$dbGE->retrieve_all($sql, $sqlparam);
 	$t3->logTimer(Gb_Log::LOG_DEBUG, "retrieve_all");
 

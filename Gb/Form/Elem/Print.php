@@ -1,7 +1,7 @@
 <?php
 /**
  * Gb_Form_Elem_Print
- * 
+ *
  * @author Gilles Bouthenot
  * @version $Revision$
  * @Id $Id$
@@ -24,7 +24,7 @@ class Gb_Form_Elem_Print extends Gb_Form_Elem_Abstract
         $aParams=array("javascriptEnabled"=>false, "value"=>$text, "backendCol"=>false);
         return parent::__construct($name, $availableParams, $aParams);
     }
-    
+
     public function getInput($value, $inInput, $inputJs)
     {
         $value;$inInput;$inputJs;

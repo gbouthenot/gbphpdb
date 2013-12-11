@@ -1,7 +1,7 @@
 <?php
 /**
  * Gb_Form_Backend_Database
- * 
+ *
  * @author Gilles Bouthenot
  * @version $Revision$
  * @Id $Id$
@@ -28,7 +28,7 @@ class Gb_Form_Backend_Database extends Gb_Form_Backend_Abstract
     protected $db;
     protected $tableName;
     protected $where;
-    
+
     /**
      * Renvoie la révision de la classe ou un boolean si la version est plus petite que précisée, ou Gb_Exception
      *
@@ -44,7 +44,7 @@ class Gb_Form_Backend_Database extends Gb_Form_Backend_Abstract
         if ($throw) { throw new Gb_Exception(__CLASS__." r".$revision."<r".$mini); }
         return false;
     }
-      
+
     /**
      * constructeur
      *
@@ -60,7 +60,7 @@ class Gb_Form_Backend_Database extends Gb_Form_Backend_Abstract
         $this->where=$where;
         parent::__construct($aParams);
     }
-  
+
     /**
      * Remplit les valeurs depuis la base. Remplit hasData
      *
@@ -73,13 +73,13 @@ class Gb_Form_Backend_Database extends Gb_Form_Backend_Abstract
             // no WHERE, we cannot find the line in the database
             return null;
         }
-        
+
         $moreData=array_merge(array_keys($this->moreData()), $moreData);
         $aDbCols=$moreData;
-        
+
         // obient le nom des colonnes
         $aCols=$this->_parent->getDataAsArray();
-        
+
         $fHasData=false;
         foreach (array_keys($aCols) as $nom) {
             $elem=$this->_parent->getElem($nom);
@@ -88,7 +88,7 @@ class Gb_Form_Backend_Database extends Gb_Form_Backend_Abstract
         }
         $sql=" SELECT ".implode(",", $aDbCols)." FROM ".$this->tableName." WHERE ".implode(" AND ", $this->where);
         $aRes=$this->db->retrieve_one($sql);
-        
+
         if (is_array($aRes)) {
             foreach (array_keys($aCols) as $nom) {
                 $elem=$this->_parent->getElem($nom);
@@ -99,13 +99,13 @@ class Gb_Form_Backend_Database extends Gb_Form_Backend_Abstract
             }
             $moreDataRead=array();
             foreach ($moreData as $nom) {
-                $moreDataRead[$nom]=$aRes[$nom]; 
+                $moreDataRead[$nom]=$aRes[$nom];
             }
             $this->_parent->moreDataRead($moreDataRead);
             $this->_parent->hasData(true);
             $fHasData=true;
-        }    
-        
+        }
+
         return $fHasData;
     }
 
@@ -133,8 +133,8 @@ class Gb_Form_Backend_Database extends Gb_Form_Backend_Abstract
             $dbcol = str_replace("_DBCOL_", $dbcol, $this->dbColFormat());
             $aDbCols[$dbcol]=$elem->backendValue();
         }
-        
-        
+
+
         $db=$this->db;
         try {
             if (count($this->where)) {
@@ -154,6 +154,6 @@ class Gb_Form_Backend_Database extends Gb_Form_Backend_Abstract
         return true;
     }
 
-    
-    
+
+
 }

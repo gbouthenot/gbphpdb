@@ -11,9 +11,9 @@ class Bitstring
     protected $_typeMsb;
     protected $_bitWeight_first;
     protected $_bitWeight_empty;
-    
+
     const _zBase32_alphabet = "ybndrfg8ejkmcpqxot1uwisza345h769";
-    
+
     /**
      * Constructor
      * @param string $type "MSB1" or "LSB1"
@@ -34,7 +34,7 @@ class Bitstring
         $this->_curWeight = $this->_bitWeight_first;
     }
 
-    
+
     /**
      * Append one bit
      * @param boolean $bit
@@ -45,7 +45,7 @@ class Bitstring
         if ($bit) {
             $this->_curByte |= $curWeight;
         }
-        
+
         if ($this->_typeMsb) {
             $curWeight >>= 1;
         } else {
@@ -56,11 +56,11 @@ class Bitstring
             $this->_str .= chr($this->_curByte);
             $this->_curByte = 0;
         }
-        
+
         $this->_curWeight = $curWeight;
     }
-    
-    
+
+
     /**
      * Append one (or more) values
      * @param integer|array $values
@@ -71,7 +71,7 @@ class Bitstring
         if (!is_array($values)) {
             $values = array($values);
         }
-        
+
         foreach ($values as $value) {
             $this->appendValue($value, $width);
         }
@@ -86,7 +86,7 @@ class Bitstring
     {
         // compute highest bit weight
         $weight = 1;
-        
+
         if ($this->_typeMsb) {
             // Msb
             if ($width > 1) {
@@ -95,7 +95,7 @@ class Bitstring
                 }
             }
         }
-                    
+
         for ($i=0; $i<$width; $i++) {
             $bit = 0;
             if ($value & $weight) {
@@ -109,9 +109,9 @@ class Bitstring
             }
         }
     }
-    
-    
-    
+
+
+
     /**
      * Append bits from a "010110" string
      * @param string $bits
@@ -125,8 +125,8 @@ class Bitstring
             }
         }
     }
-    
-    
+
+
     /**
      * Returns a binary string
      * @return string
@@ -169,10 +169,10 @@ class Bitstring
                 $curBits++;
             }
         }
-        
+
         return (strlen($this->_str)<<3)+$curBits;
     }
-    
+
 
 
     /**
@@ -186,7 +186,7 @@ class Bitstring
         $lostBit = null;
         $tmpLost = null;
         $tmpByte = null;
-        
+
         if ($this->_typeMsb) {
             // MSB
             if ($lenBytes) {
@@ -203,7 +203,7 @@ class Bitstring
                     $lenBytes--;
                     $this->curWeight = 0x80;
                 }
-                    
+
                 for ($runB=$lenBytes-1; $runB>=0; $runB--) {
                     $tmpByte = ord($this->_str[$runB]);
                     $this->str[$runB] = chr(($tmpByte<<1) | $tmpLost);
@@ -233,7 +233,7 @@ class Bitstring
                     $lenBytes--;
                     $this->curWeight = 0x01;
                 }
-                    
+
                 for ($runB=$lenBytes-1; $runB>=0; $runB--) {
                     $tmpByte = ord($this->_str[$runB]);
                     $this->str[$runB] = chr(($tmpByte>>1) | $tmpLost);
@@ -248,20 +248,20 @@ class Bitstring
             }
             return $lostBit;
         }
-    }    
-    
-    
+    }
+
+
     public function zBase32_encode()
     {
         $totalBits     = $this->getLength();
         $remainingBits = $totalBits;
-        
+
         $byteOffset = 0;
         $bitWeight = $this->_bitWeight_first;
-        
+
         $out = "";
         $alphabet = self::_zBase32_alphabet;
-        
+
         // fetch 5 bits
         while ($remainingBits > 0) {
             $int = $this->_getBits(5, $totalBits, &$byteOffset, &$bitWeight);
@@ -271,11 +271,11 @@ class Bitstring
         return $out;
     }
 
-    
+
     public function zBase32_decode($in)
     {
         $alphabet = self::_zBase32_alphabet;
-        
+
         $length = strlen($in);
         for ($i=0; $i<$length; $i++) {
             $c = $in[$i];
@@ -291,22 +291,22 @@ class Bitstring
             }
         }
 
-    
+
     }
-    
-    
+
+
     private function _getBits($count, $totalBits, &$byteOffset, &$bitWeight)
     {
         $int    = 0;
         $strlen = $totalBits>>3;
-        
+
         // get next byte
         if ($byteOffset < $strlen) {
             $curByte = ord($this->_str[$byteOffset]);
         } else {
             $curByte = $this->_curByte;
         }
-        
+
         while ($count) {
             if ($this->_typeMsb) {
                 $int <<= 1;
@@ -329,18 +329,18 @@ class Bitstring
             }
             $count--;
         }
-        
+
         return $int;
     }
-    
 
-    
-    
+
+
+
     public static function unitTest()
     {
         $bits = new Bitstring("MSB1");
         if ($bits->getLength() != 0)  { echo "ERROR Length=".$bits->getLength()."\n"; }
-        
+
         $bits = new Bitstring("MSB1");
         $sBits="0";
         $bits->appendBits($sBits);
@@ -351,8 +351,8 @@ class Bitstring
         $bits = new Bitstring("MSB1");
         $bits->zBase32_decode($zb32en);
         $bits->zBase32_encode();
-        
-    
+
+
         $bits = new Bitstring("MSB1");
         $sBits="1";
         $bits->appendBits($sBits);
@@ -360,7 +360,7 @@ class Bitstring
         $zb32 = $bits->zBase32_encode();
         if (base64_encode($bits_string) != "gA==") { echo "ERROR\n"; }
         if ($bits->getLength() != 1)  { echo "ERROR Length=".$bits->getLength()."\n"; }
-        
+
         $bits = new Bitstring("MSB1");
         $sBits="01";
         $bits->appendBits($sBits);
@@ -368,7 +368,7 @@ class Bitstring
         $zb32 = $bits->zBase32_encode();
         if (base64_encode($bits_string) != "QA==") { echo "ERROR\n"; }
         if ($bits->getLength() != 2)  { echo "ERROR Length=".$bits->getLength()."\n"; }
-        
+
         $bits = new Bitstring("MSB1");
         $sBits="11";
         $bits->appendBits($sBits);
@@ -376,7 +376,7 @@ class Bitstring
         $zb32 = $bits->zBase32_encode();
         if (base64_encode($bits_string) != "wA==") { echo "ERROR\n"; }
         if ($bits->getLength() != 2)  { echo "ERROR Length=".$bits->getLength()."\n"; }
-        
+
         $bits = new Bitstring("MSB1");
         $sBits="0000000000";
         $bits->appendBits($sBits);
@@ -384,7 +384,7 @@ class Bitstring
         $zb32 = $bits->zBase32_encode();
         if (base64_encode($bits_string) != "AAA=") { echo "ERROR\n"; }
         if ($bits->getLength() != 10)  { echo "ERROR Length=".$bits->getLength()."\n"; }
-        
+
         $bits = new Bitstring("MSB1");
         $sBits="1000000010";
         $bits->appendBits($sBits);
@@ -392,7 +392,7 @@ class Bitstring
         $zb32 = $bits->zBase32_encode();
         if (base64_encode($bits_string) != "gIA=") { echo "ERROR\n"; }
         if ($bits->getLength() != 10)  { echo "ERROR Length=".$bits->getLength()."\n"; }
-        
+
         $bits = new Bitstring("MSB1");
         $sBits="10001011100010001000";
         $bits->appendBits($sBits);
@@ -404,7 +404,7 @@ class Bitstring
     //i4iA
     //0000:  8b 88 80                                          ???
     //0000:  08 b8 88                                          .¸? CLiI
-    
+
         $bits = new Bitstring("MSB1");
         $sBits="000010001011100010001000";
         $bits->appendBits($sBits);
@@ -412,8 +412,8 @@ class Bitstring
         $zb32 = $bits->zBase32_encode();
         if (base64_encode($bits_string) != "CLiI") { echo "ERROR\n"; }
         if ($bits->getLength() != 24)  { echo "ERROR Length=".$bits->getLength()."\n"; }
-        
-        
+
+
         $bits = new Bitstring("MSB1");
         $sBits="111100001011111111000111";
         $bits->appendBits($sBits);
@@ -421,7 +421,7 @@ class Bitstring
         $zb32 = $bits->zBase32_encode();
         if (base64_encode($bits_string) != "8L/H") { echo "ERROR\n"; }
         if ($bits->getLength() != 24)  { echo "ERROR Length=".$bits->getLength()."\n"; }
-        
+
         $bits = new Bitstring("MSB1");
         $sBits="110101000111101000000100";
         $bits->appendBits($sBits);
@@ -429,7 +429,7 @@ class Bitstring
         $zb32 = $bits->zBase32_encode();
         if (base64_encode($bits_string) != "1HoE") { echo "ERROR\n"; }
         if ($bits->getLength() != 24)  { echo "ERROR Length=".$bits->getLength()."\n"; }
-        
+
         $bits = new Bitstring("MSB1");
         $sBits="111101010101011110111101000011";
         $bits->appendBits($sBits);
@@ -441,8 +441,8 @@ class Bitstring
     //9Ve9DA==
     //0000:  f5 57 bd 0c                                       õW½.
     //0000:  3d 55 ef 43                                       =UïC
-    
-        
+
+
         $bits = new Bitstring("MSB1");
         $sBits="00111101010101011110111101000011";
         $bits->appendBits($sBits);
@@ -450,14 +450,14 @@ class Bitstring
         $zb32 = $bits->zBase32_encode();
         if (base64_encode($bits_string) != "PVXvQw==") { echo "ERROR\n"; }
         if ($bits->getLength() != 32)  { echo "ERROR Length=".$bits->getLength()."\n"; }
-        
-        
+
+
     //    echo base64_encode($bits_string)."\n";
     //    echo Memory::dumpBin($bits_string);
     //    echo Memory::dumpBin(base64_decode("PVXvQw=="));
-    
+
     }
-    
-    
-    
+
+
+
 }

@@ -10,7 +10,7 @@ Class Memory
 {
     protected $_data=array();
     protected $_length=0;
-    
+
     /**
      * write string(s) to the specified memory address.
      * If no adr specified, write at the END of the memory
@@ -23,13 +23,13 @@ Class Memory
     	if (null === $adr) {
     		$adr = $this->_length;
     	}
-    	
+
         if (is_array($chars)) {
             $chars = implode("", $chars);
         }
         $coords = $this->_getDataCoords($adr);
         list($blkNumber, $offset) = $coords;
-        
+
         for ($i=0, $len=strlen($chars); $i<$len; $i++) {
             $this->_poke($blkNumber, $offset++, $chars[$i]);
             $adr++;
@@ -38,12 +38,12 @@ Class Memory
                 $blkNumber++;
             }
         }
-        
+
 		// update length
         if ($adr > $this->_length) {
         	$this->_length = $adr;
         }
-        
+
         return $this;
     }
 
@@ -65,16 +65,16 @@ Class Memory
         } elseif (0 === $len) {
             $len = null;
         }
-        
+
         $chars="";
-        
+
         while ( ($len===null) || ($len>0) ) {
             $char = $this->_peek($blkNumber, $offset++);
             if ( $offset == 256 ) {
                 $offset = 0;
                 $blkNumber++;
             }
-            
+
             // end of string ?
             if ($len===null) {
                 if ($char===chr(0)) {
@@ -87,11 +87,11 @@ Class Memory
             }
 
         }
-        
+
         return $chars;
     }
-    
-    
+
+
     /**
      * Enter description here ...
      * @param integer|array $adr
@@ -106,15 +106,15 @@ Class Memory
         }
         $coords = $this->_getDataCoords($adr);
         list($blkNumber, $offset) = $coords;
-        
+
         $masks=array( array(0x000000ff, 0), array(0x0000ff00, 8), array(0x00ff0000, 16), array(0xff000000, 24) );
-        
+
         foreach ($values as $value) {
             $w = $width;
             while ($w--) {
                 list($mask, $dec)  = $masks[$w];
                 $val = ($value & $mask) >> $dec;
-                
+
                 $this->_poke($blkNumber, $offset++, chr($val));
                 $adr++;
                 if ( $offset == 256 ) {
@@ -123,7 +123,7 @@ Class Memory
                 }
             }
         }
-        
+
 		// update length
         if ($adr > $this->_length) {
         	$this->_length = $adr;
@@ -131,7 +131,7 @@ Class Memory
 
         return $this;
     }
-    
+
     /**
      * Enter description here ...
      * @param integer|array $adr
@@ -146,13 +146,13 @@ Class Memory
         }
         $coords = $this->_getDataCoords($adr);
         list($blkNumber, $offset) = $coords;
-        
+
         foreach ($values as $value) {
             $w = $width;
             while ($w--) {
                 $val = ($value & 0xff);
                 $value >>= 8;
-                
+
                 $this->_poke($blkNumber, $offset++, chr($val));
                 $adr++;
                 if ( $offset == 256 ) {
@@ -161,7 +161,7 @@ Class Memory
                 }
             }
         }
-        
+
 		// update length
         if ($adr > $this->_length) {
         	$this->_length = $adr;
@@ -169,13 +169,13 @@ Class Memory
 
         return $this;
     }
-    
-    
+
+
     public function peekIntsMsb($adr, $width=1, $number=null)
     {
         $coords = $this->_getDataCoords($adr);
         list($blkNumber, $offset) = $coords;
-        
+
         $values=array();
         $number2 = $number;
         if (null === $number) {
@@ -191,20 +191,20 @@ Class Memory
             }
             $values[] = $value;
         }
-        
+
         if (null === $number) {
             return $values[0];
         }
         return $values;
     }
 
-    
-    
+
+
     public function peekIntsLsb($adr, $width=1, $number=null)
     {
         $coords = $this->_getDataCoords($adr);
         list($blkNumber, $offset) = $coords;
-        
+
         $values=array();
         $number2 = $number;
         if (null === $number2) {
@@ -222,20 +222,20 @@ Class Memory
             }
             $values[] = $value;
         }
-        
+
         if (null === $number) {
             return $values[0];
         }
         return $values;
     }
-    
-    
-    
+
+
+
     public function peekIntsMsb_decstr($adr, $width=1, $number=null)
     {
         $coords = $this->_getDataCoords($adr);
         list($blkNumber, $offset) = $coords;
-        
+
         $values=array();
         $number2 = $number;
         if (null === $number) {
@@ -251,20 +251,20 @@ Class Memory
             }
             $values[] = $value;
         }
-        
+
         if (null === $number) {
             return $values[0];
         }
         return $values;
     }
 
-    
-    
+
+
     public function peekIntsLsb_decstr($adr, $width=1, $number=null)
     {
         $coords = $this->_getDataCoords($adr);
         list($blkNumber, $offset) = $coords;
-        
+
         $values=array();
         $number2 = $number;
         if (null === $number2) {
@@ -282,32 +282,32 @@ Class Memory
             }
             $values[] = $value;
         }
-        
+
         if (null === $number) {
             return $values[0];
         }
         return $values;
     }
-    
-    
-    
+
+
+
     public static function binToHexstr($rawstring)
     {
         return array_shift(unpack("H*", $rawstring));
     }
 
-    
+
     public static function hexstrToBin($hexstr)
     {
         $hexstr = str_replace(' ', '', $hexstr);
         $hexstr = str_replace('\x', '', $hexstr);
         return pack('H*', $hexstr);
     }
-    
+
     public static function binstrMsbToBin($binstr)
     {
         $binstr = str_replace(' ', '', $binstr);
-        
+
         $ret="";
         $weight = 0x80;
         $byte   = 0;
@@ -326,7 +326,7 @@ Class Memory
     public static function binstrLsbToBin($binstr)
     {
         $binstr = str_replace(' ', '', $binstr);
-        
+
         $ret="";
         $weight = 1;
         $byte   = 0;
@@ -341,7 +341,7 @@ Class Memory
         }
         return $ret;
     }
-    
+
     /**
      * Print a hex dump of a string
      * 49 4e 46 4f 00 00 00 10 54 61 68 6f 6d 61 00 62     INFO....Tahoma.b
@@ -363,9 +363,9 @@ Class Memory
         }
         return $ret;
     }
-    
-    
-    
+
+
+
     public function bload($filename, $adr)
     {
         $filesize = @filesize($filename);
@@ -375,7 +375,7 @@ Class Memory
         if ($filesize == 0) {
             return;
         }
-        
+
         $fhandle = fopen($filename, "rb");
         while ( $filesize > 0 ) {
             $len = min(1024, $filesize);
@@ -385,7 +385,7 @@ Class Memory
                 fclose($fhandle);
                 throw new Exception("Error reading $filename");
             }
-            
+
             $this->pokeChars($adr, $chars);
 
             $filesize -= $len;
@@ -393,8 +393,8 @@ Class Memory
         }
         fclose($fhandle);
     }
-    
-    
+
+
     protected function _initBlock($blkNumber)
     {
         if (!isset($this->_data[$blkNumber])) {
@@ -402,7 +402,7 @@ Class Memory
         }
         return;
     }
-    
+
     /**
      * Renvoie le block demandé
      * @param int|array $blkNumber
@@ -415,7 +415,7 @@ Class Memory
         $this->_initBlock($blkNumber);
         return $this->_data[$blkNumber];
     }
-    
+
     /**
      * convert an absolute address into (blockNumber, offset)
      * @param integer|array $adr
@@ -429,7 +429,7 @@ Class Memory
         $offset    = $adr & 255;
         return array($blkNumber, $offset);
     }
-    
+
     /**
      * LOW LEVEL Poke a byte (char)
      * @param integer $blkNumber
@@ -452,7 +452,7 @@ Class Memory
         $this->_initBlock($blkNumber);
         return $this->_data[$blkNumber][$offset];
     }
-    
+
 //function readIntel(&$s, $off,   $len)
 //{
 //    for ($value=0, $i=0; $i<$len; $i++)
@@ -461,37 +461,37 @@ Class Memory
 //}
 
 
-    
+
     public function unitTest()
     {
         $M=new Memory();
         $M->pokeChars(123456, "Bonjour this is a test");
         $M->pokeChars(124000, "Bonjour this is a test");
-    
+
         $ret = $M->peekChars(123456, 2000);
         // $ret : s:2000:"Bonjour this is a testBonjour this is a test";    (with 0x00 bytes)
         assert('md5(serialize($ret))=="95e91c3df7ecb1bb4bf05e8e8f735f6b"');
         assert('strlen($ret)==2000');
-    
+
         $ret = $M->peekChars(123456, 0);
         $ass=<<<HEREDOC
 serialize(\$ret) == 's:22:"Bonjour this is a test";'
 HEREDOC;
     	assert($ass);
-    
+
         $ret = $M->peekChars(124000, 10);
         $ass=<<<HEREDOC
 serialize(\$ret) == 's:10:"Bonjour th";'
 HEREDOC;
     	assert($ass);
-    
+
         $ret = $M->peekChars(124001);
         $ass=<<<HEREDOC
 serialize(\$ret) == 's:1:"o";'
 HEREDOC;
     	assert($ass);
-    	
-    	
+
+
         $M=new Memory();
         $M->pokeIntsMsb(0xff8240, 2, array(
             0x7ee, 0x530, 0x750, 0x310,
@@ -515,49 +515,49 @@ HEREDOC;
         $M->pokeIntsMsb(0x3f8000+ 7*160, 4, 0xc3fffc7f);
         $M->pokeIntsMsb(0x3f8000+ 8*160, 4, 0xc3fffc7f);
         $M->pokeIntsMsb(0x3f8000+ 9*160, 4, 0xc3fffc7f);
-        
-        
-        
+
+
+
         // compose raw string
         $pi1  = chr(0);
         $pi1 .= chr(0);
         $palette = $M->peekChars(0xff8240, 32);
         $pi1 .= $palette;
         $pi1 .= $M->peekChars(0x3f8000, 32000);
-        
+
         //file_put_contents("test.pi1", $pi1);
-    
+
         $md5 = md5($pi1);
         assert('$md5=="4a02f1e19e4b594de2d453c19bf662d2"');
-    
+
         $ass1 = Memory::binToHexstr($palette);
         assert('$ass1 == "07ee0530075003100919053007500310034e0530075003100e43053007500310"');
         $ass2 = Memory::hexstrToBin($ass1);
         assert('$ass2 == $palette');
-        
+
         $ass1 = Memory::dumpBin($palette);
         $ass2 = <<<HEREDOC
 0000:  07 ee 05 30 07 50 03 10 09 19 05 30 07 50 03 10   .î.0.P.....0.P..
 0010:  03 4e 05 30 07 50 03 10 0e 43 05 30 07 50 03 10   .N.0.P...C.0.P..
 
 HEREDOC;
-    
+
         assert('serialize($ass1) == serialize($ass2)');
-        
+
         $M->pokeIntsMsb(0, 2, 0x1234);
         assert("\$M->peekChars(0) == chr(0x12)");
         assert("\$M->peekChars(1) == chr(0x34)");
         $ass1 = $M->peekIntsMsb(0, 2);
-        $ass2 = 0x1234; 
+        $ass2 = 0x1234;
         assert('serialize($ass1) == serialize($ass2)');
-        
+
         $M->pokeIntsLsb(0, 2, 0x1234);
         assert("\$M->peekChars(0) == chr(0x34)");
         assert("\$M->peekChars(1) == chr(0x12)");
         $ass1 = $M->peekIntsLsb(0, 2);
-        $ass2 = 0x1234; 
+        $ass2 = 0x1234;
         assert('serialize($ass1) == serialize($ass2)');
-            
+
         $M->pokeIntsMsb(0, 4, 0xfedcba98);
         assert("\$M->peekChars(0) == chr(0xfe)");
         assert("\$M->peekChars(1) == chr(0xdc)");
@@ -566,7 +566,7 @@ HEREDOC;
         $ass1 = $M->peekIntsMsb(0, 4);
         $ass2 = 0xfedcba98;
         assert('serialize($ass1) == serialize($ass2)');
-        
+
         $M->pokeIntsLsb(0, 4, 0xfedcba98);
         assert("\$M->peekChars(3) == chr(0xfe)");
         assert("\$M->peekIntsMsb(2) == 0xdc");
@@ -575,16 +575,16 @@ HEREDOC;
         $ass1 = $M->peekIntsLsb(0, 4);
         $ass2 = 0xfedcba98;
         assert('serialize($ass1) == serialize($ass2)');
-        
+
         $ass1 = $M->peekIntsLsb(0, 2, 2);
         $ass2 = array(        0xba98,         0xfedc);
         assert('serialize($ass1) == serialize($ass2)');
-    
+
         $ass1 = $M->peekIntsLsb_decstr(0, 2, 2);
         $ass2 = array((string)0xba98, (string)0xfedc);
         assert('serialize($ass1) == serialize($ass2)');
-            
-        
+
+
         /*
         0000011111100000
         0001111111111000
@@ -594,15 +594,15 @@ HEREDOC;
         1122222111111111
         1233322211111111
         1233322211111111
-        
-        
+
+
         couleur 0: 10+ 6+ 4+ 2+ 2+ 0+ 0x2  =  24 --> toujours 0
         couleur 1:  6+10+12+14+11+11+ 9x2  =  82 --> 1 : permet de faire des move.w (mais nécessite and.w pour les or !)
-        couleur 2:  0+ 0+ 0+ 0+ 3+ 5+ 4x2  =  16 --> 3 : permet de 
+        couleur 2:  0+ 0+ 0+ 0+ 3+ 5+ 4x2  =  16 --> 3 : permet de
         couleur 3:  0+ 0+ 0+ 0+ 0+ 0+ 3x2  =   6
         */
-        
-        
+
+
         $aSprData=array(
         "0000011111100000",
         "0001111111111000",
@@ -612,7 +612,7 @@ HEREDOC;
         "1122222111111111",
         "1233322211111111",
         );
-        
+
         for ($dec=0; $dec<16; $dec++){
     //        echo "Décalage $dec:\n";
             foreach ($aSprData as $sprData) {
@@ -639,7 +639,7 @@ HEREDOC;
             }
         }
     }
-        
+
 
 
 }

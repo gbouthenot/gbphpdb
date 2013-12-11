@@ -1,7 +1,7 @@
 <?php
 /**
  * Gb_Exception
- * 
+ *
  * @author Gilles Bouthenot
  * @version $Revision$
  * @Id $Id$
@@ -36,7 +36,7 @@ class Gb_Exception extends Exception
         if ($throw) { throw new Gb_Exception(__CLASS__." r".$revision."<r".$mini); }
         return false;
     }
-        
+
     public function __toString()
     {
         $message=__CLASS__ . ": \n";

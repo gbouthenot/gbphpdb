@@ -1,7 +1,7 @@
 <?php
 /**
  * Gb_Form_Group
- * 
+ *
  * @author Gilles Bouthenot
  * @version $Revision$
  * @Id $Id$
@@ -31,7 +31,7 @@ class Gb_Form_Group implements IteratorAggregate
     protected $_format = "_LABELS__ELEMS_";
     protected $_labelFormat = "_LABEL_";
     protected $_elemFormat = "_ELEM_";
-    
+
     /**
      * Constructeur de Gb_Form_Group
      *
@@ -43,20 +43,20 @@ class Gb_Form_Group implements IteratorAggregate
        $this->_name=$name;
        $this->_elems=array();
        $this->_modifiers=$modifiers;
-       
+
        $availableParams=array(
             "toStringRendersAs", "preGroup", "postGroup", "fGrouped", "format", "labelFormat", "elemFormat",
         );
-        
+
         foreach ($availableParams as $key) {
             if (isset($aParams[$key])) {
                 $val=$aParams[$key];
                 call_user_func(array($this, $key), $val);
-                
+
             }
         }
     }
-    
+
 // implements InteratorAggregate START
     public function getIterator()
     {
@@ -88,7 +88,7 @@ class Gb_Form_Group implements IteratorAggregate
         }
         return $obj;
     }
-    
+
 // implements standard OOP START
     final public function __set($key, $obj)
     {
@@ -116,10 +116,10 @@ class Gb_Form_Group implements IteratorAggregate
         } else {
             throw new Gb_Exception("element $key inexistant");
         }
-        
+
     }
 // implements standard OOP END
-    
+
     /**
      * Ajoute des Gb_Form_Element au groupe
      *
@@ -139,7 +139,7 @@ class Gb_Form_Group implements IteratorAggregate
         }
         return $this;
     }
-    
+
     /**
      * search a elem by name recursively. To get en elem without recursion, use object->elemName OOP function
      *
@@ -163,13 +163,13 @@ class Gb_Form_Group implements IteratorAggregate
         }
         throw new Gb_Exception("Element $name not found");
     }
-    
-    
+
+
     final public function getKeys()
     {
         return array_keys($this->_elems);
     }
-    
+
     final public function __toString()
     {
         return $this->render();
@@ -180,11 +180,11 @@ class Gb_Form_Group implements IteratorAggregate
         $format = $this->_format;
         $labelFormat = $this->_labelFormat;
         $elemFormat = $this->_elemFormat;
-        
+
         if (is_string($aElemNames)) {
             $aElemNames=array($aElemNames);
         }
-        
+
         if (false == $this->fGrouped()) {
             // not grouped
             foreach ($this as $elemName=>$elemOrGroup) {
@@ -195,11 +195,11 @@ class Gb_Form_Group implements IteratorAggregate
                             if ($elemOrGroup instanceof Gb_Form_Elem_Abstract) {
                                 $sLabel = str_replace("_LABEL_", $elemOrGroup->renderLabelHtml(), $labelFormat);
                                 $sElem  = str_replace("_ELEM_",  $renderHtml                    , $elemFormat);
-                                
+
                                 $sElem2 = $format;
                                 $sElem2 = str_replace("_LABELS_", $sLabel, $sElem2);
                                 $sElem2 = str_replace("_ELEMS_"  , $sElem,  $sElem2);
-                                
+
                                 $ret .= $sElem2;
                             } else {
                                 $ret .= $renderHtml;
@@ -210,10 +210,10 @@ class Gb_Form_Group implements IteratorAggregate
             }
         } else {
             // grouped
-            
+
             $aLabels = array();
             $aElems = array();
-            
+
             foreach ($this as $elemName=>$elemOrGroup) {
                 if ($elemOrGroup instanceof Gb_Form_Elem_Abstract || $elemOrGroup instanceOf Gb_Form_Group) {
                     if (($aElemNames===null) || in_array($elemName, $aElemNames)) {
@@ -233,10 +233,10 @@ class Gb_Form_Group implements IteratorAggregate
             if (count($aElems)) {
                 $format = str_replace("_LABELS_", join("", $aLabels), $format);
                 $format = str_replace("_ELEMS_", join("", $aElems), $format);
-                
+
                 $ret .= $format;
             }
-            
+
         }
 
         if (strlen($ret)) {
@@ -250,7 +250,7 @@ class Gb_Form_Group implements IteratorAggregate
     final public function renderJavascript($aElemNames=null)
     {
         $ret="";
-        
+
         if ($aElemNames===null) {
             foreach ($this as $elemOrGroup) {
                 if ($elemOrGroup instanceof Gb_Form_Elem_Abstract || $elemOrGroup instanceOf Gb_Form_Group) {
@@ -306,8 +306,8 @@ class Gb_Form_Group implements IteratorAggregate
             default: throw new Gb_Exception("mode $mode unhandled");
         }
     }
-    
-    
+
+
     /**
      * get/set preGroup
      * @param string[optional] $text
@@ -315,7 +315,7 @@ class Gb_Form_Group implements IteratorAggregate
      * @return Gb_Form_Group|String
      */
     final public function preGroup($text=null, $mode="append")
-    {   
+    {
         if ($text===null) {         return $this->_preGroup; }
         else { $this->_preGroup=self::textSetter($text, $this->_preGroup, $mode); return $this;}
     }
@@ -326,7 +326,7 @@ class Gb_Form_Group implements IteratorAggregate
      * @return Gb_Form_Group|String
      */
     final public function postGroup($text=null, $mode="append")
-    {   
+    {
         if ($text===null) {         return $this->_postGroup; }
         else { $this->_postGroup=self::textSetter($text, $this->_postGroup, $mode); return $this;}
     }
@@ -336,7 +336,7 @@ class Gb_Form_Group implements IteratorAggregate
      * @return Gb_Form_Group|String
      */
     final public function fGrouped($text=null)
-    {   
+    {
         if ($text===null) {         return $this->_fGrouped; }
         else { $this->_fGrouped=$text; return $this;}
     }
@@ -346,7 +346,7 @@ class Gb_Form_Group implements IteratorAggregate
      * @return Gb_Form_Group|String
      */
     final public function format($text=null)
-    {   
+    {
         if ($text===null) {         return $this->_format; }
         else { $this->_format=$text; return $this;}
     }
@@ -356,7 +356,7 @@ class Gb_Form_Group implements IteratorAggregate
      * @return Gb_Form_Group|String
      */
     final public function labelFormat($text=null)
-    {   
+    {
         if ($text===null) {         return $this->_labelFormat; }
         else { $this->_labelFormat=$text; return $this;}
     }
@@ -366,7 +366,7 @@ class Gb_Form_Group implements IteratorAggregate
      * @return Gb_Form_Group|String
      */
     final public function elemFormat($text=null)
-    {   
+    {
         if ($text===null) {         return $this->_elemFormat; }
         else { $this->_elemFormat=$text; return $this;}
     }
@@ -389,15 +389,15 @@ class Gb_Form_Group implements IteratorAggregate
     /**
      * get/set name
      * @param string[optional] $text
-     * @return Gb_Form_Group|String 
+     * @return Gb_Form_Group|String
      */
     final public function name($text=null)
-    {   
+    {
         if ($text===null) {         return $this->_name; }
         else { $this->_name=$text; return $this;}
     }
-    
-    
+
+
 }
 
 /*

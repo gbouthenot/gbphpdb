@@ -2,7 +2,7 @@
 
 /**
  * Gb_Form2
- * 
+ *
  * @author Gilles Bouthenot
  * @version $Revision$
  * @Id $Id$
@@ -39,7 +39,7 @@ Class Gb_Form2 implements IteratorAggregate
     protected $_moreDataRead=array();
     protected $_renderFormTags=true;
     protected $_toStringRendersAs="BOTH";
-    
+
     protected $_formTagOpened=false;
     protected $_formPostTagIssued=false;
     protected $_formTagClosed=false;
@@ -48,7 +48,7 @@ Class Gb_Form2 implements IteratorAggregate
      * @var Gb_Form_Backend_Abstract
      */
     protected $_backend=null;
-    
+
     /**
      * Renvoie la révision de la classe ou un boolean si la version est plus petite que précisée, ou Gb_Exception
      *
@@ -64,7 +64,7 @@ Class Gb_Form2 implements IteratorAggregate
         if ($throw) { throw new Gb_Exception(__CLASS__." r".$revision."<r".$mini); }
         return false;
     }
-      
+
     /**
      * constructeur
      *
@@ -75,30 +75,30 @@ Class Gb_Form2 implements IteratorAggregate
     {
         $this->_elems=array();
         $this->_modifiers=$modifiers;
-        
+
         $availableParams=array(
             "action", "enctype", "acceptCharset", "errors", "formHash", "hasData",
             "isLoaded", "isPost", "isValid", "backend",
             "method", "moreDataRead", "renderFormTags", "toStringRendersAs",
             "formTagOpened", "formPostTagIssued", "formTagClosed" ,
         );
-        
+
         foreach ($availableParams as $key) {
             if (isset($aParams[$key])) {
                 $val=$aParams[$key];
                 call_user_func(array($this, $key), $val);
             }
         }
-        
+
     }
-    
+
 // implements InteratorAggregate START
     final public function getIterator()
     {
         return (new Gb_Form_Iterator($this));
     }
 // implements InteratorAggregate END
-    
+
     final private function _applyModifiers($obj)
     {
         $c=get_class($obj);
@@ -123,7 +123,7 @@ Class Gb_Form2 implements IteratorAggregate
         }
         return $obj;
     }
-    
+
 // implements standard OOP START
     final public function __set($key, $obj)
     {
@@ -151,7 +151,7 @@ Class Gb_Form2 implements IteratorAggregate
         } else {
             throw new Gb_Exception("element $key inexistant");
         }
-        
+
     }
 // implements standard OOP END
 
@@ -174,7 +174,7 @@ Class Gb_Form2 implements IteratorAggregate
         }
         return $this;
     }
-    
+
     final public function getKeys()
     {
         return array_keys($this->_elems);
@@ -184,7 +184,7 @@ Class Gb_Form2 implements IteratorAggregate
     {
         return $this->render();
     }
-    
+
     /**
      * Renvoie la partie HTML du formulaire
      * @param array[optional] $aElemNames
@@ -268,7 +268,7 @@ Class Gb_Form2 implements IteratorAggregate
         if (!$this->formTagClosed()) {
             $ret="</form>";
             $this->formTagClosed(true);
-        }        
+        }
         return $ret;
     }
     final public function renderJavascript($aElemNames=null, $fRenderScriptTag=null)
@@ -346,13 +346,13 @@ EOF;
                 }
             }
         }
-        
+
         if ($fRenderScriptTag && strlen($ret)) {
             $head= "<script type='text/javascript'>\n";
             $head.="/* <![CDATA[ */\n";
             $ret=$head.$ret;
             $ret.="/* ]]> */\n";
-            $ret.="</script>\n"; 
+            $ret.="</script>\n";
         }
         return $ret;
     }
@@ -372,7 +372,7 @@ EOF;
     {
         $hash=$this->formHash();
         $ret="GBFORMPOST: '$hash'";
-        
+
         foreach ($this as $elem) {
             if ($elem instanceof Gb_Form_Elem_Abstract || $elem instanceof Gb_Form_Group) {
                 $arg=$elem->getAjaxArgs();
@@ -390,7 +390,7 @@ EOF;
      * @return Gb_Form2|String
      */
     final public function action($text=null)
-    {   
+    {
         if ($text===null) {         return $this->_action; }
         else { $this->_action=$text; return $this;}
     }
@@ -400,7 +400,7 @@ EOF;
      * @return Gb_Form2|String
      */
     final public function enctype($text=null)
-    {   
+    {
         if ($text===null) {         return $this->_enctype; }
         else { $this->_enctype=$text; return $this;}
     }
@@ -410,7 +410,7 @@ EOF;
      * @return Gb_Form2|String
      */
     final public function acceptCharset($text=null)
-    {   
+    {
         if ($text===null) {         return $this->_acceptCharset; }
         else { $this->_acceptCharset=$text; return $this;}
     }
@@ -469,7 +469,7 @@ EOF;
      * @return Gb_Form2|boolean
      */
     final public function hasData($text=null)
-    {   
+    {
         if ($text===null) {         return $this->_hasData; }
         else { $this->_hasData=$text; return $this;}
     }
@@ -533,7 +533,7 @@ EOF;
      * @return Gb_Form2|String
      */
     final public function method($text=null)
-    {   
+    {
         if ($text===null) {         return $this->_method; }
         else { $this->_method=$text; return $this;}
     }
@@ -543,7 +543,7 @@ EOF;
      * @return Gb_Form2|array
      */
     final public function moreDataRead(array $text=null)
-    {   
+    {
         if ($text===null) {         return $this->_moreDataRead; }
         else { $this->_moreDataRead=$text; return $this;}
     }
@@ -553,7 +553,7 @@ EOF;
      * @return Gb_Form2|Boolean
      */
     final public function renderFormTags($text=null)
-    {   
+    {
         if ($text===null) {         return $this->_renderFormTags; }
         else { $this->_renderFormTags=$text; return $this;}
     }
@@ -563,7 +563,7 @@ EOF;
      * @return Gb_Form2|Boolean
      */
     final public function formTagOpened($text=null)
-    {   
+    {
         if ($text===null) {         return $this->_formTagOpened; }
         else { $this->_formTagOpened=$text; return $this;}
     }
@@ -573,7 +573,7 @@ EOF;
      * @return Gb_Form2|Boolean
      */
     final public function formPostTagIssued($text=null)
-    {   
+    {
         if ($text===null) {         return $this->_formPostTagIssued; }
         else { $this->_formPostTagIssued=$text; return $this;}
     }
@@ -583,7 +583,7 @@ EOF;
      * @return Gb_Form2|Boolean
      */
     final public function formTagClosed($text=null)
-    {   
+    {
         if ($text===null) {         return $this->_formTagClosed; }
         else { $this->_formTagClosed=$text; return $this;}
     }
@@ -612,7 +612,7 @@ EOF;
      */
     final public function backend(Gb_Form_Backend_Abstract $p=null)
     {
-        if ($p===null) {    
+        if ($p===null) {
             return $this->_backend;
         } else {
             $this->_backend=$p;
@@ -620,25 +620,25 @@ EOF;
             return $this;
         }
     }
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
 
 
-  
-  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
   /**
    * Remplit les valeurs depuis le backend. Remplit hasData
-   * 
+   *
    * @param array $moreData array("col1", "col2")
    * @return boolean true, null si non applicable, false si pas d'info
    */
@@ -673,7 +673,7 @@ EOF;
                 }
             }
         }
-        
+
         return $aCols;
     }
 
@@ -692,8 +692,8 @@ EOF;
             return $this->_backend->putInDb($moreData);
         }
     }
-    
-    
+
+
     /**
      * search a elem by name recursively. To get en elem without recursion, use object->elemName OOP function
      *
@@ -717,13 +717,13 @@ EOF;
         }
         throw new Gb_Exception("Element $name not found");
     }
-    
 
-    
-    
-    
-    
-    
+
+
+
+
+
+
 
    /**
     * Remplit les valeurs depuis $_POST. Remplit hasData
@@ -751,10 +751,10 @@ EOF;
         }
         return $hasData;
     }
-    
-    
-    
-    
+
+
+
+
     /**
      * Valide le formulaire
      * En cas d'erreur, $this->setErrorMsg pour chaque $nom incorrect. Met à jour isValid() et errors()
@@ -774,7 +774,7 @@ EOF;
                 } elseif (null !== $val) {
                     // erreur
                     $errorMsgCustom=$elem->errorMsgCustom();
-                    
+
                     if (strlen($errorMsgCustom)) {
                         $err=$errorMsgCustom;
                     }
@@ -832,10 +832,10 @@ EOF;
         }
         return null;
     }
-    
-    
-    
-    
+
+
+
+
     /**
      * Lit les données de la db et de post
      * remplit hasData et isLoaded

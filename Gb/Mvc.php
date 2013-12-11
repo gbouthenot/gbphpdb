@@ -1,7 +1,7 @@
-<?
+<?php
 /**
  * Gb_Mvc
- * 
+ *
  * @author Gilles Bouthenot
  * @version $Revision$
  * @Id $Id$
@@ -23,17 +23,17 @@ Class Gb_Mvc
      * @var Gb_Mvc
      */
     private static $_instance;
-    
+
     protected $_pathApplication="../application/";
     protected $_pathControllers="controllers/";
     protected $_pathViews=      "views/";
     protected $_pathHelpers=    "helpers/";
-    
+
     /**
      * @var Gb_Args
      */
     protected $_args;
-    
+
     protected $_href;
     protected $_rootUrl;
 
@@ -52,7 +52,7 @@ Class Gb_Mvc
         if ($throw) { throw new Gb_Exception(__CLASS__." r".$revision."<r".$mini); }
         return false;
     }
-    
+
     /**
      * @return Gb_Mvc
      */
@@ -64,23 +64,23 @@ Class Gb_Mvc
         }
         return self::$_instance;
     }
-    
-    
+
+
     protected function _getMvcArgs()
     {
         $match=array();
-        
-        $script=$_SERVER["SCRIPT_NAME"];           //      /maps/index.php 
+
+        $script=$_SERVER["SCRIPT_NAME"];           //      /maps/index.php
         $req0=$_SERVER["REQUEST_URI"];              //      /maps/view/abc/def/ghi/klm
-        
+
         // sanityse $req and remove GET params
         preg_match("@^([a-z/0-9_-]*)@i", $req0, $match);
         $req=$match[1];
-        
+
         // remove the last part of $script
         preg_match("@^(.*/).*/.*$@", $script, $match);
         $rooturl=$match[1];                       //       /maps/
-        
+
         $href="";
         $href.=$_SERVER["SERVER_PORT"]==443 ? "https":"http";
         $href.="://";
@@ -156,10 +156,10 @@ Class Gb_Mvc
         if ($mvcArgs===null) {
             $mvcArgs=new Gb_Args(array());
         }
-        
+
         $oldMvcArgs=$this->_args;
         $this->_args=$mvcArgs;
-        
+
         //        $mvcArgs=$this->_args;
         $mvcHref=$this->_href;
         $mvcRootUrl=$this->_rootUrl;
@@ -190,7 +190,7 @@ Class Gb_Mvc
                 throw new Gb_Exception("PANIC: error controller not found.");
             }
         }
-        
+
         $this->_args=$oldMvcArgs;
         return $output;
     }
@@ -204,7 +204,7 @@ Class Gb_Mvc
     {
         return $this->_rootUrl;
     }
-    
+
     /**
      * @return Gb_Args
      */
@@ -212,11 +212,11 @@ Class Gb_Mvc
     {
         return $this->_args;
     }
-    
+
     /**
      * Renvoie une URL
      * @param mixed[optional] $args Gb_Args, string ou array
-     * 
+     *
      * @return string
      */
     public function getUrl($args=null)
@@ -228,7 +228,7 @@ Class Gb_Mvc
         } elseif (is_array($args)) {
             $args=new Gb_Args($args);
         }
-        
+
         $root=$this->_rootUrl;
         $sArgs=implode("/", $args->getAll());
         if (strlen($sArgs)) {
@@ -237,6 +237,6 @@ Class Gb_Mvc
 
         return $root.$sArgs;
     }
-    
-    
+
+
 }

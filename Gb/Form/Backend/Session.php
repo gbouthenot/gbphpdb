@@ -1,7 +1,7 @@
 <?php
 /**
  * Gb_Form_Backend_Session
- * 
+ *
  * @author Gilles Bouthenot
  * @version $Revision$
  * @Id $Id$
@@ -38,7 +38,7 @@ class Gb_Form_Backend_Session extends Gb_Form_Backend_Abstract
         if ($throw) { throw new Gb_Exception(__CLASS__." r".$revision."<r".$mini); }
         return false;
     }
-      
+
     /**
      * constructeur
      *
@@ -51,7 +51,7 @@ class Gb_Form_Backend_Session extends Gb_Form_Backend_Abstract
         parent::__construct($aParams);
     }
 
-  
+
     /**
      * Remplit les valeurs depuis la session. Remplit hasData
      *
@@ -63,7 +63,7 @@ class Gb_Form_Backend_Session extends Gb_Form_Backend_Abstract
         //todo: checkbox
         // obient le nom des colonnes
         $aCols=$this->_parent->getDataAsArray();
-        
+
         $fData=false;
         // non ! on doit r�cup�rer le nom de l'element et non dbcol /** @TODO **/
         foreach (array_keys($aCols) as $nom) {
@@ -77,7 +77,7 @@ class Gb_Form_Backend_Session extends Gb_Form_Backend_Abstract
                 $this->_parent->hasData(true);
             }
         }
-        
+
         return $fData;
     }
 
@@ -94,13 +94,13 @@ class Gb_Form_Backend_Session extends Gb_Form_Backend_Abstract
 
         $aCols=array_merge($aCols, $moreData);
         $aCols=array_merge($aCols, $this->moreDataInsert());
-    
+
         foreach ($aCols as $dbcol=>$val) {
             Gb_Session::set($this->_sessionprefix.str_replace("_DBCOL_", $dbcol, $this->dbColFormat()), $val);
         }
-    
+
         Gb_Log::LogInfo("GBFORMSESSION->putInDb OK", $aCols );
         return true;
     }
-    
+
 }

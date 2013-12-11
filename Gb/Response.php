@@ -1,7 +1,7 @@
 <?php
 /**
  * Gb_Response
- * 
+ *
  * @author Gilles Bouthenot
  * @version $Revision$
  * @Id $Id$
@@ -71,8 +71,8 @@ class Gb_Response
         if ($throw) { throw new Gb_Exception(__CLASS__." r".$revision."<r".$mini); }
         return false;
     }
-        
-    
+
+
     public static function send_headers($fPrint=1)
   {
     $head=self::$head;
@@ -140,14 +140,14 @@ class Gb_Response
 
     return $ret;
   } // function send_headers
-    
+
   /**
    * Cette classe ne doit pas �tre instanc�e !
    */
   private function __construct()
   {
   }
-  
+
 
   /**
    * Envoie le footer si html_parse<=P_XBODY
@@ -162,10 +162,10 @@ class Gb_Response
             printf("\n<div class='Gb_footer'>\n%s</div>\n", htmlspecialchars($footer, ENT_QUOTES));
         }
     }
-  
-  
-  
-  
+
+
+
+
     /**
      * Renvoie le footer, avec les plugins appel�
      *
@@ -174,7 +174,7 @@ class Gb_Response
     public static function get_footer()
     {
         $footer=self::$footer;
-    
+
         $plugins=Gb_Glue::getPlugins("Gb_Response_Footer");
         foreach ($plugins as $plugin) {
             if (is_callable($plugin[0])) {
@@ -182,7 +182,7 @@ class Gb_Response
             }
         }
         $footer.="\n";
-        
+
         return $footer;
     }
 
@@ -206,6 +206,6 @@ class Gb_Response
             self::$html_parse=self::P_XHTML;
         }
     }
-  
-    
+
+
 }
