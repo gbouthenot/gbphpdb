@@ -56,6 +56,10 @@ class Model implements \IteratorAggregate, \ArrayAccess {
         $id = array_pop($args);
         $db = array_pop($args); if (!$db) {$db = self::$_db; };
 
+        if (null === $id) {
+            throw new \Gb_Exception("id is null");
+        }
+
         if (!isset(static::$_buffer[$id])) {
             // fetch the row into the buffer
             self::fetch($db, $id);
@@ -122,7 +126,8 @@ class Model implements \IteratorAggregate, \ArrayAccess {
      * Fetch one or some or all rows from the database to the buffer. Will overwrite buffer rows.
      * @param \Gb_Db[optional] $db
      * @param mixed $ids single/array/null
-     * @throws \Gb_Exception if a key is not found.
+     * @return null|\Gb\Model\Rows|\Gb\Model\Model
+     * @throws \Gb_Exception if a row is not found for the asked keys.
      */
     public static function fetch($ids) {
         $args = func_get_args();
@@ -158,6 +163,19 @@ class Model implements \IteratorAggregate, \ArrayAccess {
 
         // merge the rows in the buffer. Do not use array_merge!
         static::$_buffer += $data;
+
+        $model = get_called_class();
+        if (count($data) === 0) {
+            return null;
+        } elseif (count($data) === 1) {
+            // get the first row
+            $data = reset($data);
+            $id = reset($ids);
+            return new $model($db, $id, $data);
+        } else {
+            return new Rows($db, $model, array_keys($data));
+
+        }
     }
 
 
@@ -191,7 +209,8 @@ class Model implements \IteratorAggregate, \ArrayAccess {
         // merge the rows in the buffer. Do not use array_merge!
         static::$_buffer += $data;
 
-        return new Rows($db, get_called_class(), array_keys($data));
+        $model = get_called_class();
+        return new Rows($db, $model, array_keys($data));
     }
 
 
@@ -199,7 +218,7 @@ class Model implements \IteratorAggregate, \ArrayAccess {
     /**
      * return the first line
      * @param array|string[optional] $cond array("col"=>"value") or array("col"=>array(1,2)) or "col='value'"
-     * @return \Gb\Model\Model
+     * @return null|\Gb\Model\Model
      */
     public static function findFirst($cond=null) {
         $args = func_get_args();
@@ -212,10 +231,14 @@ class Model implements \IteratorAggregate, \ArrayAccess {
         $data = $db->retrieve_one($sql);
         // merge the row in the buffer.
         $id = $data[static::$_pk];
-        static::$_buffer[$id] = $data;
+        if ($id !== null) {
+            static::$_buffer[$id] = $data;
 
-        $model = get_called_class();
-        return new $model($db, $id, $data);
+            $model = get_called_class();
+            return new $model($db, $id, $data);
+        } else {
+            return null;
+        }
     }
 
 
@@ -234,6 +257,10 @@ class Model implements \IteratorAggregate, \ArrayAccess {
             foreach ($cond as $k=>$v) {
                 if (is_array($v)) {
                     $aWhere[] = $db->quoteIdentifier($k) . ' IN (' . $db->quote($v) . ')';
+                } elseif (null === $v) {
+                    $aWhere[] = $db->quoteIdentifier($k) . ' IS NULL';
+                } elseif (is_a($v, "Zend_Db_Expr")) {
+                    $aWhere[] = $db->quoteIdentifier($k) . " $v";
                 } else {
                     $aWhere[] = $db->quoteIdentifier($k) . '=' . $db->quote($v);
                 }
@@ -257,16 +284,27 @@ class Model implements \IteratorAggregate, \ArrayAccess {
     }
 
     /**
-     * returns a blank row
+     * returns a blank row. created_at is handled by save()
      * @return \Gb\Model\Model
-     * @todo: implements defaults
      */
-    public static function create() {
+    public static function create(/* $db=null, $data=null*/) {
         $args = func_get_args();
-        $db = array_pop($args); if (!$db) {$db = self::$_db; };
+        $data = array_pop($args);
+        $db = array_pop($args);
+        if (is_array($db)) {
+            $data = $db;
+            $db = null;
+        }
+
+        if ($db   === null) { $db = self::$_db; }
+        if ($data === null) { $data = array(); }
+
+        if (!is_a($db, "Gb_Db")) {
+            throw new \Gb_Exception("database should be an instance of Gb_Db " . get_class($db) . " given.");
+        }
 
         $model = get_called_class();
-        return new $model($db, null, array());
+        return new $model($db, null, $data);
     }
 
 
@@ -316,6 +354,11 @@ class Model implements \IteratorAggregate, \ArrayAccess {
         return json_encode($this->o);
     }
 
+    /**
+     * Save the row
+     * handles updated_at and created_at
+     * @return \Gb\Model\Model
+     */
     public function save() {
         $table = static::$_tablename;
         $pk    = static::$_pk;
@@ -338,8 +381,15 @@ class Model implements \IteratorAggregate, \ArrayAccess {
 
         // save in the buffer
         static::$_buffer[$id] = $this->o;
+
+        return $this;
     }
 
+    /**
+     * Delete the row
+     * The data is still in memory
+     * @return \Gb\Model\Model
+     */
     public function destroy() {
         $table = static::$_tablename;
         $pk    = static::$_pk;
@@ -352,6 +402,8 @@ class Model implements \IteratorAggregate, \ArrayAccess {
         }
         // after deletion, the data remain in memory, and can be inserted again upon save()
         $this->id = null;
+
+        return $this;
     }
 
 
@@ -404,10 +456,14 @@ class Model implements \IteratorAggregate, \ArrayAccess {
         }
         $relMeta = $model::$rels[$relname];
         $relclass = $relMeta["class_name"];
+        if (!class_exists($relclass, true)) {
+            throw new \Gb_Exception("Class $relclass does not exist for $model -> $relname");
+        }
         $reltype  = $relMeta["reltype"];
         if ('belongs_to' === $reltype) {
             if (!isset($this->rel[$relname])) {
                 $relfk    = $relMeta["foreign_key"];
+            if (!isset($this->o[$relfk])) { throw new \Gb_Exception("Relation {$model}->rel('{$relname}'): there is no column $relfk"); }
                 $relfk    = $this->o[$relfk];
                 $relat    = $relclass::getOne($this->db, $relfk);
                 $this->rel[$relname] = $relat->asArray();
@@ -424,6 +480,7 @@ class Model implements \IteratorAggregate, \ArrayAccess {
         } elseif ('belongs_to_json' === $reltype) {
             if (!isset($this->rel[$relname])) {
                 $relfk    = $relMeta["foreign_key"];
+                if (!isset($this->o[$relfk])) { throw new \Gb_Exception("Relation {$model}->rel('{$relname}'): there is no column $relfk"); }
                 $relfk    = $this->o[$relfk];
                 $relfk    = json_decode($relfk);
                 $relclass::_getSome($this->db, $relfk);

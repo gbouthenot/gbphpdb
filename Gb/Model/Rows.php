@@ -52,6 +52,36 @@ class Rows implements \IteratorAggregate, \Countable, \ArrayAccess {
       return json_encode($this->asArray());
     }
 
+    /**
+     * Get a single attribute from each row
+     * @param string $key
+     * @return array
+     */
+    public function pluck($key) {
+        $ret = [];
+        foreach($this as $row) {
+            $ret[] = $row[$key];
+        }
+        return $ret;
+    }
+
+    /**
+     * Reduce the number of rows
+     * @param callable $callback
+     * @return \Gb\Model\Rows
+     */
+    public function filter($callback) {
+        $rowsIds = array();
+        foreach($this as $id=>$row) {
+            if ($callback($row)) {
+                $rowsIds[] = $id;
+            }
+        }
+        $class = __CLASS__;
+        return new $class($this->db, $this->nam, $rowsIds);
+        // join() :
+        //select count(questionnairealineas.id) from questionnairealineas JOIN questionnaires ON (questionnaires.id=questionnairealineas.questionnaire_id AND score IS NOT NULL) where questionalinea_id IN (100,101);
+    }
 
     /**
      * @param string $relname
@@ -69,8 +99,14 @@ class Rows implements \IteratorAggregate, \Countable, \ArrayAccess {
             if (!isset($this->rel[$relname])) {
                 $relfk    = $relMeta["foreign_key"];
                 // for each line, get the foreign key
-                $relfks   = array_map(function($id)use($relfk, $model){return $model::$_buffer[$id][$relfk]; }, $this->o);
+                $relfks   = array_map(function($id) use ($relfk, $model) {
+                    if (!isset($model::$_buffer[$id][$relfk])) {
+                        throw new \Gb_Exception("column $relfk does not exist in $model");
+                    }
+                    return $model::$_buffer[$id][$relfk];
+                }, $this->o);
                 $relfks   = array_unique($relfks);
+                $relfks   = array_filter($relfks, "strlen"); // remove null, false, empty string
                 $relclass::_getSome($this->db, $relfks);
                 $this->rel[$relname] = $relfks;
             }
