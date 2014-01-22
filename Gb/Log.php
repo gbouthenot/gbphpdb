@@ -268,6 +268,10 @@ class Gb_Log
             array_shift($vd);
         }
 
+        if (isset($text->xdebug_message)) {
+            unset($text->xdebug_message);
+        }
+
         self::writelog($level, $text, $o, $vd, $fPrintCall);
 
   }

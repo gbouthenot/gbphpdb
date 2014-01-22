@@ -110,7 +110,7 @@ class Model implements \IteratorAggregate, \ArrayAccess {
      * @param \Gb_Db[optional] $db
      * @return \Gb\Model\Rows
      */
-    public static function getAll(\Gb_Db $db=null) {
+    public static function getAll() {
         $args = func_get_args();
         $db = array_pop($args); if (!$db) {$db = self::$_db; };
 

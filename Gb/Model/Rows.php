@@ -58,7 +58,7 @@ class Rows implements \IteratorAggregate, \Countable, \ArrayAccess {
      * @return array
      */
     public function pluck($key) {
-        $ret = [];
+        $ret = array();
         foreach($this as $row) {
             $ret[] = $row[$key];
         }
@@ -82,6 +82,73 @@ class Rows implements \IteratorAggregate, \Countable, \ArrayAccess {
         // join() :
         //select count(questionnairealineas.id) from questionnairealineas JOIN questionnaires ON (questionnaires.id=questionnairealineas.questionnaire_id AND score IS NOT NULL) where questionalinea_id IN (100,101);
     }
+
+    /**
+     * Prepend an object to the current rows
+     * @param \Gb\Model $one
+     * @return \Gb\Model\Rows
+     * @throws \Gb_Exception
+     */
+    public function prepend($rows) {
+        if (is_a($rows, '\Gb\Model\Rows')) {
+            foreach ($rows as $row) {
+                $this->append($row);
+            }
+        } elseif (!is_a($rows, $this->nam)) {
+            throw new \Gb_Exception("Cannot prepend a " . get_class($rows) . " to rows of " . $this->nam);
+        } else { // one object
+            array_unshift($this->o, $rows->id);
+        }
+        return $this;
+    }
+
+
+
+    /**
+     * Append an object to the current rows
+     * @param \Gb\Model|\Gb\Model\Rows $rows
+     * @return \Gb\Model\Rows
+     * @throws \Gb_Exception
+     */
+    public function append($rows) {
+        if (is_a($rows, '\Gb\Model\Rows')) {
+            foreach ($rows as $row) {
+                $this->append($row);
+            }
+        } elseif (!is_a($rows, $this->nam)) {
+            throw new \Gb_Exception("Cannot append a " . get_class($rows) . " to rows of " . $this->nam);
+        } else { // one object
+            array_push($this->o, $rows->id);
+        }
+        return $this;
+    }
+
+
+
+    /**
+     * Return new Rows with duplicate rows thrown away
+     * @return \Gb\Model\Rows
+     */
+    public function unique() {
+        $rowsIds = $this->o;
+        array_unique($rowsIds);
+        $class = __CLASS__;
+        return new $class($this->db, $this->nam, $rowsIds);
+        return $this;
+    }
+
+
+
+    /**
+     * Get the first row
+     * @return \Gb\Model
+     */
+    public function first() {
+        $model = $this->nam;
+        $id = $this->o[0];
+        return new $model($this->db, $id, $model::$_buffer[$id]);
+    }
+
 
     /**
      * @param string $relname
