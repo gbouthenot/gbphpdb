@@ -59,16 +59,18 @@ class Model implements \IteratorAggregate, \ArrayAccess {
         if (null === $id) {
             throw new \Gb_Exception("id is null");
         }
+        $id = (int) $id;
 
         if (!isset(static::$_buffer[$id])) {
             // fetch the row into the buffer
-            self::fetch($db, $id);
+            self::_fetch($db, $id);
         }
 
         return self::_getOne($db, $id);
     }
 
     public static function _getOne($db, $id, $rel=array()) {
+        $id = (int) $id;
         // send the row from the buffer
         $model = get_called_class();
         return new $model($db, $id, static::$_buffer[$id], $rel);
@@ -101,7 +103,7 @@ class Model implements \IteratorAggregate, \ArrayAccess {
         // get the rows that are not in the buffer
         $ids = array_unique($ids);
         $fetchIds = array_diff($ids, array_keys(static::$_buffer));
-        self::fetch($db, $fetchIds); // fetch them
+        self::_fetch($db, $fetchIds); // fetch them
     }
 
 
@@ -115,7 +117,7 @@ class Model implements \IteratorAggregate, \ArrayAccess {
         $db = array_pop($args); if (!$db) {$db = self::$_db; };
 
         if (!static::$_isFullyLoaded) {
-            self::fetch($db, null);
+            self::_fetch($db, null);
         }
         return new Rows($db, get_called_class(), array_keys(static::$_buffer));
     }
@@ -123,13 +125,12 @@ class Model implements \IteratorAggregate, \ArrayAccess {
 
 
     /**
-     * Fetch one or some or all rows from the database to the buffer. Will overwrite buffer rows.
+     * Fetch one or some or all rows from the database to the buffer. Overwrite buffer rows.
      * @param \Gb_Db[optional] $db
      * @param mixed $ids single/array/null
-     * @return null|\Gb\Model\Rows|\Gb\Model\Model
      * @throws \Gb_Exception if a row is not found for the asked keys.
      */
-    public static function fetch($ids) {
+    public static function _fetch($ids) {
         $args = func_get_args();
         $ids = array_pop($args);
         $db = array_pop($args); if (!$db) {$db = self::$_db; };
@@ -144,13 +145,18 @@ class Model implements \IteratorAggregate, \ArrayAccess {
             if (0 === count($ids)) {
                 return;
             }
-            // quote the key values
-            $idsq = array_map(function($val)use($db){return $db->quote($val);}, $ids);
+            // id should be integer
+            $idsq = array_map(function($val){return (int) $val;}, $ids);
 
             $sql .= " WHERE " . static::$_pk . " IN (" . implode(",", $idsq) . ")";
         }
 
         $data = $db->retrieve_all($sql, null, static::$_pk, null, true);
+
+        // for id to be integer
+        foreach (array_keys($data) as $key) {
+            $data[$key][static::$_pk] = (int) $data[$key][static::$_pk];
+        }
 
         if (null === $ids) {
             static::$_isFullyLoaded = true;
@@ -162,8 +168,10 @@ class Model implements \IteratorAggregate, \ArrayAccess {
         }
 
         // merge the rows in the buffer. Do not use array_merge!
-        static::$_buffer += $data;
+        static::$_buffer = $data + static::$_buffer;
 
+        return null;
+        /*
         $model = get_called_class();
         if (count($data) === 0) {
             return null;
@@ -176,6 +184,7 @@ class Model implements \IteratorAggregate, \ArrayAccess {
             return new Rows($db, $model, array_keys($data));
 
         }
+        */
     }
 
 
@@ -207,7 +216,7 @@ class Model implements \IteratorAggregate, \ArrayAccess {
 
         //echo static::$_tablename."\n";print_r(static::$_buffer);
         // merge the rows in the buffer. Do not use array_merge!
-        static::$_buffer += $data;
+        static::$_buffer = $data + static::$_buffer;
 
         $model = get_called_class();
         return new Rows($db, $model, array_keys($data));
@@ -304,7 +313,9 @@ class Model implements \IteratorAggregate, \ArrayAccess {
         }
 
         $model = get_called_class();
-        return new $model($db, null, $data);
+        $obj = new $model($db, null, array());
+        $obj->set($data);
+        return $obj;
     }
 
 
@@ -336,6 +347,10 @@ class Model implements \IteratorAggregate, \ArrayAccess {
      */
     protected $o;
     /**
+     * @var array initial data, as fetched from db
+     */
+    protected $pristine = null;
+    /**
      * @var array the relations
      */
     protected $rel;
@@ -344,6 +359,7 @@ class Model implements \IteratorAggregate, \ArrayAccess {
         $this->db   = $db;
         $this->id   = $id;
         $this->o    = $data;
+        $this->pristine = $data;
         $this->rel  = $rel;
     }
 
@@ -354,16 +370,33 @@ class Model implements \IteratorAggregate, \ArrayAccess {
         return json_encode($this->o);
     }
 
+
+
     /**
-     * Save the row
+     * Save the row, if modified
      * handles updated_at and created_at
      * @return \Gb\Model\Model
      */
     public function save() {
+        if ($this->isModified()) {
+            $this->saveAlways();
+        }
+
+        return $this;
+    }
+
+
+
+    /**
+     * Save the row, even if not modified
+     * handles updated_at and created_at
+     * @return \Gb\Model\Model
+     */
+    public function saveAlways() {
         $table = static::$_tablename;
         $pk    = static::$_pk;
         $db    = $this->db;
-        $id    = $this->id;
+        $id    = (int) $this->id;
         if (static::$_timestamps) {
             $this->o["updated_at"] = \Gb_String::date_iso();
             if (null === $id) {
@@ -372,22 +405,58 @@ class Model implements \IteratorAggregate, \ArrayAccess {
         }
         if (null === $id) {
             $db->insert($table, $this->o);
-            $id = $db->lastInsertId();
+            $id = (int) $db->lastInsertId();
             $this->id = $id;
             $this->o[$pk] = $id;
         } else {
-            $db->update($table, $this->o, $db->quoteInto("$pk = ?", $id));
+            $db->update($table, $this->o, "$pk = $id");
         }
 
-        // save in the buffer
-        static::$_buffer[$id] = $this->o;
+        // reload the row into the buffer
+        $this->_fetch($id);
 
         return $this;
     }
 
+
+    /**
+     * Set the properties if the column exists
+     * @see set
+     * @param array $data
+     */
+    public function merge(array $data) {
+        foreach ($data as $key=>$value) {
+            if ($this->__isset($key)) {
+                $this->__set($key, $value);
+            }
+        }
+    }
+    /**
+     * Set properties. Even if the column does not exist.
+     * @see merge
+     * @param array $data
+     */
+    public function set(array $data) {
+        foreach ($data as $key=>$value) {
+            $this->__set($key, $value);
+        }
+    }
+
+
+
+    /**
+     * The model has been modified ?
+     * @return boolean
+     */
+    public function isModified() {
+        // == return true regardless of key order, and value type
+        // $a=array("a1"=>"1", "a2"=>"2");  $b=array("a2"=>2, "a1"=>1);  $a == $b --> true
+        return $this->o != $this->pristine;
+    }
+
     /**
      * Delete the row
-     * The data is still in memory
+     * The data is still in the model instance
      * @return \Gb\Model\Model
      */
     public function destroy() {
@@ -400,8 +469,10 @@ class Model implements \IteratorAggregate, \ArrayAccess {
             // remove from the buffer
             unset(static::$_buffer[$id]);
         }
-        // after deletion, the data remain in memory, and can be inserted again upon save()
+        // after deletion, the data remain in the instance memory, and can be inserted again upon save()
         $this->id = null;
+        $this->pristine = null;
+
 
         return $this;
     }
@@ -422,6 +493,17 @@ class Model implements \IteratorAggregate, \ArrayAccess {
         }
     }
     public function __set($key, $value) {
+        if (substr($key, 0, 3) === "is_") {
+            if ($value===false || $value==="false" || $value===0 || $value==="0") {
+                $value = "0";
+            } elseif ($value===true || $value==="true" || $value===1 || $value==="1") {
+                $value = "1";
+            } else {
+                throw new \Gb_Exception("$value is not boolean for column $key");
+            }
+        } elseif ($key === static::$_pk) {
+            $value = (int) $value;
+        }
         $this->o[$key] = $value;
     }
     public function __isset($key) {

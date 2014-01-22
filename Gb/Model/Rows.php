@@ -21,6 +21,8 @@ class Rows implements \IteratorAggregate, \Countable, \ArrayAccess {
     protected $rel;
 
     public function __construct(\Gb_Db $db, $classname, array $data, $rel=array()) {
+        // $data should be array of integers
+        $data = array_map(function($val){return (int) $val;}, $data);
         $this->db   = $db;
         $this->nam  = $classname;
         $this->o    = $data;
