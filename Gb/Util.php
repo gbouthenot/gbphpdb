@@ -130,6 +130,21 @@ Class Gb_Util
     return $arr1;
   }
 
+
+    /**
+     * Return the first array element that match the callback
+     * @return mixed|null
+     */
+    public static function array_find($array, $callback) {
+        foreach ($array as $key => $value) {
+            $result = $callback($value, $key);
+            if ($result) {
+                return $value;
+            }
+        }
+        return null;
+    }
+
     /**
      * Insert an array into another one
      * @param array $insert
