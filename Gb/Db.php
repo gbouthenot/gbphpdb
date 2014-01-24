@@ -15,6 +15,7 @@ if (!defined("_GB_PATH")) {
 
 require_once(_GB_PATH."Exception.php");
 require_once(_GB_PATH."Glue.php");
+require_once(_GB_PATH."Log.php");
 require_once(_GB_PATH."Util.php");
 require_once("Zend/Db.php");
 
@@ -205,8 +206,11 @@ Class Gb_Db extends Zend_Db
      * Log the request
      * @param string $str
      */
-    public function log($str) {
-        self::$sqlLog[$this->instanceNumber][] = $str;
+    public function log($str, $o=null) {
+        $str = trim($str);
+        $str = str_replace("\n", " ", $str);
+        if ($o !== null) { $str .= " "; }
+        self::$sqlLog[$this->instanceNumber][] = $str . Gb_Log::dump($o);
     }
 
     public function initialize()
@@ -763,7 +767,7 @@ EOF;
         $time=microtime(true);
         $this->initialize();
         self::$nbRequest++;
-        $this->log("UPDATE $table");
+        $this->log("UPDATE $table where", $where);
 
         try {
             $ret=$this->_adapter->update($table, $data, $where);
@@ -788,7 +792,7 @@ EOF;
         $time=microtime(true);
         $this->initialize();
         self::$nbRequest++;
-        $this->log("DELETE $table");
+        $this->log("DELETE $table where", $where);
 
         try {
             $ret=$this->_adapter->delete($table, $where);
@@ -850,7 +854,7 @@ EOF;
         $time=microtime(true);
         $this->initialize();
         self::$nbRequest++;
-        $this->log("REPLACE $table");
+        $this->log("REPLACE $table where", $where);
 
         try {
             // compte le nombre de lignes correspondantes
