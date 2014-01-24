@@ -153,7 +153,7 @@ class Model implements \IteratorAggregate, \ArrayAccess {
 
         $data = $db->retrieve_all($sql, null, static::$_pk, null, true);
 
-        // for id to be integer
+        // force id to be integer
         foreach (array_keys($data) as $key) {
             $data[$key][static::$_pk] = (int) $data[$key][static::$_pk];
         }
@@ -214,6 +214,11 @@ class Model implements \IteratorAggregate, \ArrayAccess {
 
         $data = $db->retrieve_all($sql, null, static::$_pk, null, true);
 
+        // force id to be integer
+        foreach (array_keys($data) as $key) {
+            $data[$key][static::$_pk] = (int) $data[$key][static::$_pk];
+        }
+
         //echo static::$_tablename."\n";print_r(static::$_buffer);
         // merge the rows in the buffer. Do not use array_merge!
         static::$_buffer = $data + static::$_buffer;
@@ -227,6 +232,7 @@ class Model implements \IteratorAggregate, \ArrayAccess {
     /**
      * return the first line
      * @param array|string[optional] $cond array("col"=>"value") or array("col"=>array(1,2)) or "col='value'"
+     * @see findFirstOrThrows
      * @return null|\Gb\Model\Model
      */
     public static function findFirst($cond=null) {
@@ -241,6 +247,7 @@ class Model implements \IteratorAggregate, \ArrayAccess {
         // merge the row in the buffer.
         $id = $data[static::$_pk];
         if ($id !== null) {
+            $data[static::$_pk] = (int) $id;
             static::$_buffer[$id] = $data;
 
             $model = get_called_class();
@@ -249,6 +256,22 @@ class Model implements \IteratorAggregate, \ArrayAccess {
             return null;
         }
     }
+
+    /**
+     * return the first line or throw an exception
+     * @param array|string[optional] $cond array("col"=>"value") or array("col"=>array(1,2)) or "col='value'"
+     * @see findFirst
+     * @return null|\Gb\Model\Model
+     */
+    public static function findFirstOrThrows($cond=null) {
+        $z = "Row not found for Model " . get_called_class();
+        $ret = self::findFirst($cond);
+        if (null === $ret) {
+            throw new \Gb_Exception("Row not found for Model " . get_called_class());
+        }
+        return $ret;
+    }
+
 
 
     /**
@@ -396,7 +419,7 @@ class Model implements \IteratorAggregate, \ArrayAccess {
         $table = static::$_tablename;
         $pk    = static::$_pk;
         $db    = $this->db;
-        $id    = (int) $this->id;
+        $id    = $this->id;
         if (static::$_timestamps) {
             $this->o["updated_at"] = \Gb_String::date_iso();
             if (null === $id) {
@@ -409,6 +432,7 @@ class Model implements \IteratorAggregate, \ArrayAccess {
             $this->id = $id;
             $this->o[$pk] = $id;
         } else {
+            $id    = (int) $this->id;
             $db->update($table, $this->o, "$pk = $id");
         }
 
@@ -502,7 +526,8 @@ class Model implements \IteratorAggregate, \ArrayAccess {
                 throw new \Gb_Exception("$value is not boolean for column $key");
             }
         } elseif ($key === static::$_pk) {
-            $value = (int) $value;
+            // do not allow id change $value = (int) $value;
+            return;
         }
         $this->o[$key] = $value;
     }
