@@ -18,7 +18,7 @@ require_once(_GB_PATH."Exception.php");
 require_once(_GB_PATH."Form/Iterator.php");
 
 
-Class Gb_Form2 implements IteratorAggregate
+Class Gb_Form2 implements IteratorAggregate, ArrayAccess
 {
     protected $_elems;
     protected $_modifiers;
@@ -36,6 +36,7 @@ Class Gb_Form2 implements IteratorAggregate
     protected $_isPost;
     protected $_isValid;
     protected $_method="post";
+    protected $_classForm;
     protected $_moreDataRead=array();
     protected $_renderFormTags=true;
     protected $_toStringRendersAs="BOTH";
@@ -80,7 +81,7 @@ Class Gb_Form2 implements IteratorAggregate
             "action", "enctype", "acceptCharset", "errors", "formHash", "hasData",
             "isLoaded", "isPost", "isValid", "backend",
             "method", "moreDataRead", "renderFormTags", "toStringRendersAs",
-            "formTagOpened", "formPostTagIssued", "formTagClosed" ,
+            "formTagOpened", "formPostTagIssued", "formTagClosed" , "classForm",
         );
 
         foreach ($availableParams as $key) {
@@ -98,6 +99,22 @@ Class Gb_Form2 implements IteratorAggregate
         return (new Gb_Form_Iterator($this));
     }
 // implements InteratorAggregate END
+
+// implements ArrayAccess START
+    public function offsetSet($key, $value) {
+        return $this->__set($key, $value);
+    }
+    public function offsetExists($key) {
+        return $this->__isset($key);
+    }
+    public function offsetUnset($key) {
+        return $this->__unset($key);
+    }
+    public function offsetGet($key) {
+        return $this->__get($key);
+    }
+// implements ArrayAccess END
+
 
     final private function _applyModifiers($obj)
     {
@@ -246,8 +263,9 @@ Class Gb_Form2 implements IteratorAggregate
             $method=$this->method();   if (strlen($method))  {$method="method='$method'";}
             $action=$this->action();   if (strlen($action))  {$action="action='$action'";}
             $enctype=$this->enctype(); if (strlen($enctype)) {$enctype="enctype='$enctype'";}
+            $class=$this->classForm(); if (strlen($class))   {$class="class='$class'";}
             $acceptCharset=$this->acceptCharset(); if (strlen($acceptCharset)) {$acceptCharset="accept-charset='$acceptCharset'";}
-            $ret="<form $method $action $enctype $acceptCharset>";
+            $ret="<form $method $action $enctype $acceptCharset $class>";
             $this->formTagOpened(true);
         }
         return $ret;
@@ -302,11 +320,13 @@ window.remove_accents = function(my_string){
   }
 };
 if (window.gbSetClass == undefined)
-window. gbSetClass = function(id, classname) {
+window.gbSetClass = function(id, classname) {
   if (window.YUI != undefined) {
     YUI().use('node', function(Y) {
       Y.one('#' + id).setAttribute("class", classname);
     });
+  } else if (window.jQuery != undefined) {
+    jQuery('#' + id).attr("class", classname);
   } else {
     \$(id).className = classname;
   }
@@ -320,6 +340,9 @@ window.gbRemoveError = function(id) {
       var div = Y.one('#' + id + '_div div.ERROR');
       if (div != null) { div.setContent(); }
     });
+  } else if (window.jQuery != undefined) {
+    jQuery('#' + id + '_div span.ERROR').html();
+    jQuery('#' + id + '_div div.ERROR').html();
   } else {
     var e=\$(id + '_div').select('div[class=\"ERROR\"]').first(); if (e!=undefined){e.innerHTML='';}
     var e=\$(id + '_div').select('span[class=\"ERROR\"]').first(); if (e!=undefined){e.innerHTML='';}
@@ -536,6 +559,16 @@ EOF;
     {
         if ($text===null) {         return $this->_method; }
         else { $this->_method=$text; return $this;}
+    }
+    /**
+     * get/set classForm (the class attribute in the <form> tag
+     * @param string[optional] $text
+     * @return Gb_Form2|String
+     */
+    final public function classForm($text=null)
+    {
+        if ($text===null) {         return $this->_classForm; }
+        else { $this->_classForm=$text; return $this;}
     }
     /**
      * get/set moreDataRead
