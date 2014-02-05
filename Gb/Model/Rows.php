@@ -68,7 +68,7 @@ class Rows implements \IteratorAggregate, \Countable, \ArrayAccess {
     }
 
     /**
-     * Reduce the number of rows
+     * Reduce the number of rows and return new \Gb\Model\Rows
      * @param callable $callback
      * @return \Gb\Model\Rows
      */

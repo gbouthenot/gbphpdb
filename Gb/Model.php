@@ -287,14 +287,20 @@ class Model implements \IteratorAggregate, \ArrayAccess {
         if (is_array($cond) && count($cond)) {
             $aWhere = array();
             foreach ($cond as $k=>$v) {
-                if (is_array($v)) {
-                    $aWhere[] = $db->quoteIdentifier($k) . ' IN (' . $db->quote($v) . ')';
-                } elseif (null === $v) {
-                    $aWhere[] = $db->quoteIdentifier($k) . ' IS NULL';
-                } elseif (is_a($v, "Zend_Db_Expr")) {
-                    $aWhere[] = $db->quoteIdentifier($k) . " $v";
-                } else {
-                    $aWhere[] = $db->quoteIdentifier($k) . '=' . $db->quote($v);
+                if (is_string($k)) {
+                    if (is_array($v)) {
+                        $aWhere[] = $db->quoteIdentifier($k) . ' IN (' . $db->quote($v) . ')';
+                    } elseif (null === $v) {
+                        $aWhere[] = $db->quoteIdentifier($k) . ' IS NULL';
+                    } elseif (is_a($v, "Zend_Db_Expr")) {
+                        $aWhere[] = $db->quoteIdentifier($k) . " $v";
+                    } else {
+                        $aWhere[] = $db->quoteIdentifier($k) . '=' . $db->quote($v);
+                    }
+                } elseif (is_int($k)) {
+                    if (is_a($v, "Zend_Db_Expr")) {
+                        $aWhere[] = $v->__toString();
+                    }
                 }
             }
             $sql .= " WHERE " . join(" AND ", $aWhere);
