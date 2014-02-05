@@ -615,7 +615,11 @@ class Gb_Log
   {
         if (is_array($var))
             return self::dump_array($var);
-        $pr=print_r($var, true);
+        if (method_exists($var, "__toString")) {
+            $pr = $var->__toString();
+        } else {
+            $pr=print_r($var, true);
+        }
         $pr=preg_replace("/^ +/m", "", $pr);                // enlève les espaces en début de ligne
         $pr=preg_replace("/,\n\\)/m", ")", $pr);            // remplace les ,) par )
         $pr=preg_replace("/,$/m", ", ", $pr);               // remplace "," par ", " en fin de ligne
