@@ -38,9 +38,10 @@ abstract class Gb_Form_Elem_Text_Abstract extends Gb_Form_Elem_Abstract
         $js = null;
         $ret="";
         $elemid=$this->elemId();
+        $classContainer = $this->classContainer();
 
         // par défaut, met en classOK, si erreur, repasse en classNOK
-        $ret .= "gbSetClass('{$elemid}_div', 'OK');\n";
+        $ret .= "gbSetClass('{$elemid}_div', 'OK $classContainer');\n";
 
         // enlève le message d'erreur
         $ret .= "gbRemoveError('{$elemid}');\n";
@@ -50,7 +51,7 @@ abstract class Gb_Form_Elem_Text_Abstract extends Gb_Form_Elem_Abstract
         // traitement fMandatory
         if ($this->fMandatory()) {
           $ret.="if (value=='') {\n";
-          $ret.=" gbSetClass('{$elemid}_div', 'NOK');\n";
+          $ret.=" gbSetClass('{$elemid}_div', 'NOK $classContainer');\n";
           $ret.="}\n";
         }
 
@@ -63,7 +64,7 @@ abstract class Gb_Form_Elem_Text_Abstract extends Gb_Form_Elem_Abstract
             }
             $ret.="var regexp=$regexp\n";
             $ret.="if (!regexp.test(value)) {\n";
-            $ret.=" gbSetClass('{$elemid}_div', 'NOK');\n";
+            $ret.=" gbSetClass('{$elemid}_div', 'NOK $classContainer');\n";
             $ret.="}\n";
         }
 
@@ -73,7 +74,7 @@ abstract class Gb_Form_Elem_Text_Abstract extends Gb_Form_Elem_Abstract
 
         if (!$this->fMandatory()) {
           $ret.="if (value=='') {\n";
-          $ret.=" gbSetClass('{$elemid}_div', 'OK');\n";
+          $ret.=" gbSetClass('{$elemid}_div', 'OK $classContainer');\n";
           $ret.="}\n";
         }
 
@@ -100,6 +101,7 @@ abstract class Gb_Form_Elem_Text_Abstract extends Gb_Form_Elem_Abstract
     {
         $ret="";
         $elemid=$this->elemId();
+        $classContainer = $this->classContainer();
 
         // traitement minvalue/maxvalue
         if (count($aValues)) {
@@ -123,7 +125,7 @@ abstract class Gb_Form_Elem_Text_Abstract extends Gb_Form_Elem_Abstract
                     $ret.=" var borne={$borne};\n";
                 }
                 $ret.=" if (bornevalue $operator borne) {";
-                $ret.=" gbSetClass('{$elemid}_div', 'NOK');\n";
+                $ret.=" gbSetClass('{$elemid}_div', 'NOK $classContainer');\n";
                 $ret.="}\n";
             }
         }

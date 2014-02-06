@@ -49,7 +49,8 @@ class Gb_Form_Elem_Radio extends Gb_Form_Elem_Abstract
               $sSelected="";
               // $ordre is int, $rawvalue is int/string
               if ((strlen($rawvalue)) && ($ordre == $rawvalue)) { $sSelected="checked='checked'"; }
-              $button = "<input type='radio' name='$elemidEsc' value='$ordre' $sSelected />";
+              $classInput = $this->classInput();
+              $button = "<input type='radio' name='$elemidEsc' value='$ordre' $sSelected class='$classinput' />";
 
               $format = $this->_buttonsFormat;
               $format = str_replace("_RADIOTEXT_", $sLib, $format);
@@ -71,9 +72,10 @@ class Gb_Form_Elem_Radio extends Gb_Form_Elem_Abstract
         $args=$this->args();
         $ret="";
         $elemid=$this->elemId();
+        $classContainer = $this->classContainer();
 
         // par défaut, met en classOK, si erreur, repasse en classNOK
-        $ret .= "gbSetClass('{$elemid}_div', 'OK');\n";
+        $ret .= "gbSetClass('{$elemid}_div', 'OK classContainer');\n";
 
         // enlève le message d'erreur
         $ret .= "gbRemoveError('{$elemid}');\n";
@@ -90,7 +92,7 @@ class Gb_Form_Elem_Radio extends Gb_Form_Elem_Abstract
             }
             $ret.="var {$elemid}_values = { ".implode(", ",$aValues)."};\n";
             $ret.="if (({$elemid}_values[value])=='false') {\n";
-            $ret.=" gbSetClass('{$elemid}_div', 'NOK');\n";
+            $ret.=" gbSetClass('{$elemid}_div', 'NOK $classContainer');\n";
             $ret.="}\n";
         }
 
@@ -106,7 +108,7 @@ class Gb_Form_Elem_Radio extends Gb_Form_Elem_Abstract
                    $ret.=" var notvalue=\"".addslashes($notValue)."\";\n";
                  }
                  $ret.=" if (bornevalue == notvalue) {";
-                 $ret.=" gbSetClass('{$elemid}_div', 'NOK');\n";
+                 $ret.=" gbSetClass('{$elemid}_div', 'NOK $classContainer');\n";
                  $ret.="}\n";
             }
         }

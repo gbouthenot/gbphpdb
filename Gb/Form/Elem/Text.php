@@ -21,6 +21,7 @@ class Gb_Form_Elem_Text  extends Gb_Form_Elem_Text_Abstract
 
     protected function getHtmlInInput()
     {
-        return "type='text' class='text'";
+        $classInput = $this->classInput();
+        return "type='text' class='text $classInput'";
     }
 }

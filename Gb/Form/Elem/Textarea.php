@@ -23,7 +23,8 @@ class Gb_Form_Elem_Textarea extends Gb_Form_Elem_Abstract
     public function getInput($value, $inInput, $inputJs)
     {
         $elemid=$this->elemId();
-        return "<textarea id='{$elemid}' name='{$elemid}' $inInput $inputJs>".htmlspecialchars($value)."</textarea>";
+        $classInput = $this->classInput();
+        return "<textarea id='{$elemid}' name='{$elemid}' $inInput $inputJs class='$classInput'>".htmlspecialchars($value)."</textarea>";
     }
 
 
@@ -32,9 +33,10 @@ class Gb_Form_Elem_Textarea extends Gb_Form_Elem_Abstract
         $js = null;
         $ret="";
         $elemid=$this->elemId();
+        $classContainer = $this->classContainer();
 
         // par défaut, met en classOK, si erreur, repasse en classNOK
-        $ret .= "gbSetClass('{$elemid}_div', 'OK');\n";
+        $ret .= "gbSetClass('{$elemid}_div', 'OK $classContainer');\n";
 
         // enlève le message d'erreur
         $ret .= "gbRemoveError('{$elemid}');\n";
@@ -43,7 +45,7 @@ class Gb_Form_Elem_Textarea extends Gb_Form_Elem_Abstract
         // traitement fMandatory
         if ($this->fMandatory()) {
           $ret.="if (value=='') {\n";
-          $ret.=" gbSetClass('{$elemid}_div', 'NOK');\n";
+          $ret.=" gbSetClass('{$elemid}_div', 'NOK $classContainer');\n";
           $ret.="}\n";
         }
 
@@ -56,13 +58,13 @@ class Gb_Form_Elem_Textarea extends Gb_Form_Elem_Abstract
             }
             $ret.="var regexp=$regexp\n";
             $ret.="if (!regexp.test(value)) {\n";
-            $ret.=" gbSetClass('{$elemid}_div', 'NOK');\n";
+            $ret.=" gbSetClass('{$elemid}_div', 'NOK $classContainer');\n";
             $ret.="}\n";
         }
 
         if (!$this->fMandatory()) {
           $ret.="if (value=='') {\n";
-          $ret.=" gbSetClass('{$elemid}_div', 'OK');\n";
+          $ret.=" gbSetClass('{$elemid}_div', 'OK $classContainer');\n";
           $ret.="}\n";
         }
 

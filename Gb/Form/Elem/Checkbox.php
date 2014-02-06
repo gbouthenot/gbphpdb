@@ -30,7 +30,8 @@ class Gb_Form_Elem_Checkbox extends Gb_Form_Elem_Abstract
         }
         $ret="";
         $elemid=$this->elemId();
-        $ret.="<input type='checkbox' $value id='$elemid' name='$elemid' $inInput $inputJs />";
+        $classInput = $this->classInput();
+        $ret.="<input type='checkbox' $value id='$elemid' name='$elemid' $inInput $inputJs class='classinput' />";
         return $ret;
     }
 
@@ -39,9 +40,10 @@ class Gb_Form_Elem_Checkbox extends Gb_Form_Elem_Abstract
         $js = null;
         $ret="";
         $elemid=$this->elemId();
+        $classContainer = $this->classContainer();
 
         // par défaut, met en classOK, si erreur, repasse en classNOK
-        $ret .= " gbSetClass('{$elemid}_div', 'OK');\n";
+        $ret .= " gbSetClass('{$elemid}_div', 'OK $classContainer');\n";
 
         // enlève le message d'erreur
         $ret .= "gbRemoveError('{$elemid}');\n";
@@ -51,7 +53,7 @@ class Gb_Form_Elem_Checkbox extends Gb_Form_Elem_Abstract
         // traitement fMandatory
         if ($this->fMandatory()) {
               $ret.="if (value!='true' && value!='on') {\n";
-              $ret.=" gbSetClass('{$elemid}_div', 'NOK');\n";
+              $ret.=" gbSetClass('{$elemid}_div', 'NOK $classContainer');\n";
               $ret.="}\n";
         }
 

@@ -27,8 +27,9 @@ class Gb_Form_Elem_Selectmultiple extends Gb_Form_Elem_Abstract
         $aValues=$this->args();
         $value=$this->rawvalue();
         $elemid=$this->elemId();
+        $classInput=$this->classInput();
         $ret="";
-        $ret.="<select multiple='multiple' id='{$elemid}' name='{$elemid}[]' class='multiple' $inInput $inputJs>\n";
+        $ret.="<select multiple='multiple' id='{$elemid}' name='{$elemid}[]' class='multiple $classInput' $inInput $inputJs>\n";
         $fOptgroup=false;
         foreach ($aValues as $ordre=>$aOption){
           $sVal=htmlspecialchars(is_array($aOption)?$aOption[0]:$aOption, ENT_QUOTES);
@@ -74,9 +75,10 @@ class Gb_Form_Elem_Selectmultiple extends Gb_Form_Elem_Abstract
         $js = null;
         $ret="";
         $elemid=$this->elemId();
+        $classContainer = $this->classContainer();
 
         // par défaut, met en classOK, si erreur, repasse en classNOK
-        $ret .= "gbSetClass('{$elemid}_div', 'OK');\n";
+        $ret .= "gbSetClass('{$elemid}_div', 'OK $classContainer');\n";
 
         // enlève le message d'erreur
         $ret .= "gbRemoveError('{$elemid}');\n";
@@ -86,7 +88,7 @@ class Gb_Form_Elem_Selectmultiple extends Gb_Form_Elem_Abstract
         // traitement fMandatory
         if ($this->fMandatory()) {
             $ret.="if (value.length==0) {";
-            $ret.=" gbSetClass('{$elemid}_div', 'NOK');\n";
+            $ret.=" gbSetClass('{$elemid}_div', 'NOK $classContainer');\n";
             $ret.="}\n";
         }
 
@@ -105,7 +107,7 @@ class Gb_Form_Elem_Selectmultiple extends Gb_Form_Elem_Abstract
                    $ret.=" var notvalue=\"".addslashes($notValue)."\";\n";
                  }
                  $ret.=" if (bornevalue == notvalue) {";
-                 $ret.=" gbSetClass('{$elemid}_div', 'NOK');\n";
+                 $ret.=" gbSetClass('{$elemid}_div', 'NOK $classContainer');\n";
                  $ret.="}\n";
             }
         }

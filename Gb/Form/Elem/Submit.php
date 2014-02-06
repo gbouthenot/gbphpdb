@@ -37,7 +37,8 @@ class Gb_Form_Elem_Submit extends Gb_Form_Elem_Abstract
         $onclick=$this->onclick();
         if (strlen($onclick)) { $onclick="onclick='".htmlspecialchars($onclick, ENT_QUOTES)."'"; }
 
-        return "<input type='submit' class='submit' name='{$elemid}' $value $inInput $inputJs $onclick />";
+        $classInput = $this->classInput();
+        return "<input type='submit' class='submit $classInput' name='{$elemid}' $value $inInput $inputJs $onclick />";
     }
 
 

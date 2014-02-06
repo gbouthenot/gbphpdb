@@ -75,6 +75,11 @@ abstract class Gb_Form_Elem_Abstract
     protected $_postInputContainer;
     protected $_preLabel;
     protected $_postLabel;
+    protected $_classContainer;
+    protected $_classInput;
+    protected $_classLabel;
+    protected $_classPre;
+    protected $_classPost;
     protected $_classStatut;
     protected $_container="div";
     protected $_errorContainer;
@@ -102,6 +107,7 @@ abstract class Gb_Form_Elem_Abstract
             "publicName",        "fromBackendFunc",   "preInput",  "value",    "errorMsgMissing",
             "errorMsgCustom",    "disabled",     "fReadOnly",
             "javascriptRendered","htmlRendered", "label",
+            "classContainer", "classInput", "classLabel", "classPre", "classPost",
         ));
 
         foreach ($availableParams as $key) {
@@ -171,7 +177,8 @@ abstract class Gb_Form_Elem_Abstract
             $elemid=$this->elemId();
             if (strlen($container)) {
                 $classStatut=$this->classStatut();
-                if (strlen($classStatut)) { $classStatut="class='$classStatut'"; } else { $classStatut="class='OKNOK'"; }
+                $classContainer=$this->classContainer();
+                if (strlen($classStatut)) { $classStatut="class='$classStatut $classContainer'"; } else { $classStatut="class='OKNOK $classContainer'"; }
                 $container1="<$container id='{$elemid}_div' $classStatut >";
                 $container2="</$container>";
             }
@@ -179,11 +186,13 @@ abstract class Gb_Form_Elem_Abstract
                 $errorMsg="<$errorContainer class='ERROR'>$errorMsg</$errorContainer>";
             }
             if (strlen($preInput.$postInput)) {
+                $classPre=$this->classPre();
+                $classPost=$this->classPost();
                 if (strlen($preInput)) {
-                    $preInput  = ("<span class='PRE'>$preInput</span>");
+                    $preInput  = ("<span class='PRE $classPre'>$preInput</span>");
                 }
                 if (strlen($postInput)) {
-                    $postInput = ("<span class='POST'>$postInput</span>");
+                    $postInput = ("<span class='POST $classPost'>$postInput</span>");
                 }
             }
             $this->HtmlRendered(true);
@@ -201,12 +210,13 @@ abstract class Gb_Form_Elem_Abstract
         $text = $this->_label;
         $elemid = $this->elemId();
         $fLabel=true;
+        $classLabel = $this->classLabel();
         $ret = "";
         if (get_class($this) == "Gb_Form_Elem_Radio") {
             $fLabel=false;
         }
         if (strlen($text)) {
-            $ret = (($fLabel)?("<label for='$elemid'>"):("")) . ("<span class='LABEL'>$text</span>") . (($fLabel)?("</label>"):(""));
+            $ret = (($fLabel)?("<label for='$elemid' class='$classLabel'>"):("")) . ("<span class='LABEL'>$text</span>") . (($fLabel)?("</label>"):(""));
         }
 
         return $this->preLabel().$ret.$this->postLabel();
@@ -617,6 +627,56 @@ abstract class Gb_Form_Elem_Abstract
                 return $this->_container;
             }
         } else { $this->_errorContainer=$text; return $this;}
+    }
+    /**
+     * get/set classContainer: the html class used by the <div> containing the preInput / input / postInput
+     * @param string[optional] $text
+     * @return Gb_Form_Elem_Abstract|String
+     */
+    public function classContainer($text=null)
+    {
+        if ($text===null) {         return $this->_classContainer; }
+        else { $this->_classContainer=$text; return $this;}
+    }
+    /**
+     * get/set classInput: the html class used inside the <input> / <select> / ...
+     * @param string[optional] $text
+     * @return Gb_Form_Elem_Abstract|String
+     */
+    public function classInput($text=null)
+    {
+        if ($text===null) {         return $this->_classInput; }
+        else { $this->_classInput=$text; return $this;}
+    }
+    /**
+     * get/set classLabel: the html class used by the <label>
+     * @param string[optional] $text
+     * @return Gb_Form_Elem_Abstract|String
+     */
+    public function classLabel($text=null)
+    {
+        if ($text===null) {         return $this->_classLabel; }
+        else { $this->_classLabel=$text; return $this;}
+    }
+    /**
+     * get/set classPre: the html class used in the <span class="PRE">. Not including "PRE".
+     * @param string[optional] $text
+     * @return Gb_Form_Elem_Abstract|String
+     */
+    public function classPre($text=null)
+    {
+        if ($text===null) {         return $this->_classPre; }
+        else { $this->_classPre=$text; return $this;}
+    }
+    /**
+     * get/set classPost: : the html class used in the <span class="POST">. Not including "POST".
+     * @param string[optional] $text
+     * @return Gb_Form_Elem_Abstract|String
+     */
+    public function classPost($text=null)
+    {
+        if ($text===null) {         return $this->_classPost; }
+        else { $this->_classPost=$text; return $this;}
     }
     /**
      * get/set classStatut
