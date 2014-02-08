@@ -96,7 +96,7 @@ Class Gb_Form2 implements IteratorAggregate, ArrayAccess
 // implements InteratorAggregate START
     final public function getIterator()
     {
-        return (new Gb_Form_Iterator($this));
+        return new Gb_Form_Iterator($this);
     }
 // implements InteratorAggregate END
 
