@@ -44,8 +44,9 @@ class Gb_Form_Elem_Selectmultiple extends Gb_Form_Elem_Abstract
               $fOptgroup=true;
           } else {
               $sSelected="";
-              if (in_array($ordre, $value))
-                $sSelected="selected='selected'";
+              if (in_array($ordre, $value)) {
+                  $sSelected="selected='selected'";
+              }
               $ret.="<option value='$ordre' $sSelected>$sLib</option>\n";
           }
         }

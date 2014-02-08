@@ -28,7 +28,7 @@ abstract class Gb_Form_Elem_Text_Abstract extends Gb_Form_Elem_Abstract
         $htmlInInput=$this->getHtmlInInput();
         $elemid=$this->elemId();
         $required = ($this->fMandatory()) ? ("required='required'") : "";
-        $pattern = (strlen($this->regexp())) ? ('pattern="' . $this->regexp() . '"') : "";
+        $pattern = (strlen($this->regexp())) ? ('pattern="' . $this->_getStrippedRegexp() . '"') : "";
         $placeholder = (strlen($this->placeholder())) ? ('placeholder="' . $this->placeholder() . '"') : "";
         $title = (strlen($this->title())) ? ('title="' . $this->title() . '"') : "";
         return "<input $htmlInInput id='{$elemid}' name='{$elemid}' value='$sValue' $required $pattern $placeholder $title $inInput $inputJs />";
@@ -174,6 +174,7 @@ abstract class Gb_Form_Elem_Text_Abstract extends Gb_Form_Elem_Abstract
         $fMandatory=$this->fMandatory();
 
         if (strlen($value) && strlen($regexp)) {
+            //Gb_Log::logDebug("regexp validate val=$value, regexp=$regexp");
             if (!preg_match($regexp, $value)) {
                 return "Valeur incorrecte";
             }
@@ -244,8 +245,6 @@ abstract class Gb_Form_Elem_Text_Abstract extends Gb_Form_Elem_Abstract
         }
         return "";
     }
-
-
 
 
 

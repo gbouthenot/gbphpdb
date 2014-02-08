@@ -444,6 +444,8 @@ abstract class Gb_Form_Elem_Abstract
                     }
                 }
                 $val=call_user_func_array($func, $params);
+            } elseif (is_callable($func)) {
+                $val=call_user_func($func, $val);
             }
             return $val;
         } else {
@@ -457,6 +459,8 @@ abstract class Gb_Form_Elem_Abstract
                     }
                 }
                 $text=call_user_func_array($func, $params);
+            } elseif (is_callable($func)) {
+                $text=call_user_func($func, $text);
             }
             $this->value($text);
             return $this;
@@ -528,23 +532,23 @@ abstract class Gb_Form_Elem_Abstract
     }
     /**
      * get/set toBackendFunc
-     * @param string[optional] $text
+     * @param callable|string[optional] $callback
      * @return Gb_Form_Elem_Abstract|String
      */
-    final public function toBackendFunc(array $text=null)
+    final public function toBackendFunc($callback=null)
     {
-        if ($text===null) {         return $this->_toBackendFunc; return $this;}
-        else { $this->_toBackendFunc=$text; return $this;}
+        if ($callback===null) {         return $this->_toBackendFunc; return $this;}
+        else { $this->_toBackendFunc=$callback; return $this;}
     }
     /**
      * get/set fromBackendFunc
-     * @param string[optional] $text
+     * @param callable|string[optional] $callback
      * @return Gb_Form_Elem_Abstract|String
      */
-    final public function fromBackendFunc(array $text=null)
+    final public function fromBackendFunc($callback=null)
     {
-        if ($text===null) {         return $this->_fromBackendFunc; return $this;}
-        else { $this->_fromBackendFunc=$text; return $this;}
+        if ($callback===null) {         return $this->_fromBackendFunc; return $this;}
+        else { $this->_fromBackendFunc=$callback; return $this;}
     }
     /**
      * get/set validateFunc
@@ -741,7 +745,7 @@ abstract class Gb_Form_Elem_Abstract
         else { if (!is_array($text)){$text=array($text);} $this->_notValue=$text; return $this;}
     }
     /**
-     * get/set regexp
+     * get/set regexp MUST start and end with '/' (no modifiers), or be a commonRegex
      * @param string[optional] $text
      * @return Gb_Form_Elem_Abstract|String
      */
@@ -752,6 +756,20 @@ abstract class Gb_Form_Elem_Abstract
             if ("null"===$text) {$text=null;} elseif (isset(self::$_commonRegex[$text])){$text=self::$_commonRegex[$text];}
             $this->_regexp=$text; return $this;
         }
+    }
+    /**
+     * Return regexp without the starting and ending /.
+     * Used in HTML5 'pattern' attribute
+     * Note that HTML5 pattern does not support modifiers
+     * @return string
+     */
+    protected function _getStrippedRegexp()
+    {
+        $r = $this->regexp();
+        if (substr($r, 0, 1) === '/' && substr($r, -1, 1) === '/') {
+            return substr($r, 1, -1);
+        }
+        return $r;
     }
     /**
      * get/set errorMsg and sets classStatut

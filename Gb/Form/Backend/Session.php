@@ -15,6 +15,7 @@ if (!defined("_GB_PATH")) {
 
 require_once(_GB_PATH."Exception.php");
 require_once(_GB_PATH."Form2.php");
+require_once(_GB_PATH."Form/Backend/Abstract.php");
 require_once(_GB_PATH."Log.php");
 require_once(_GB_PATH."Session.php");
 

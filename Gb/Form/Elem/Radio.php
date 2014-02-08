@@ -50,7 +50,7 @@ class Gb_Form_Elem_Radio extends Gb_Form_Elem_Abstract
               // $ordre is int, $rawvalue is int/string
               if ((strlen($rawvalue)) && ($ordre == $rawvalue)) { $sSelected="checked='checked'"; }
               $classInput = $this->classInput();
-              $button = "<input type='radio' name='$elemidEsc' value='$ordre' $sSelected class='$classinput' />";
+              $button = "<input type='radio' name='$elemidEsc' value='$ordre' $sSelected class='$classInput' />";
 
               $format = $this->_buttonsFormat;
               $format = str_replace("_RADIOTEXT_", $sLib, $format);

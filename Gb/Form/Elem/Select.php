@@ -44,8 +44,10 @@ class Gb_Form_Elem_Select extends Gb_Form_Elem_Abstract
               $fOptgroup=true;
           } else {
               $sSelected="";
-              if ( (strlen($rawvalue)) && ($ordre == $rawvalue) )
+              if ($aOption[0] === 'false') { $ordre=""; }
+              if ( (strlen($rawvalue)) && ($ordre == $rawvalue) ) {
                 $sSelected="selected='selected'";
+              }
               $ret.="<option value='$ordre' $sSelected>$sLib</option>\n";
           }
         }
