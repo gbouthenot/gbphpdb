@@ -28,8 +28,10 @@ class Gb_Form_Elem_Selectmultiple extends Gb_Form_Elem_Abstract
         $value=$this->rawvalue();
         $elemid=$this->elemId();
         $classInput=$this->classInput();
+        $required = ($this->fMandatory()) ? ("required='required'") : "";
+        $title = (strlen($this->title())) ? ('title="' . $this->title() . '"') : "";
         $ret="";
-        $ret.="<select multiple='multiple' id='{$elemid}' name='{$elemid}[]' class='multiple $classInput' $inInput $inputJs>\n";
+        $ret.="<select multiple='multiple' id='{$elemid}' name='{$elemid}[]' class='multiple $classInput' $required $title $inInput $inputJs>\n";
         $fOptgroup=false;
         foreach ($aValues as $ordre=>$aOption){
           $sVal=htmlspecialchars(is_array($aOption)?$aOption[0]:$aOption, ENT_QUOTES);

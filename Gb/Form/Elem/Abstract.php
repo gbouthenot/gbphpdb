@@ -87,6 +87,8 @@ abstract class Gb_Form_Elem_Abstract
     protected $_errorMsgCustom;
     protected $_errorMsgMissing="Non rempli";
     protected $_disabled=false;
+    protected $_placeholder;
+    protected $_title;
 
     protected $_minValue=array();
     protected $_maxValue=array();
@@ -106,7 +108,7 @@ abstract class Gb_Form_Elem_Abstract
             "classStatut",       "name",         "toBackendFunc",  "backendCol",    "errorContainer",
             "publicName",        "fromBackendFunc",   "preInput",  "value",    "errorMsgMissing",
             "errorMsgCustom",    "disabled",     "fReadOnly",
-            "javascriptRendered","htmlRendered", "label",
+            "javascriptRendered","htmlRendered", "label", "placeholder", "title",
             "classContainer", "classInput", "classLabel", "classPre", "classPost",
         ));
 
@@ -687,6 +689,26 @@ abstract class Gb_Form_Elem_Abstract
     {
         if ($text===null) {         return $this->_classStatut; }
         else { $this->_classStatut=$text; return $this;}
+    }
+    /**
+     * get/set placeholder: the 'placeholder' attribute inside the <input> tag
+     * @param string[optional] $text
+     * @return Gb_Form_Elem_Abstract|String
+     */
+    public function placeholder($text=null)
+    {
+        if ($text===null) {         return $this->_placeholder; }
+        else { $this->_placeholder=$text; return $this;}
+    }
+    /**
+     * get/set title: the 'title' attribute inside the <input> tag
+     * @param string[optional] $text
+     * @return Gb_Form_Elem_Abstract|String
+     */
+    public function title($text=null)
+    {
+        if ($text===null) {         return $this->_title; }
+        else { $this->_title=$text; return $this;}
     }
     /**
      * get/set minValue

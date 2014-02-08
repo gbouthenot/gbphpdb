@@ -24,7 +24,11 @@ class Gb_Form_Elem_Textarea extends Gb_Form_Elem_Abstract
     {
         $elemid=$this->elemId();
         $classInput = $this->classInput();
-        return "<textarea id='{$elemid}' name='{$elemid}' $inInput $inputJs class='$classInput'>".htmlspecialchars($value)."</textarea>";
+        $required = ($this->fMandatory()) ? ("required='required'") : "";
+        $pattern = (strlen($this->regexp())) ? ('pattern="' . $this->regexp() . '"') : "";
+        $placeholder = (strlen($this->placeholder())) ? ('placeholder="' . $this->placeholder() . '"') : "";
+        $title = (strlen($this->title())) ? ('title="' . $this->title() . '"') : "";
+        return "<textarea id='{$elemid}' name='{$elemid}' $inInput $inputJs class='$classInput' $required $pattern $placeholder $title>".htmlspecialchars($value)."</textarea>";
     }
 
 

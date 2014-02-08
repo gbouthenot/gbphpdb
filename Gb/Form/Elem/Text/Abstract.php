@@ -27,7 +27,11 @@ abstract class Gb_Form_Elem_Text_Abstract extends Gb_Form_Elem_Abstract
         $sValue=htmlspecialchars($value);
         $htmlInInput=$this->getHtmlInInput();
         $elemid=$this->elemId();
-        return "<input $htmlInInput id='{$elemid}' name='{$elemid}' value='$sValue' $inInput $inputJs />";
+        $required = ($this->fMandatory()) ? ("required='required'") : "";
+        $pattern = (strlen($this->regexp())) ? ('pattern="' . $this->regexp() . '"') : "";
+        $placeholder = (strlen($this->placeholder())) ? ('placeholder="' . $this->placeholder() . '"') : "";
+        $title = (strlen($this->title())) ? ('title="' . $this->title() . '"') : "";
+        return "<input $htmlInInput id='{$elemid}' name='{$elemid}' value='$sValue' $required $pattern $placeholder $title $inInput $inputJs />";
     }
 
     abstract protected function getHtmlInInput();

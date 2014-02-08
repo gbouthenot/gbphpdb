@@ -28,8 +28,10 @@ class Gb_Form_Elem_Select extends Gb_Form_Elem_Abstract
         $rawvalue = $this->rawvalue();
         $elemid   = $this->elemId();
         $classInput = $this->classInput();
+        $required = ($this->fMandatory()) ? ("required='required'") : "";
+        $title = (strlen($this->title())) ? ('title="' . $this->title() . '"') : "";
         $ret="";
-        $ret.="<select id='{$elemid}' name='{$elemid}' class='simple $classInput' $inInput $inputJs>\n";
+        $ret.="<select id='{$elemid}' name='{$elemid}' class='simple $classInput' $required $title $inInput $inputJs>\n";
         $fOptgroup=false;
         foreach ($aValues as $ordre=>$aOption){
           $sVal=htmlspecialchars(is_array($aOption)?$aOption[0]:$aOption, ENT_QUOTES);
