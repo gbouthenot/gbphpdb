@@ -70,7 +70,7 @@ class Rows implements \IteratorAggregate, \Countable, \ArrayAccess {
     /**
      * Reduce the number of rows and return new \Gb\Model\Rows
      * @param callable $callback
-     * @return \Gb\Model\Rows
+     * @return self
      */
     public function filter($callback) {
         $rowsIds = array();
@@ -88,7 +88,7 @@ class Rows implements \IteratorAggregate, \Countable, \ArrayAccess {
     /**
      * Prepend an object to the current rows
      * @param \Gb\Model $one
-     * @return \Gb\Model\Rows
+     * @return self
      * @throws \Gb_Exception
      */
     public function prepend($rows) {
@@ -109,7 +109,7 @@ class Rows implements \IteratorAggregate, \Countable, \ArrayAccess {
     /**
      * Append an object to the current rows
      * @param \Gb\Model|\Gb\Model\Rows $rows
-     * @return \Gb\Model\Rows
+     * @return self
      * @throws \Gb_Exception
      */
     public function append($rows) {
@@ -129,7 +129,7 @@ class Rows implements \IteratorAggregate, \Countable, \ArrayAccess {
 
     /**
      * Return new Rows with duplicate rows thrown away
-     * @return \Gb\Model\Rows
+     * @return self
      */
     public function unique() {
         $rowsIds = $this->o;
@@ -154,7 +154,7 @@ class Rows implements \IteratorAggregate, \Countable, \ArrayAccess {
 
     /**
      * @param string $relname
-     * @return \Gb\Model\Rows
+     * @return self
      */
     public function rel($relname) {
         $model = $this->nam;

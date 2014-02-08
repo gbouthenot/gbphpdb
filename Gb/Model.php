@@ -49,7 +49,7 @@ class Model implements \IteratorAggregate, \ArrayAccess {
      * @param \Gb_Db[optional] $db
      * @param $id
      * @throws \Gb_Exception
-     * @return \Gb\Model\Model
+     * @return self
      */
     public static function getOne($id) {
         $args = func_get_args();
@@ -323,7 +323,7 @@ class Model implements \IteratorAggregate, \ArrayAccess {
 
     /**
      * returns a blank row. created_at is handled by save()
-     * @return \Gb\Model\Model
+     * @return self
      */
     public static function create(/* $db=null, $data=null*/) {
         $args = func_get_args();
@@ -404,7 +404,7 @@ class Model implements \IteratorAggregate, \ArrayAccess {
     /**
      * Save the row, if modified
      * handles updated_at and created_at
-     * @return \Gb\Model\Model
+     * @return self
      */
     public function save() {
         if ($this->isModified()) {
@@ -419,7 +419,7 @@ class Model implements \IteratorAggregate, \ArrayAccess {
     /**
      * Save the row, even if not modified
      * handles updated_at and created_at
-     * @return \Gb\Model\Model
+     * @return self
      */
     public function saveAlways() {
         $table = static::$_tablename;
@@ -487,7 +487,7 @@ class Model implements \IteratorAggregate, \ArrayAccess {
     /**
      * Delete the row
      * The data is still in the model instance
-     * @return \Gb\Model\Model
+     * @return self
      */
     public function destroy() {
         $table = static::$_tablename;
