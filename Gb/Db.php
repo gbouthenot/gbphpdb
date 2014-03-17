@@ -146,6 +146,9 @@ Class Gb_Db extends Zend_Db
         if (strlen($port)) {
             $array["port"]=$port;
         }
+        if (strlen($charset)) {
+            $array["charset"]=$charset;
+        }
 
         try
         {
