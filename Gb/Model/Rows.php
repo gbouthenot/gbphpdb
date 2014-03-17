@@ -86,6 +86,23 @@ class Rows implements \IteratorAggregate, \Countable, \ArrayAccess {
     }
 
     /**
+     * Get the first row that matches the callback
+     * @param callable $callback
+     * @return \Gb\Model|null
+     */
+    public function filterFirst($callback) {
+        $rowsIds = array();
+        foreach($this as $id=>$row) {
+            if ($callback($row)) {
+                $model = $this->nam;
+                return new $model($this->db, $id, $model::$_buffer[$id]);
+            }
+        }
+        return null;
+    }
+
+
+    /**
      * Prepend an object to the current rows
      * @param \Gb\Model $one
      * @return self
@@ -150,6 +167,22 @@ class Rows implements \IteratorAggregate, \Countable, \ArrayAccess {
         $id = $this->o[0];
         return new $model($this->db, $id, $model::$_buffer[$id]);
     }
+
+    /**
+     * Get the row at the specified index
+     * @return \Gb\Model
+     * @throws Gb_Exception if row index does not exist
+     */
+    public function index($rowNumber) {
+        $model = $this->nam;
+        if (!isset($this->o[$rowNumber])) {
+            throw new Gb_Exception("Row index does not exist for model $model");
+        }
+        $id = $this->o[$rowNumber];
+        return new $model($this->db, $id, $model::$_buffer[$id]);
+    }
+
+
 
 
     /**
