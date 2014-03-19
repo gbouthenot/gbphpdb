@@ -532,19 +532,22 @@ class Model implements \IteratorAggregate, \ArrayAccess {
                 throw new \Gb_Exception("$value is not boolean for column $key");
             }
         } elseif ($key === static::$_pk) {
-            if (strlen($value)) {
+            if (strlen($value) & ((int)$value)>0) {
                 $value = (int) $value;
             } else {
                $value = null;
             }
             if ($value !== $this->id) {
-                if ($value !== null) {
-                    throw new \Gb_Exception("Changing primary key is not supported");
+                if ($value === null) {
+                    return;
+                } else {
+                    throw new \Gb_Exception("Changing primary key is not supported value:$value id:{$this->id}");
                     // do not allow id change $value = (int) $value;
                     // cause: the old row would still be in the buffer, so this would only be a duplicate row
+
+                    //$this->id = $value;
+                    //$this->pristine = array(); // mark dirty
                 }
-                $this->id = $value;
-                $this->pristine = array(); // mark dirty
             }
         }
         $this->o[$key] = $value;

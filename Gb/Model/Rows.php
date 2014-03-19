@@ -176,7 +176,7 @@ class Rows implements \IteratorAggregate, \Countable, \ArrayAccess {
     public function index($rowNumber) {
         $model = $this->nam;
         if (!isset($this->o[$rowNumber])) {
-            throw new Gb_Exception("Row index does not exist for model $model");
+            throw new \Gb_Exception("Row index does not exist for model $model");
         }
         $id = $this->o[$rowNumber];
         return new $model($this->db, $id, $model::$_buffer[$id]);
