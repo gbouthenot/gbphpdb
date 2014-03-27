@@ -481,7 +481,10 @@ class Model implements \IteratorAggregate, \ArrayAccess {
     public function isModified() {
         // == return true regardless of key order, and value type
         // $a=array("a1"=>"1", "a2"=>"2");  $b=array("a2"=>2, "a1"=>1);  $a == $b --> true
-        return $this->o != $this->pristine;
+        // UNFORTUNATELY: $a=array("a1"=>0, "a2"=>"2");  $b=array("a2"=>2, "a1"=>null);  $a == $b --> true !!! 0 == null :-(
+        // so I return always true for the time being
+        //return $this->o != $this->pristine;
+        return true;
     }
 
     /**
