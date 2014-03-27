@@ -162,21 +162,23 @@ class Rows implements \IteratorAggregate, \Countable, \ArrayAccess {
      * Get the first row
      * @return \Gb\Model
      */
-    public function first() {
-        $model = $this->nam;
-        $id = $this->o[0];
-        return new $model($this->db, $id, $model::$_buffer[$id]);
+    public function first($fThrows = true) {
+        return $this->index(0, $fThrows);
     }
 
     /**
      * Get the row at the specified index
-     * @return \Gb\Model
-     * @throws Gb_Exception if row index does not exist
+     * @return \Gb\Model or null
+     * @throws Gb_Exception if row index does not exist and $fThrows is set
      */
-    public function index($rowNumber) {
+    public function index($rowNumber, $fThrows=true) {
         $model = $this->nam;
         if (!isset($this->o[$rowNumber])) {
-            throw new \Gb_Exception("Row index does not exist for model $model");
+            if ($fThrows) {
+                throw new \Gb_Exception("Row index does not exist for model $model");
+            } else {
+                return null;
+            }
         }
         $id = $this->o[$rowNumber];
         return new $model($this->db, $id, $model::$_buffer[$id]);
