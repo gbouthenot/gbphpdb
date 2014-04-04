@@ -515,7 +515,7 @@ class Gb_Log
    */
   public static function dump_array($var, $sFormat="array(%s)")
   {
-      if (null == $var) { return "null"; }
+      if (null === $var) { return "null"; }
     $sLog="";
     $curnum=0;
     $fShowKey=false;
@@ -605,29 +605,29 @@ class Gb_Log
 
 
 
-  /**
-   * Renvoie une description sur une ligne d'une variable (comme print_r, mais sur une ligne)
-   *
-   * @param mixed $var Variable à dumper
-   * @return string
-   */
-  public static function dump($var)
-  {
-        if (is_array($var))
-            return self::dump_array($var);
-        if (method_exists($var, "__toString")) {
+    /**
+     * Renvoie une description sur une ligne d'une variable (comme print_r, mais sur une ligne)
+     *
+     * @param mixed $var Variable à dumper
+     * @return string
+     */
+    public static function dump($var)
+    {
+        if (is_array($var)) {
+            $pr = self::dump_array($var);
+        } elseif (method_exists($var, "__toString")) {
             $pr = $var->__toString();
         } else {
             $pr=print_r($var, true);
+            $pr=preg_replace("/^ +/m", "", $pr);                // enlève les espaces en début de ligne
+            $pr=preg_replace("/,\n\\)/m", ")", $pr);            // remplace les ,) par )
+            $pr=preg_replace("/,$/m", ", ", $pr);               // remplace "," par ", " en fin de ligne
+            $pr=str_replace("\n", "", $pr);                     // met tout sur une ligne
+            $pr=str_replace(" => ", "=>", $pr);                 // enlève les espaces avant et après "=>"
+            $pr=str_replace("array (", "array( ", $pr);         // formate array (
         }
-        $pr=preg_replace("/^ +/m", "", $pr);                // enlève les espaces en début de ligne
-        $pr=preg_replace("/,\n\\)/m", ")", $pr);            // remplace les ,) par )
-        $pr=preg_replace("/,$/m", ", ", $pr);               // remplace "," par ", " en fin de ligne
-        $pr=str_replace("\n", "", $pr);                     // met tout sur une ligne
-        $pr=str_replace(" => ", "=>", $pr);                 // enlève les espaces avant et après "=>"
-        $pr=str_replace("array (", "array( ", $pr);         // formate array (
-    return $pr;
-  }
+        return $pr;
+    }
 
 }
 ?>
