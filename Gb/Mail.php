@@ -44,8 +44,8 @@ class Gb_Mail
      * @param string $from
      * @param string|array[optional] $bcc destinataires, séparés par virgule
      * @param string|array[optional] $cc destinataires, séparés par virgule
-     * @param string[optional] $charset charset
-     * @param string[optional] $bodyhtml charset
+     * @param string[optional] $charset
+     * @param string[optional] $bodyhtml
      *
      * @return boolean
      */
@@ -68,7 +68,7 @@ class Gb_Mail
 
         $from=str_ireplace("From: ", "", $from);
 
-        $mail=new Zend_Mail();
+        $mail=new Zend_Mail($charset);
 
         foreach ($to as $t) {
             if (strlen($t)) {
@@ -90,10 +90,10 @@ class Gb_Mail
 
         $mail->setFrom($from, substr($from, 0, strpos($from, "@")));
         if (strlen($bodytext)) {
-            $mail->setBodyText($bodytext, $charset);
+            $mail->setBodyText($bodytext);
         }
         if (strlen($bodyhtml)) {
-            $mail->setBodyHtml($bodyhtml, $charset);
+            $mail->setBodyHtml($bodyhtml);
         }
 
         $mail->setSubject($sujet);
