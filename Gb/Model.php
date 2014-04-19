@@ -152,11 +152,7 @@ class Model implements \IteratorAggregate, \ArrayAccess {
         }
 
         $data = $db->retrieve_all($sql, null, static::$_pk, null, true);
-
-        // force id to be integer
-        foreach (array_keys($data) as $key) {
-            $data[$key][static::$_pk] = (int) $data[$key][static::$_pk];
-        }
+        $data = self::castInteger_all($data);
 
         if (null === $ids) {
             static::$_isFullyLoaded = true;
@@ -213,11 +209,7 @@ class Model implements \IteratorAggregate, \ArrayAccess {
         $sql = static::_find($db, $cond, $options);
 
         $data = $db->retrieve_all($sql, null, static::$_pk, null, true);
-
-        // force id to be integer
-        foreach (array_keys($data) as $key) {
-            $data[$key][static::$_pk] = (int) $data[$key][static::$_pk];
-        }
+        $data = self::castInteger_all($data);
 
         //echo static::$_tablename."\n";print_r(static::$_buffer);
         // merge the rows in the buffer. Do not use array_merge!
@@ -244,10 +236,14 @@ class Model implements \IteratorAggregate, \ArrayAccess {
         $sql .= " LIMIT 1";
 
         $data = $db->retrieve_one($sql);
+        if ($data === false) {
+            return null;
+        }
+        $data = self::castInteger_one($data);
+
         // merge the row in the buffer.
         $id = $data[static::$_pk];
         if ($id !== null) {
-            $data[static::$_pk] = (int) $id;
             static::$_buffer[$id] = $data;
 
             $model = get_called_class();
@@ -351,10 +347,57 @@ class Model implements \IteratorAggregate, \ArrayAccess {
 
 
 
+    /**
+     * Cast columns to integer
+     * @param array[array] $data
+     * @return array[array]
+     */
+    protected static function castInteger_all($data) {
+        $integerCols = self::_getIntegerCols();
+
+        foreach (array_keys($data) as $rowid) {
+            foreach ($integerCols as $col) {
+                if (isset($data[$rowid][$col]) && (null !== $data[$rowid][$col])) {
+                    $data[$rowid][$col] = (int) $data[$rowid][$col];
+                }
+            }
+        }
+
+        return $data;
+    }
+
+
+    /**
+     * Cast columns to integer
+     * @param array $data
+     * @return array
+     */
+    protected static function castInteger_one($data) {
+        if (is_array($data)) {
+            $data = self::castInteger_all(array(0=>$data));
+            $data = $data[0];
+        }
+        return $data;
+    }
 
 
 
 
+
+    /**
+     * return array of column to be casted to int
+     * @return array
+     */
+    protected static function _getIntegerCols() {
+        if (isset(static::$_integerCols)) {
+            $integerCols = static::$_integerCols;
+        } else {
+            $integerCols = array();
+        }
+        $integerCols[] = static::$_pk; // always push id
+
+        return $integerCols;
+    }
 
 
     /***********************/
