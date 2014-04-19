@@ -1,7 +1,6 @@
 <?php
 namespace Gb\Model;
 
-
 class Rows implements \IteratorAggregate, \Countable, \ArrayAccess {
     /**
      * @var Gb_Db
@@ -138,6 +137,30 @@ class Rows implements \IteratorAggregate, \Countable, \ArrayAccess {
             throw new \Gb_Exception("Cannot append a " . get_class($rows) . " to rows of " . $this->nam);
         } else { // one object
             array_push($this->o, $rows->id);
+        }
+        return $this;
+    }
+
+
+    /**
+     * Merge model/rows to the current rows
+     * @param \Gb\Model|\Gb\Model\Rows $rows
+     * @return self
+     * @throws \Gb_Exception
+     */
+    public function merge($rows) {
+        if (is_a($rows, '\Gb\Model\Rows')) {
+            foreach ($rows as $row) {
+                if (!in_array($row->id, $this->o)) {
+                    array_push($this->o, $row->id);
+                }
+            }
+        } elseif (!is_a($rows, $this->nam)) {
+            throw new \Gb_Exception("Cannot append a " . get_class($rows) . " to rows of " . $this->nam);
+        } else { // one object
+            if (!in_array($rows->id, $this->o)) {
+                array_push($this->o, $rows->id);
+            }
         }
         return $this;
     }
