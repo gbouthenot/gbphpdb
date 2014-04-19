@@ -224,6 +224,22 @@ class Rows implements \IteratorAggregate, \Countable, \ArrayAccess {
                 $this->rel[$relname] = $relat->ids();
             }
             return new Rows($this->db, $relclass, $this->rel[$relname]);
+        } elseif ('has_many_through' === $reltype) {
+            if (!isset($this->rel[$relname])) {
+                // Find the other rows referenced by our line
+                $relfk    = $relMeta["foreign_key"];
+                $through  = $relMeta["through"];
+                $pivClass = $through[0];
+                $pivCol   = $through[1];
+                $pivfks   = $this->o;
+                //echo "<br />relfk:$relfk // values:" . implode(",", $pivfks) . " // relclass:$relclass // pivClass:$pivClass // pivCol:$pivCol<br />";
+                $pivot    = $pivClass::findAll($this->db, array($pivCol=>$pivfks));
+                //echo "<br />pivot: $pivot<br />";
+                $relfks   = $pivot->pluck($relfk);
+                //print_r($pivot);
+                $this->rel[$relname] = $relfks;
+            }
+            return new Rows($this->db, $relclass, $this->rel[$relname]);
         } elseif ('belongs_to_json' === $reltype) {
             if (!isset($this->rel[$relname])) {
                 $relfk    = $relMeta["foreign_key"];
@@ -237,6 +253,8 @@ class Rows implements \IteratorAggregate, \Countable, \ArrayAccess {
                 $this->rel[$relname] = $relfks2;
             }
             return new Rows($this->db, $relclass, $this->rel[$relname]);
+        } else {
+            throw new \Gb_Exception("Unsupported relation type $reltype for model $model rows");
         }
     }
 
