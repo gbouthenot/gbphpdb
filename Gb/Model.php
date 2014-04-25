@@ -639,7 +639,16 @@ class Model implements \IteratorAggregate, \ArrayAccess {
         return json_encode($this->o);
     }
 
-    public function rel($relname) {
+    /**
+     * returns rows/model for the relation
+     * @param string $relname
+     * @param array[optional] $params
+     *   fCacheMiss[false] true to force database read
+     * @return self|\Gb\Model\Rows
+     */
+    public function rel($relname, array $params = null) {
+        if (null === $params) { $params = array(); }
+        if (!isset($params["fCacheMiss"])) { $params["fCacheMiss"] = false; }
         $model = get_called_class();
         if (!isset($model::$rels[$relname])) {
             throw new \Gb_Exception("relation $relname does not exist for $model");
@@ -651,16 +660,16 @@ class Model implements \IteratorAggregate, \ArrayAccess {
         }
         $reltype  = $relMeta["reltype"];
         if ('belongs_to' === $reltype) {
-            if (!isset($this->rel[$relname])) {
+            if ($params["fCacheMiss"] || !isset($this->rel[$relname])) {
                 $relfk    = $relMeta["foreign_key"];
-            if (!isset($this->o[$relfk])) { throw new \Gb_Exception("Relation {$model}->rel('{$relname}'): there is no column $relfk"); }
+                if (!isset($this->o[$relfk])) { throw new \Gb_Exception("Relation {$model}->rel('{$relname}'): there is no column $relfk"); }
                 $relfk    = $this->o[$relfk];
                 $relat    = $relclass::getOne($this->db, $relfk);
                 $this->rel[$relname] = $relat->asArray();
             }
             return new $relclass($this->db, $this->rel[$relname][$relclass::$_pk], $this->rel[$relname]);
         } elseif ('has_many' === $reltype) {
-            if (!isset($this->rel[$relname])) {
+            if ($params["fCacheMiss"] || !isset($this->rel[$relname])) {
                 // Find the other rows referenced by our line
                 $relfk    = $relMeta["foreign_key"];
                 $relat    = $relclass::findAll($this->db, array($relfk=>$this->o[$relclass::$_pk]));
@@ -668,7 +677,7 @@ class Model implements \IteratorAggregate, \ArrayAccess {
             }
             return new Rows($this->db, $relclass, $this->rel[$relname]);
         } elseif ('has_many_through' === $reltype) {
-            if (!isset($this->rel[$relname])) {
+            if ($params["fCacheMiss"] || !isset($this->rel[$relname])) {
                 // Find the other rows referenced by our line
                 $relfk    = $relMeta["foreign_key"];
                 $through  = $relMeta["through"];
@@ -683,7 +692,7 @@ class Model implements \IteratorAggregate, \ArrayAccess {
             }
             return new Rows($this->db, $relclass, $this->rel[$relname]);
         } elseif ('belongs_to_json' === $reltype) {
-            if (!isset($this->rel[$relname])) {
+            if ($params["fCacheMiss"] || !isset($this->rel[$relname])) {
                 $relfk    = $relMeta["foreign_key"];
                 if (!isset($this->o[$relfk])) { throw new \Gb_Exception("Relation {$model}->rel('{$relname}'): there is no column $relfk"); }
                 $relfk    = $this->o[$relfk];

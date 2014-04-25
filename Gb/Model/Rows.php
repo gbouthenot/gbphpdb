@@ -211,10 +211,15 @@ class Rows implements \IteratorAggregate, \Countable, \ArrayAccess {
 
 
     /**
+     * returns rows for the relation
      * @param string $relname
+     * @param array[optional] $params
+     *   fCacheMiss[false] true to force database read
      * @return self
      */
-    public function rel($relname) {
+    public function rel($relname, array $params = null) {
+        if (null === $params) { $params = array(); }
+        if (!isset($params["fCacheMiss"])) { $params["fCacheMiss"] = false; }
         $model = $this->nam;
         if (!isset($model::$rels[$relname])) {
             throw new \Gb_Exception("relation $relname does not exist for $model");
@@ -223,7 +228,7 @@ class Rows implements \IteratorAggregate, \Countable, \ArrayAccess {
         $relclass = $relMeta["class_name"];
         $reltype  = $relMeta["reltype"];
         if ('belongs_to' === $reltype) {
-            if (!isset($this->rel[$relname])) {
+            if ($params["fCacheMiss"] || !isset($this->rel[$relname])) {
                 $relfk    = $relMeta["foreign_key"];
                 // for each line, get the foreign key
                 $relfks   = array_map(function($id) use ($relfk, $model) {
@@ -240,7 +245,7 @@ class Rows implements \IteratorAggregate, \Countable, \ArrayAccess {
             return new Rows($this->db, $relclass, $this->rel[$relname]);
         } elseif ('has_many' === $reltype) {
             // For all of our lines, find the other rows, referenced by our line
-            if (!isset($this->rel[$relname])) {
+            if ($params["fCacheMiss"] || !isset($this->rel[$relname])) {
                 $relfk    = $relMeta["foreign_key"];
                 $relfks   = $this->o;
                 $relat    = $relclass::findAll($this->db, array($relfk=>$relfks));
@@ -248,7 +253,7 @@ class Rows implements \IteratorAggregate, \Countable, \ArrayAccess {
             }
             return new Rows($this->db, $relclass, $this->rel[$relname]);
         } elseif ('has_many_through' === $reltype) {
-            if (!isset($this->rel[$relname])) {
+            if ($params["fCacheMiss"] || !isset($this->rel[$relname])) {
                 // Find the other rows referenced by our line
                 $relfk    = $relMeta["foreign_key"];
                 $through  = $relMeta["through"];
@@ -264,7 +269,7 @@ class Rows implements \IteratorAggregate, \Countable, \ArrayAccess {
             }
             return new Rows($this->db, $relclass, $this->rel[$relname]);
         } elseif ('belongs_to_json' === $reltype) {
-            if (!isset($this->rel[$relname])) {
+            if ($params["fCacheMiss"] || !isset($this->rel[$relname])) {
                 $relfk    = $relMeta["foreign_key"];
                 $relfks   = array_map(function($id)use($relfk, $model){return $model::$_buffer[$id][$relfk]; }, $this->o);
                 $relfks2  = array();
