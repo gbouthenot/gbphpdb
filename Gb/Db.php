@@ -37,7 +37,7 @@ Class Gb_Db extends Zend_Db
     protected $charset;
     protected $fTransaction=false;
     protected $fInitialized=false;
-    protected $instanceNumber=null;
+    protected $instanceNumber=null;                             // starts at 0
 
     /**
      * @var Gb_Cache
@@ -203,6 +203,14 @@ Class Gb_Db extends Zend_Db
     public function getCache()
     {
         return $this->_cache;
+    }
+
+    /**
+     * get instance number (start at 0)
+     * @return number
+     */
+    public function getInstanceNumber() {
+        return $this->instanceNumber;
     }
 
     /**
