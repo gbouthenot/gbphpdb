@@ -69,7 +69,14 @@ class Model implements \IteratorAggregate, \ArrayAccess {
         return self::_getOne($db, $id);
     }
 
-    public static function _getOne($db, $id, $rel=array()) {
+    /**
+     * Return an already fetched row into a new Model object
+     * @param \Gb_Db $db
+     * @param $id
+     * @param array[optional] $rel
+     * @return \Gb\Model
+     */
+    public static function _getOne(\Gb_Db $db, $id, $rel=array()) {
         $id = (int) $id;
         // send the row from the buffer
         $model = get_called_class();
