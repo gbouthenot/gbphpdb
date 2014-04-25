@@ -51,7 +51,7 @@ class Model implements \IteratorAggregate, \ArrayAccess {
      * @throws \Gb_Exception
      * @return self
      */
-    public static function getOne($id) {
+    public static function getOne($db__id) {
         $args = func_get_args();
         $id = array_pop($args);
         $db = array_pop($args); if (!$db) {$db = self::$_db; };
@@ -84,7 +84,7 @@ class Model implements \IteratorAggregate, \ArrayAccess {
      * @param array $ids
      * @return \Gb\Model\Rows
      */
-    public static function getSome($ids) {
+    public static function getSome($db__ids) {
         $args = func_get_args();
         $ids = array_unique(array_pop($args));
         $db = array_pop($args); if (!$db) {$db = self::$_db; };
@@ -191,13 +191,13 @@ class Model implements \IteratorAggregate, \ArrayAccess {
 
     /**
      * Search lines
+     * @param \Gb_Db[optional] $db
      * @param array|string[optional] $cond array("col"=>"value") or array("col"=>array(1,2)) or "col='value'"
      * @param array[optional] $options array("order"=>"cola DESC, colb", "limit"=>10, "offset"=>5)
      * @return \Gb\Model\Rows
      * @todo: if isFullyLoaded, handle the requestion without the database ?
      */
-    public static function findAll($cond=null) {
-
+    public static function findAll($db__cond__options=null) {
         $args = func_get_args();
         $db = self::$_db;
         if (isset($args[0]) && $args[0] instanceof \Gb_Db) {
@@ -223,16 +223,22 @@ class Model implements \IteratorAggregate, \ArrayAccess {
 
     /**
      * return the first line
+     * @param \Gb_Db[optional] $db
      * @param array|string[optional] $cond array("col"=>"value") or array("col"=>array(1,2)) or "col='value'"
+     * @param array[optional] $options array("order"=>"cola DESC, colb", "limit"=>10, "offset"=>5)
      * @see findFirstOrThrows
      * @return null|\Gb\Model\Model
      */
-    public static function findFirst($cond=null) {
+    public static function findFirst($db__cond__options=null) {
         $args = func_get_args();
-        $cond = array_pop($args);
-        $db = array_pop($args); if (!$db) {$db = self::$_db; };
+        $db = self::$_db;
+        if (isset($args[0]) && $args[0] instanceof \Gb_Db) {
+            $db = array_shift($args);
+        }
+        $cond = array_shift($args);
+        $options = array_shift($args); if (null===$options){$options=array();}
 
-        $sql = static::_find($db, $cond);
+        $sql = static::_find($db, $cond, $options);
         $sql .= " LIMIT 1";
 
         $data = $db->retrieve_one($sql);
@@ -255,13 +261,14 @@ class Model implements \IteratorAggregate, \ArrayAccess {
 
     /**
      * return the first line or throw an exception
+     * @param \Gb_Db[optional] $db
      * @param array|string[optional] $cond array("col"=>"value") or array("col"=>array(1,2)) or "col='value'"
+     * @param array[optional] $options array("order"=>"cola DESC, colb", "limit"=>10, "offset"=>5)
      * @see findFirst
      * @return null|\Gb\Model\Model
      */
-    public static function findFirstOrThrows($cond=null) {
-        $z = "Row not found for Model " . get_called_class();
-        $ret = self::findFirst($cond);
+    public static function findFirstOrThrows($db__cond__options=null) {
+        $ret = call_user_func_array(array(self, "findFirst"), func_get_args());
         if (null === $ret) {
             throw new \Gb_Exception("Row not found for Model " . get_called_class());
         }
@@ -319,13 +326,15 @@ class Model implements \IteratorAggregate, \ArrayAccess {
 
     /**
      * returns a blank row. created_at is handled by save()
+     * @param \Gb_Db[optional] $db
+     * @param array|stdClass[optional] $data
      * @return self
      */
-    public static function create(/* $db=null, $data=null*/) {
+    public static function create($db__data=null) {
         $args = func_get_args();
         $data = array_pop($args);
         $db = array_pop($args);
-        if (is_array($db)) {
+        if (is_array($db) || is_a($db, "stdClass")) {
             $data = $db;
             $db = null;
         }
