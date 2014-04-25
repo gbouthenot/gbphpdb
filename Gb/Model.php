@@ -495,9 +495,9 @@ class Model implements \IteratorAggregate, \ArrayAccess {
     /**
      * Set the properties if the column exists
      * @see set
-     * @param array $data
+     * @param array|stdClass $data
      */
-    public function merge(array $data) {
+    public function merge($data) {
         foreach ($data as $key=>$value) {
             if ($this->__isset($key)) {
                 $this->__set($key, $value);
@@ -507,9 +507,9 @@ class Model implements \IteratorAggregate, \ArrayAccess {
     /**
      * Set properties. Even if the column does not exist.
      * @see merge
-     * @param array $data
+     * @param array|stdClass $data
      */
-    public function set(array $data) {
+    public function set($data) {
         foreach ($data as $key=>$value) {
             $this->__set($key, $value);
         }
