@@ -130,7 +130,7 @@ class Model implements \IteratorAggregate, \ArrayAccess {
      * @param mixed $ids single/array/null
      * @throws \Gb_Exception if a row is not found for the asked keys.
      */
-    public static function _fetch($ids) {
+    public static function _fetch($db__ids) {
         $args = func_get_args();
         $ids = array_pop($args);
         $db = array_pop($args); if (!$db) {$db = self::$_db; };
@@ -486,7 +486,7 @@ class Model implements \IteratorAggregate, \ArrayAccess {
         }
 
         // reload the row into the buffer
-        $this->_fetch($id);
+        self::_fetch($db, $id);
 
         return $this;
     }
