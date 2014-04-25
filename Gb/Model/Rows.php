@@ -100,6 +100,23 @@ class Rows implements \IteratorAggregate, \Countable, \ArrayAccess {
         return null;
     }
 
+    /**
+     * Sort rows by a callback
+     * @param callable $callback
+     * @return self
+     */
+    public function sort($callback) {
+        $rowIds = $this->o;
+        $model = $this->nam;
+        usort($rowIds, function ($a, $b) use ($model, $callback) {
+            $a = new $model($this->db, $a, $model::$_buffer[$a]);
+            $b = new $model($this->db, $b, $model::$_buffer[$b]);
+            return call_user_func($callback, $a, $b);
+        });
+        $class = __CLASS__;
+        return new $class($this->db, $this->nam, $rowIds);
+    }
+
 
     /**
      * Prepend an object to the current rows
