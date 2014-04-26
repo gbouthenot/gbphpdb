@@ -19,13 +19,22 @@ class Rows implements \IteratorAggregate, \Countable, \ArrayAccess {
      */
     protected $rel;
 
-    public function __construct(\Gb_Db $db, $classname, array $data, $rel=array()) {
+    /**
+     * construct a now Rows object
+     * @param \Gb_Db $db
+     * @param string $classname should be a \Gb\Model inherited
+     * @param array $ids
+     * @param array $rel pre-resolved relations
+     * @return \Gb\Model\Rows
+     */
+    public function __construct(\Gb_Db $db, $classname, array $ids, $rel=array()) {
         // $data should be array of integers
-        $data = array_map(function($val){return (int) $val;}, $data);
+        $ids = array_map(function($val){return (int) $val;}, $ids);
         $this->db   = $db;
         $this->nam  = $classname;
-        $this->o    = $data;
+        $this->o    = $ids;
         $this->rel  = $rel;
+        $classname::_fetch($this->db, $ids);   // fetch rows in model buffer
     }
 
     /**
