@@ -275,7 +275,7 @@ class Model implements \IteratorAggregate, \ArrayAccess {
      * @return null|\Gb\Model\Model
      */
     public static function findFirstOrThrows($db__cond__options=null) {
-        $ret = call_user_func_array(array(self, "findFirst"), func_get_args());
+        $ret = call_user_func_array("self::findFirst", func_get_args());
         if (null === $ret) {
             throw new \Gb_Exception("Row not found for Model " . get_called_class());
         }
@@ -373,7 +373,7 @@ class Model implements \IteratorAggregate, \ArrayAccess {
 
         foreach (array_keys($data) as $rowid) {
             foreach ($integerCols as $col) {
-                if (isset($data[$rowid][$col]) && (null !== $data[$rowid][$col])) {
+                if (isset($data[$rowid][$col])) { // is set, and is not null
                     $data[$rowid][$col] = (int) $data[$rowid][$col];
                 }
             }
@@ -578,7 +578,7 @@ class Model implements \IteratorAggregate, \ArrayAccess {
     }
 
     public function __get($key) {
-        if (isset($this->o[$key])) {
+        if ($this->__isset($key)) {
             return $this->o[$key];
         } else {
             return null;
@@ -615,7 +615,7 @@ class Model implements \IteratorAggregate, \ArrayAccess {
         $this->o[$key] = $value;
     }
     public function __isset($key) {
-        return isset($this->o[$key]);
+        return isset($this->o[$key]) || array_key_exists($key, $this->o); // this handle null as existent
     }
     public function __unset($key) {
         unset($this->o[$key]);
