@@ -688,6 +688,7 @@ class Model implements \IteratorAggregate, \ArrayAccess {
                 $pivot = $pivClass::findAll($this->db, array($pivCol=>$pivfk));
                 //echo "<br />pivot: $pivot<br />";
                 $relfks   = $pivot->pluck($relfk);
+                $relfks   = array_unique($relfks);
                 $this->rel[$relname] = $relfks;
             }
             return new Rows($this->db, $relclass, $this->rel[$relname]);

@@ -34,7 +34,7 @@ class Rows implements \IteratorAggregate, \Countable, \ArrayAccess {
         $this->nam  = $classname;
         $this->o    = $ids;
         $this->rel  = $rel;
-        $classname::_fetch($this->db, $ids);   // fetch rows in model buffer
+        $classname::_getSome($this->db, $ids);   // fetch rows in model buffer
     }
 
     /**
@@ -290,6 +290,7 @@ class Rows implements \IteratorAggregate, \Countable, \ArrayAccess {
                 $pivot    = $pivClass::findAll($this->db, array($pivCol=>$pivfks));
                 //echo "<br />pivot: $pivot<br />";
                 $relfks   = $pivot->pluck($relfk);
+                $relfks   = array_unique($relfks);
                 //print_r($pivot);
                 $this->rel[$relname] = $relfks;
             }
