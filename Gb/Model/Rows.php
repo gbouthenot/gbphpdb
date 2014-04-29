@@ -117,9 +117,10 @@ class Rows implements \IteratorAggregate, \Countable, \ArrayAccess {
     public function sort($callback) {
         $rowIds = $this->o;
         $model = $this->nam;
-        usort($rowIds, function ($a, $b) use ($model, $callback) {
-            $a = new $model($this->db, $a, $model::$_buffer[$a]);
-            $b = new $model($this->db, $b, $model::$_buffer[$b]);
+        $db = $this->db;
+        usort($rowIds, function ($a, $b) use ($db, $model, $callback) {
+            $a = new $model($db, $a, $model::$_buffer[$a]);
+            $b = new $model($db, $b, $model::$_buffer[$b]);
             return call_user_func($callback, $a, $b);
         });
         $class = __CLASS__;
