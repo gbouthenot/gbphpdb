@@ -292,6 +292,9 @@ class Model implements \IteratorAggregate, \ArrayAccess {
      * @return string
      */
     protected static function _find(\Gb_db $db, $cond, $options=array()) {
+        if (isset($options["IS_SQL"]) && true == $options["IS_SQL"]) {
+            return $cond;
+        }
         $tablename = static::$_tablename;
         $sql  = " SELECT * FROM $tablename";
         if (is_array($cond) && count($cond)) {
