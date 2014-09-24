@@ -167,7 +167,9 @@ class Model implements \IteratorAggregate, \ArrayAccess {
             if (1 === count($ids)) {
                 throw new \Gb_Exception("row not found");
             }
-            throw new \Gb_Exception(count($data) . " rows retrieved, " . count($ids) . " rows expected.");
+            $missing = array_diff($ids,array_keys($data));
+            $table = static::$_tablename;
+            throw new \Gb_Exception(count($data) . " rows retrieved, " . count($ids) . " rows expected. Missing ids: (" . implode($missing, ",") . ") from table $table.");
         }
 
         // merge the rows in the buffer. Do not use array_merge!
