@@ -78,7 +78,7 @@ class Rows implements \IteratorAggregate, \Countable, \ArrayAccess {
     /**
      * Reduce the number of rows and return new \Gb\Model\Rows
      * @param callable $callback
-     * @return self
+     * @return new self
      */
     public function filter($callback) {
         $rowsIds = array();
@@ -112,7 +112,7 @@ class Rows implements \IteratorAggregate, \Countable, \ArrayAccess {
     /**
      * Sort rows by a callback
      * @param callable $callback
-     * @return self
+     * @return new self
      */
     public function sort($callback) {
         $rowIds = $this->o;

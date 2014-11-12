@@ -295,6 +295,12 @@ class Model implements \IteratorAggregate, \ArrayAccess {
      */
     protected static function _find(\Gb_db $db, $cond, $options=array()) {
         if (isset($options["IS_SQL"]) && true == $options["IS_SQL"]) {
+            $options2 = $options;
+            unset($options2["IS_SQL"]);
+            if (count($options2)) {
+                $cond = $db->quoteIntoMultiple($cond, $options2);
+            }
+
             return $cond;
         }
         $tablename = static::$_tablename;

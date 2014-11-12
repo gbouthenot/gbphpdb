@@ -32,7 +32,7 @@ Class Gb_Db extends Zend_Db
      */
     protected $_adapter;
     protected $connArray;                                     // array utilisé par Zend_Db::factory()
-    protected $driver;                                        // Pdo_Mysql, Pdo_Oci, Pdo_Sqlite
+    protected $driver;                                        // Pdo_Mysql, Pdo_Oci, Pdo_Sqlite, Oracle
     protected $dbname;
     protected $charset;
     protected $fTransaction=false;
@@ -96,7 +96,7 @@ Class Gb_Db extends Zend_Db
      *
      * type est le driver à utiliser (MYSQL, OCI8)
      *
-     * @param array("type"=>"Pdo_Mysql/Pdo_Oci/Pdo_Sqlite/Pdo_Pgsql", "host"=>"localhost", "user/username"=>"", "pass/password"=>"", "name/dbname"=>"", "port"=>"", "charset"=>"utf8") $aIn
+     * @param array("type"=>"Pdo_Mysql/Pdo_Oci/Pdo_Sqlite/Pdo_Pgsql/Oracle_Oci8", "host"=>"localhost", "user/username"=>"", "pass/password"=>"", "name/dbname"=>"", "port"=>"", "charset"=>"utf8") $aIn
      * @return GbDb
      */
     function __construct(array $aIn)
@@ -116,6 +116,17 @@ Class Gb_Db extends Zend_Db
         if (isset($aIn["port"]))                    $port=$aIn["port"];
         if (isset($aIn["charset"]))                 $charset=$aIn["charset"];
 
+        $array = array("username"=>$user, "password"=>$pass, "dbname"=>$name);
+        if (strlen($host)) {
+            $array["host"]=$host;
+        }
+        if (strlen($port)) {
+            $array["port"]=$port;
+        }
+        if (strlen($charset)) {
+            $array["charset"]=$charset;
+        }
+
         switch (strtoupper($driver)) {
             case "MYSQL":
             case "MYSQLI":
@@ -128,6 +139,13 @@ Class Gb_Db extends Zend_Db
             case "PDO_OCI":
                 $driver="Pdo_Oci"; break;
 
+            case "ORACLE_OCI8":
+                // see http://www.php.net/manual/en/function.oci-connect.php
+                $array["dbname"] = $host .
+                    (($port !== "") ? ":$port" : "") .
+                    "/$name";
+                $driver="Oracle"; break;
+
             case "SQLITE":
             case "PDO_SQLITE":
                 $driver="Pdo_Sqlite"; break;
@@ -136,18 +154,6 @@ Class Gb_Db extends Zend_Db
             case "POSTGRESQL":
             case "PDO_PGSQL":
                 $driver="Pdo_Pgsql"; break;
-
-        }
-
-        $array=array("username"=>$user, "password"=>$pass, "dbname"=>$name);
-        if (strlen($host)) {
-            $array["host"]=$host;
-        }
-        if (strlen($port)) {
-            $array["port"]=$port;
-        }
-        if (strlen($charset)) {
-            $array["charset"]=$charset;
         }
 
         try
@@ -362,7 +368,8 @@ EOF;
         $sql_getColumns = $sql_getPK = $sql_getFKs = $sql_getOtr = "";
 
         switch($this->driver) {
-            case "Pdo_Oci":
+
+            case "Pdo_Oci": case "Oracle":
                 $sql_getColumns=<<<EOF
 SELECT A.COLUMN_NAME, A.DATA_TYPE AS "TYPE", A.NULLABLE, C.COMMENTS AS "COMMENT", '' AS "EXTRA"
 FROM ALL_TAB_COLUMNS A
@@ -603,11 +610,16 @@ EOF;
         self::$nbRequest++;
         $this->log($sql);
 
-
         if ( (false === $bindargurment) || (null === $bindargurment)) {
             $bindargurment=array();
         } elseif (!is_array($bindargurment)) {
             $bindargurment = array($bindargurment);
+        }
+
+        if (count($bindargurment) && ("Oracle" === $this->driver)) {
+            // oracle does not support positional parameters
+            $sql = $this->quoteIntoMultiple($sql, $bindargurment);
+            $bindargurment = array();
         }
 
         try
@@ -675,11 +687,16 @@ EOF;
         self::$nbRequest++;
         $this->log($sql);
 
-
         if ( (false === $bindargurment) || (null === $bindargurment)) {
             $bindargurment=array();
         } elseif (!is_array($bindargurment)) {
             $bindargurment = array($bindargurment);
+        }
+
+        if (count($bindargurment) && ("Oracle" === $this->driver)) {
+            // oracle does not support positional parameters
+            $sql = $this->quoteIntoMultiple($sql, $bindargurment);
+            $bindargurment = array();
         }
 
         try {
@@ -1257,6 +1274,36 @@ EOF;
     {
         $db=$this->_adapter;
         return $db->setProfiler($param);
+    }
+
+    /**
+     * Quotes a value and places into a piece of text at a placeholder.
+     *
+     * The placeholder is a question-mark; all placeholders will be replaced
+     * with the quoted value.   For example:
+     *
+     * <code>
+     * $text = "WHERE date < ?";
+     * $date = "2005-01-02";
+     * $safe = $sql->quoteInto($text, $date);
+     * // $safe = "WHERE date < '2005-01-02'"
+     * </code>
+     *
+     * @param string  $text  The text with a placeholder.
+     * @param array   $values The value to quote.
+     * @param array   $types  OPTIONAL SQL datatype
+     */
+    public function quoteIntoMultiple($text, $values, $types = null)
+    {
+        $index = 0;
+        foreach ($values as $value) {
+            if (strpos($text, '?') !== false) {
+                $type = isset($types[$index]) ? ($types[$index]) : null;
+                $text = substr_replace($text, $this->quote($value, $type), strpos($text, '?'), 1);
+            }
+            $index++;
+        }
+        return $text;
     }
 
 }
