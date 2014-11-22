@@ -217,10 +217,10 @@ EOF;
                 if ('>' === substr($arg, 0, 1)) {
                     $arg = substr($arg, 1);
                     @unlink($arg);
-                    $overwrite = "[overwrite]";
+                    $overwrite = " [overwrite]";
                 }
                 $aOptions["logfile"] = $arg;
-                echo "log output set to file " . $arg . " " . $overwrite . "\n";
+                echo "log output set to file " . $arg . $overwrite . ".\n";
             }
         } else {
             logfile(">" . $line);
