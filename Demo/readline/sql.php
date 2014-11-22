@@ -10,7 +10,7 @@ require_once __DIR__ . DIRECTORY_SEPARATOR . "..". DIRECTORY_SEPARATOR . ".." . 
 
 $items = array();
 
-load_extension("pdo");
+//load_extension("pdo");
 //load_extension("pdo_mysql");
 //load_extension("pdo_oci");
 load_extension("readline");
@@ -73,6 +73,10 @@ EOF;
 $aFavorites = parse_ini_file($fname, true);
 if (!isset($aFavorites[$favoriteName])) {
     echo "error: favorite $favoriteName not found in file $fname\n";
+    if (is_array($aFavorites)) {
+        $k = array_keys($aFavorites);
+        echo "defined favorites: " . join(", ", array_keys($aFavorites)) . "\n";
+    }
     exit(2);
 }
 
@@ -141,8 +145,9 @@ function init_readline()
     "maxwidth 0",
     "logfile /tmp/output.txt",
     "format <text|csv>",
-    "show databases",
+    "desc <dbname.tablename>",
     "show tables",
+    "help",
     );
 
     foreach ($history as $line) {
@@ -162,13 +167,31 @@ function process_main()
         }
 
 
-        if (substr($linelow, 0, 4)=="exit" || substr($linelow, 0, 4)=="quit") {
-            return;
-        }
-
         readline_add_history($line);
 
-        if ($linelow=="nopager") {
+        if (substr($linelow, 0, 4)=="exit" || substr($linelow, 0, 4)=="quit" || substr($linelow, 0, 5)==".quit") {
+            return;
+        } elseif (substr($linelow, 0, 4)=="help") {
+            echo <<<EOF
+Frontend related:
+pager               enable pager
+nopager             disable pager
+format text         set the pager format to text
+format csv          set the pager format to csv
+maxwidth <nn>       set the maximum column width. If nn is not provided, return current maxwidth. Set to 0 for unlimited
+logfile <fname>     append all output to file. If fname is blank, disable logging. If fname begins with '>', erase file
+help                display this help
+exit | [.]quit      exit
+
+Database related:
+show tables | desc  list all tables name
+desc <table>        describe a table. Some backend need table=dbname.table
+search <int|string> search a value through every line of every table
+searchcol <string>  search a column name
+clearcache          clear the metadata cache
+
+EOF;
+        } elseif ($linelow=="nopager") {
             $aOptions["nopager"]=true;
         } elseif ($linelow=="pager") {
             $aOptions["nopager"]=false;
@@ -176,32 +199,39 @@ function process_main()
             $aOptions["format"] = "text";
         } elseif ($linelow=="format csv") {
             $aOptions["format"] = "csv";
-        } elseif (substr($linelow, 0, 9)=="maxwidth ") {
+        } elseif (substr($linelow, 0, 8)=="maxwidth") {
             $maxwidth = substr($line, 9);
             if (is_numeric($maxwidth)) {
                 $aOptions["maxwidth"] = (int) $maxwidth;
                 echo "maxwidth set to $maxwidth\n";
+            } else {
+                echo "maxwidth = ".$aOptions["maxwidth"]."\n";
             }
-        } elseif (substr($linelow, 0, 8)=="maxwidth") {
-            echo "maxwidth = ".$aOptions["maxwidth"]."\n";
         } elseif (substr($linelow, 0, 7)=="logfile") {
             $arg = trim(substr($line, 8));
             if (strlen($arg) == 0) {
                 $aOptions["logfile"] = "";
                 echo "no logfile\n";
             } else {
+                $overwrite = "";
+                if ('>' === substr($arg, 0, 1)) {
+                    $arg = substr($arg, 1);
+                    @unlink($arg);
+                    $overwrite = "[overwrite]";
+                }
                 $aOptions["logfile"] = $arg;
-                echo "log output set to file " . $arg . "\n";
+                echo "log output set to file " . $arg . " " . $overwrite . "\n";
             }
         } else {
             logfile(">" . $line);
             $ret=process($line);
 
-            logfile($ret);
+            logfile($ret . "\n");
             pager($ret);
         }
     } while (1);
 }
+
 
 function myreadline()
 {
