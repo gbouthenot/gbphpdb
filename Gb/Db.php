@@ -282,7 +282,7 @@ Class Gb_Db extends Zend_Db
     {
         if ($this->tables==null) {
             switch($this->driver) {
-                case "Pdo_Oci":
+                case "Pdo_Oci": case "Oracle":
                     $sql_getTablesName=<<<EOF
                         SELECT OWNER || '.' || TABLE_NAME AS "FULL_NAME"
                         FROM ALL_TABLES
