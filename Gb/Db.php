@@ -144,6 +144,20 @@ Class Gb_Db extends Zend_Db
                 $array["dbname"] = $host .
                     (($port !== "") ? ":$port" : "") .
                     "/$name";
+
+                // http://php.net/manual/en/function.oci-connect.php#105284
+                // seem that that name is not always the same as service name, so,
+                // don't use this way of connecting, but the older one:
+                $address = "ADDRESS=(PROTOCOL=TCP)(HOST = $host)";
+                $address .= ($port !== "") ? ("(PORT = $port)") : ("");
+                $cdata = "SID = $name";
+                $array["dbname"] =  "
+(DESCRIPTION=
+  (ADDRESS_LIST=($address))
+  (CONNECT_DATA=($cdata))
+)";
+                unset($array["host"]);
+                unset($array["port"]);
                 $driver="Oracle"; break;
 
             case "SQLITE":
