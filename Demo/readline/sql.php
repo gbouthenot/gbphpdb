@@ -248,7 +248,11 @@ function myreadline()
             $line_pre .= substr($line, 0, strlen($line)-1);
             $line="";
         } else {
-            $line = $line_pre.$line;
+            if ((strlen($line_pre) === 0) && (false === $line) ) {
+                $line = "quit";
+            } else {
+                $line = $line_pre . $line;
+            }
         }
     } while ( strlen($line)==0 );
 
