@@ -186,7 +186,7 @@ Class Gb_Db extends Zend_Db
             throw new Gb_Exception($e->getMessage());
         }
 
-        $this->log("CONNECT TO $host:$name");
+        $this->log("CONNECT TO " . (strlen($host)?("$host:"):("")) . $name);
         self::$nbInstance_total++;
         self::$nbInstance_current++;
         self::$nbInstance_peak=max(self::$nbInstance_peak, self::$nbInstance_current);
@@ -311,7 +311,7 @@ Class Gb_Db extends Zend_Db
         $sqltime=Gb_Util::roundCeil($sqltime);
         $ret.="Gb_Db:\n{\n";
         $ret.="totalInstances:$dbtotal peakInstances:$dbpeak nbrequests:$nbrequest time:{$sqltime}s";
-        $aTimes = array_map(function($a){return Gb_Util::roundCeil($a);}, self::$aSqlTime);
+        $aTimes = array_map(function($a){return Gb_Util::roundCeil($a)."s";}, self::$aSqlTime);
         $ret.=" per instance: {" . implode(", ", $aTimes) . "}\n";
         foreach (self::$sqlLog as $instance=>$loginstance) {
             $ret .= "Gb_Db instance $instance: " . implode("\n", $loginstance) . "\n";
