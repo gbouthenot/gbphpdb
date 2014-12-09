@@ -139,6 +139,7 @@ exit(0);
 function init_readline()
 {
     $history=array(
+    "select * from NLS_DATABASE_PARAMETERS where PARAMETER = 'NLS_CHARACTERSET'",
     "clearcache",
     "search <string|int>",
     "searchcol columnname",
