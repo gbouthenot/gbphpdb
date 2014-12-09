@@ -178,7 +178,7 @@ class Gb_Response
         $plugins=Gb_Glue::getPlugins("Gb_Response_Footer");
         foreach ($plugins as $plugin) {
             if (is_callable($plugin[0])) {
-                $footer.=call_user_func_array($plugin[0], $plugin[1])." ";
+                $footer.=call_user_func_array($plugin[0], $plugin[1])."\n";
             }
         }
         $footer.="\n";
