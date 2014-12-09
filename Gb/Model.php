@@ -216,14 +216,16 @@ class Model implements \IteratorAggregate, \ArrayAccess {
         $options = array_shift($args); if (null===$options){$options=array();}
 
         $sql = static::_find($db, $cond, $options);
+        if (strlen($sql)) {
+            $data = $db->retrieve_all($sql, null, static::$_pk, null, true);
+            $data = self::castInteger_all($data);
 
-        $data = $db->retrieve_all($sql, null, static::$_pk, null, true);
-        $data = self::castInteger_all($data);
-
-        //echo static::$_tablename."\n";print_r(static::$_buffer);
-        // merge the rows in the buffer. Do not use array_merge!
-        static::$_buffer = $data + static::$_buffer;
-
+            //echo static::$_tablename."\n";print_r(static::$_buffer);
+            // merge the rows in the buffer. Do not use array_merge!
+            static::$_buffer = $data + static::$_buffer;
+        } else {
+            $data = array();
+        }
         $model = get_called_class();
         return new Rows($db, $model, array_keys($data));
     }
@@ -310,7 +312,9 @@ class Model implements \IteratorAggregate, \ArrayAccess {
             foreach ($cond as $k=>$v) {
                 if (is_string($k)) {
                     if (is_array($v)) {
-                        $aWhere[] = $db->quoteIdentifier($k) . ' IN (' . $db->quote($v) . ')';
+                        if (count($v)) {
+                            $aWhere[] = $db->quoteIdentifier($k) . ' IN (' . $db->quote($v) . ')';
+                        }
                     } elseif (null === $v) {
                         $aWhere[] = $db->quoteIdentifier($k) . ' IS NULL';
                     } elseif (is_a($v, "Zend_Db_Expr")) {
@@ -325,6 +329,9 @@ class Model implements \IteratorAggregate, \ArrayAccess {
                 }
             }
             $sql .= " WHERE " . join(" AND ", $aWhere);
+            if (count($aWhere) === 0) {
+                return "";
+            }
         } elseif (is_string($cond) && strlen($cond)) {
             $sql .= " WHERE $cond";
         }
