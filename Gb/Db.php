@@ -38,6 +38,7 @@ Class Gb_Db extends Zend_Db
     protected $fTransaction=false;
     protected $fInitialized=false;
     protected $instanceNumber=null;                             // starts at 0
+    protected $fLogEnabled=true;
 
     /**
      * @var Gb_Cache
@@ -96,7 +97,7 @@ Class Gb_Db extends Zend_Db
      *
      * type est le driver à utiliser (MYSQL, OCI8)
      *
-     * @param array("type"=>"Pdo_Mysql/Pdo_Oci/Pdo_Sqlite/Pdo_Pgsql/Oracle_Oci8", "host"=>"localhost", "user/username"=>"", "pass/password"=>"", "name/dbname"=>"", "port"=>"", "charset"=>"utf8") $aIn
+     * @param array("type"=>"Pdo_Mysql/Pdo_Oci/Pdo_Sqlite/Pdo_Pgsql/Oracle_Oci8", "host"=>"localhost", "user/username"=>"", "pass/password"=>"", "name/dbname"=>"", "port"=>"", "charset"=>"utf8", "log"=>"true|false") $aIn
      * @return GbDb
      */
     function __construct(array $aIn)
@@ -105,6 +106,7 @@ Class Gb_Db extends Zend_Db
         $user=$pass=$name=$port=$charset="";
         $host="";
         $driver="Pdo_Mysql";
+        $log = true;
         if (isset($aIn["type"]))                    $driver=$aIn["type"];
         if (isset($aIn["host"]))                    $host=$aIn["host"];
         if (isset($aIn["user"]))                    $user=$aIn["user"];
@@ -115,6 +117,8 @@ Class Gb_Db extends Zend_Db
         if (isset($aIn["dbname"]))                  $name=$aIn["dbname"];
         if (isset($aIn["port"]))                    $port=$aIn["port"];
         if (isset($aIn["charset"]))                 $charset=$aIn["charset"];
+        if (isset($aIn["log"])
+            && in_array($aIn["log"], array("false", false))) $log=false;
 
         $array = array("username"=>$user, "password"=>$pass, "dbname"=>$name);
         if (strlen($host)) {
@@ -195,6 +199,7 @@ Class Gb_Db extends Zend_Db
         $this->dbname=$name;
         $this->connArray=$array;
         $this->charset=$charset;
+        $this->fLogEnabled=$log;
     }
 
     function __destruct()
@@ -238,10 +243,25 @@ Class Gb_Db extends Zend_Db
      * @param string $str
      */
     public function log($str, $o=null) {
+        if ($this->fLogEnabled === false) {
+            return;
+        }
         $str = trim($str);
         $str = str_replace("\n", " ", $str);
         if ($o !== null) { $str .= " "; }
         self::$sqlLog[$this->instanceNumber][] = $str . Gb_Log::dump($o);
+    }
+
+    /**
+     * get/set log
+     * @param boolean[optional] $param
+     * @return boolean
+     */
+    public function enableLog($p = null) {
+        if (false === $p || true === $p) {
+            $this->fLogEnabled = $p;
+        }
+        return $this->fLogEnabled;
     }
 
     public function initialize()
