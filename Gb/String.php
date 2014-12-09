@@ -450,7 +450,7 @@ class Gb_String
                 $max["index"]=max($max["index"], mb_strlen($indexname, "UTF-8"));
                 foreach ($firstrowkeys as $number=>$keyname) {
                     $col = self::splat($line[$keyname], $arrayMode);
-                    $max[$number]=max($max[$number], mb_strlen(str_replace(array("\r","\n","\0"), array("\\r", "\\n", "\\0"), $col)), "UTF-8");
+                    $max[$number]=max($max[$number], mb_strlen(str_replace(array("\r","\n","\0"), array("\\r", "\\n", "\\0"), $col), "UTF-8"));
                     if ($maxColLen) {
                         $max[$number] = min($max[$number], $maxColLen);
                     }
