@@ -592,7 +592,9 @@ class Gb_Log
 
 
     public static function exceptionHandler(Exception $e) {
-        header("HTTP/1.0 500 Application Exception");
+        if (!headers_sent()) {
+            header("HTTP/1.0 500 Application Exception");
+        }
         echo $e->getMessage();
         self::writelog(self::LOG_ERROR, $e);
     }
