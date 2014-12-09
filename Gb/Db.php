@@ -48,7 +48,8 @@ Class Gb_Db extends Zend_Db
     protected $tables;                                        // cache de la liste des tables
     protected $tablesDesc;                                    // cache descriptif table
 
-    protected static $sqlTime=0;
+    protected static $sqlTime=0;                             // global time spent in Gb_Db
+    protected static $aSqlTime=array();                      // per instance time spent
     protected static $nbInstance_total=0;                    // Nombre de classes gbdb ouvertes au total
     protected static $nbInstance_peak=0;                     // maximum ouvertes simultanément
     protected static $nbInstance_current=0;                  // nom d'instances ouvertes en ce moment
@@ -131,6 +132,9 @@ Class Gb_Db extends Zend_Db
             $array["charset"]=$charset;
         }
 
+        $this->instanceNumber = self::$nbInstance_total;
+        self::$aSqlTime[$this->instanceNumber] = 0;
+
         switch (strtoupper($driver)) {
             case "MYSQL":
             case "MYSQLI":
@@ -178,16 +182,14 @@ Class Gb_Db extends Zend_Db
         {
             $this->_adapter=Zend_Db::factory($driver, $array);
         } catch (Exception $e) {
-            self::$sqlTime+=microtime(true)-$time;
+            $this->addTime(microtime(true)-$time);
             throw new Gb_Exception($e->getMessage());
         }
 
-        $this->instanceNumber = self::$nbInstance_total;
         $this->log("CONNECT TO $host:$name");
         self::$nbInstance_total++;
         self::$nbInstance_current++;
         self::$nbInstance_peak=max(self::$nbInstance_peak, self::$nbInstance_current);
-        self::$sqlTime+=microtime(true)-$time;
 
         if (!self::$fPluginRegistred)
         {
@@ -200,6 +202,7 @@ Class Gb_Db extends Zend_Db
         $this->connArray=$array;
         $this->charset=$charset;
         $this->fLogEnabled=$log;
+        $this->addTime(microtime(true)-$time);
     }
 
     function __destruct()
@@ -207,7 +210,7 @@ Class Gb_Db extends Zend_Db
         $time=microtime(true);
         self::$nbInstance_current--;
         $this->_adapter->closeConnection();
-        self::$sqlTime+=microtime(true)-$time;
+        $this->addTime(microtime(true)-$time);
     }
 
    /**
@@ -250,6 +253,15 @@ Class Gb_Db extends Zend_Db
         $str = str_replace("\n", " ", $str);
         if ($o !== null) { $str .= " "; }
         self::$sqlLog[$this->instanceNumber][] = $str . Gb_Log::dump($o);
+    }
+
+    /**
+     * Add time spent
+     * @param float $time
+     */
+    protected function addTime($time) {
+        self::$sqlTime += $time;
+        self::$aSqlTime[$this->instanceNumber] += $time;
     }
 
     /**
@@ -297,12 +309,14 @@ Class Gb_Db extends Zend_Db
         $dbpeak=self::$nbInstance_peak;
         $nbrequest=self::$nbRequest;
         $sqltime=Gb_Util::roundCeil($sqltime);
-        $ret.="Gb_Db:{ ";
+        $ret.="Gb_Db:\n{\n";
         $ret.="totalInstances:$dbtotal peakInstances:$dbpeak nbrequests:$nbrequest time:{$sqltime}s";
-        foreach (self::$sqlLog as $loginstance) {
-            $ret .= "<br />" . implode("\n", $loginstance);
+        $aTimes = array_map(function($a){return Gb_Util::roundCeil($a);}, self::$aSqlTime);
+        $ret.=" per instance: {" . implode(", ", $aTimes) . "}\n";
+        foreach (self::$sqlLog as $instance=>$loginstance) {
+            $ret .= "Gb_Db instance $instance: " . implode("\n", $loginstance) . "\n";
         }
-        $ret.="<br /> }";
+        $ret.="}";
 
         return $ret;
     }
@@ -372,7 +386,6 @@ EOF;
      */
     public function getTableDesc($table)
     {
-        $sqlTime=self::$sqlTime;
         $time=microtime(true);
 
         // détermine towner et tname
@@ -554,7 +567,7 @@ EOF;
         }
 
 
-        self::$sqlTime=$sqlTime+microtime(true)-$time;
+        $this->addTime(microtime(true)-$time);
         return $desc;
     }
 
@@ -563,7 +576,7 @@ EOF;
         $time=microtime(true);
         $this->initialize();
         $ret=$this->_adapter->fetchAll($a, $b);
-        self::$sqlTime+=microtime(true)-$time;
+        $this->addTime(microtime(true)-$time);
         return $ret;
     }
 
@@ -572,7 +585,7 @@ EOF;
         $time=microtime(true);
         $this->initialize();
         $ret=$this->_adapter->fetchAssoc($a, $b);
-        self::$sqlTime+=microtime(true)-$time;
+        $this->addTime(microtime(true)-$time);
         return $ret;
     }
 
@@ -581,7 +594,7 @@ EOF;
         $time=microtime(true);
         $this->initialize();
         $ret=$this->_adapter->query($sql, $bindarguments);
-        self::$sqlTime+=microtime(true)-$time;
+        $this->addTime(microtime(true)-$time);
         return $ret;
     }
 
@@ -596,7 +609,7 @@ EOF;
         $time=microtime(true);
         $this->initialize();
         $ret=$this->_adapter->getConnection()->exec($sql);
-        self::$sqlTime+=microtime(true)-$time;
+        $this->addTime(microtime(true)-$time);
         return $ret;
     }
 
@@ -696,9 +709,9 @@ EOF;
                     $ret[$key]=$res;
                 }
             }
-            self::$sqlTime+=microtime(true)-$time;
+            $this->addTime(microtime(true)-$time);
         } catch (Exception $e) {
-            self::$sqlTime+=microtime(true)-$time;
+            $this->addTime(microtime(true)-$time);
             throw new Gb_Exception($e->getMessage());
         }
         return $ret;
@@ -743,7 +756,7 @@ EOF;
                 // on veut juste la valeur
                 $res=$stmt->fetch(Zend_Db::FETCH_ASSOC);
                 if ($res===false) {
-                    self::$sqlTime+=microtime(true)-$time;
+                    $this->addTime(microtime(true)-$time);
                     return false;
                 }
                 $ret=$res[$col];
@@ -751,14 +764,14 @@ EOF;
                 //on veut un array
                 $res=$stmt->fetch(Zend_Db::FETCH_ASSOC);
                 if ($res===false) {
-                    self::$sqlTime+=microtime(true)-$time;
+                    $this->addTime(microtime(true)-$time);
                     return false;
                 }
                 $ret=$res;
             }
-            self::$sqlTime+=microtime(true)-$time;
+            $this->addTime(microtime(true)-$time);
         } catch (Exception $e){
-            self::$sqlTime+=microtime(true)-$time;
+            $this->addTime(microtime(true)-$time);
             throw new Gb_Exception($e->getMessage());
         }
         return $ret;
@@ -791,7 +804,7 @@ EOF;
         }
         $this->fTransaction=true;
         $ret=$this->_adapter->beginTransaction();
-        self::$sqlTime+=microtime(true)-$time;
+        $this->addTime(microtime(true)-$time);
         return $ret;
     }
 
@@ -800,7 +813,7 @@ EOF;
         $time=microtime(true);
         $ret=$this->_adapter->rollBack();
         $this->fTransaction=false;
-        self::$sqlTime+=microtime(true)-$time;
+        $this->addTime(microtime(true)-$time);
         return $ret;
     }
 
@@ -810,7 +823,7 @@ EOF;
         $ret=$this->_adapter->commit();
         $this->fTransaction=false;
 
-        self::$sqlTime+=microtime(true)-$time;
+        $this->addTime(microtime(true)-$time);
         return $ret;
     }
 
@@ -834,10 +847,10 @@ EOF;
         try {
             $ret=$this->_adapter->update($table, $data, $where);
         } catch (Exception $e) {
-            self::$sqlTime+=microtime(true)-$time;
+            $this->addTime(microtime(true)-$time);
             throw new Gb_Exception($e->getMessage());
         }
-        self::$sqlTime+=microtime(true)-$time;
+        $this->addTime(microtime(true)-$time);
         return $ret;
     }
 
@@ -859,10 +872,10 @@ EOF;
         try {
             $ret=$this->_adapter->delete($table, $where);
         } catch (Exception $e) {
-            self::$sqlTime+=microtime(true)-$time;
+            $this->addTime(microtime(true)-$time);
             throw new Gb_Exception($e->getMessage());
         }
-        self::$sqlTime+=microtime(true)-$time;
+        $this->addTime(microtime(true)-$time);
         return $ret;
     }
 
@@ -885,10 +898,10 @@ EOF;
         try {
             $ret=$this->_adapter->insert($table, $data);
         } catch (Exception $e) {
-            self::$sqlTime+=microtime(true)-$time;
+            $this->addTime(microtime(true)-$time);
             throw new Gb_Exception($e->getMessage());
         }
-        self::$sqlTime+=microtime(true)-$time;
+        $this->addTime(microtime(true)-$time);
         return $ret;
     }
 
@@ -912,7 +925,6 @@ EOF;
         if (null === $moreDataUpdate) { $moreDataUpdate=array(); }
 
         if (is_string($where)) {$where=array($where);}
-        $sqlTime=self::$sqlTime;
         $time=microtime(true);
         $this->initialize();
         self::$nbRequest++;
@@ -952,13 +964,13 @@ EOF;
                 throw new Gb_Exception("replace impossible: plus d'une ligne correspond !");
             }
         } catch (Gb_Exception $e) {
-            self::$sqlTime=$sqlTime+microtime(true)-$time;
+            $this->addTime(microtime(true)-$time);
             throw $e;
         } catch (Exception $e) {
-            self::$sqlTime=$sqlTime+microtime(true)-$time;
+            $this->addTime(microtime(true)-$time);
             throw new Gb_Exception($e->getMessage());
         }
-        self::$sqlTime=$sqlTime+microtime(true)-$time;
+        $this->addTime(microtime(true)-$time);
         return $ret;
     }
 
@@ -978,7 +990,6 @@ EOF;
     public function insertOrDeleteInsert($table, array $data)
     {
         if (count($data)==0) { return 0; }
-        $sqlTime=self::$sqlTime;
         $time=microtime(true);
         $this->initialize();
         self::$nbRequest++;
@@ -1027,20 +1038,19 @@ EOF;
                 throw new Gb_Exception("replace impossible: plus d'une ligne correspond !");
             }
         } catch (Gb_Exception $e) {
-            self::$sqlTime=$sqlTime+microtime(true)-$time;
+            $this->addTime(microtime(true)-$time);
             throw $e;
         } catch (Exception $e) {
-            self::$sqlTime=$sqlTime+microtime(true)-$time;
+            $this->addTime(microtime(true)-$time);
             throw new Gb_Exception($e->getMessage());
         }
-        self::$sqlTime=$sqlTime+microtime(true)-$time;
+        $this->addTime(microtime(true)-$time);
         return $ret;
     }
 
 
     protected function developpeData($table, $data, &$newdata, &$where)
     {
-        $sqlTime=self::$sqlTime;
         $time=microtime(true);
 
         $tableDesc=$this->getTableDesc($table);
@@ -1059,7 +1069,7 @@ EOF;
             unset($newdata[$key]);
         }
 
-        self::$sqlTime=$sqlTime+microtime(true)-$time;
+        $this->addTime(microtime(true)-$time);
     }
 
    /**
@@ -1072,7 +1082,6 @@ EOF;
     public function insertOrUpdateNOTWORKING($table, array $data)
     {
         if (count($data)==0) { return 0; }
-        $sqlTime=self::$sqlTime;
         $time=microtime(true);
         $this->initialize();
         self::$nbRequest++;
@@ -1105,20 +1114,19 @@ EOF;
                 throw new Gb_Exception("replace impossible: plus d'une ligne correspond !");
             }
         } catch (Gb_Exception $e) {
-            self::$sqlTime=$sqlTime+microtime(true)-$time;
+            $this->addTime(microtime(true)-$time);
             throw $e;
         } catch (Exception $e) {
-            self::$sqlTime=$sqlTime+microtime(true)-$time;
+            $this->addTime(microtime(true)-$time);
             throw new Gb_Exception($e->getMessage());
         }
-        self::$sqlTime=$sqlTime+microtime(true)-$time;
+        $this->addTime(microtime(true)-$time);
         return $ret;
     }
 
     public function insertOrUpdate($table, array $data)
     {
         if (count($data)==0) { return 0; }
-        $sqlTime=self::$sqlTime;
         $time=microtime(true);
         $this->initialize();
         self::$nbRequest++;
@@ -1151,13 +1159,13 @@ EOF;
                 throw new Gb_Exception("replace impossible: plus d'une ligne correspond !");
             }
         } catch (Gb_Exception $e) {
-            self::$sqlTime=$sqlTime+microtime(true)-$time;
+            $this->addTime(microtime(true)-$time);
             throw $e;
         } catch (Exception $e) {
-            self::$sqlTime=$sqlTime+microtime(true)-$time;
+            $this->addTime(microtime(true)-$time);
             throw new Gb_Exception($e->getMessage());
         }
-        self::$sqlTime=$sqlTime+microtime(true)-$time;
+        $this->addTime(microtime(true)-$time);
         return $ret;
     }
 
@@ -1188,7 +1196,7 @@ EOF;
         } else {
             $ret=$this->_adapter->quote($var);
         }
-        self::$sqlTime+=microtime(true)-$time;
+        $this->addTime(microtime(true)-$time);
         return $ret;
     }
 
@@ -1215,7 +1223,7 @@ EOF;
            $text=$this->_adapter->quoteInto($text, $value);
         }
 
-        self::$sqlTime+=microtime(true)-$time;
+        $this->addTime(microtime(true)-$time);
         return $text;
     }
 
@@ -1229,7 +1237,7 @@ EOF;
     {
         $time=microtime(true);
         $ret=$this->_adapter->quoteIdentifier($ident, false);
-        self::$sqlTime+=microtime(true)-$time;
+        $this->addTime(microtime(true)-$time);
         return $ret;
     }
 
@@ -1245,7 +1253,7 @@ EOF;
         $time=microtime(true);
         $this->initialize();
         $ret=(int) $this->_adapter->lastInsertId($tableName, $primaryKey);
-        self::$sqlTime+=microtime(true)-$time;
+        $this->addTime(microtime(true)-$time);
         return $ret;
     }
 
@@ -1266,14 +1274,13 @@ EOF;
     {
         $time=microtime(true);
         $this->initialize();
-        $sqlTime=self::$sqlTime;
 
         $nb=$this->update($tableName, array( $colName=>new Zend_Db_Expr("LAST_INSERT_ID(".$this->_adapter->quoteIdentifier($colName)."+1)") ));
         if ($nb!=1) {
-            self::$sqlTime=$sqlTime+microtime(true)-$time;
+            $this->addTime(microtime(true)-$time);
             throw new Gb_Exception("erreur sequenceNext($tableName.$colName)");
         }
-        self::$sqlTime=$sqlTime+microtime(true)-$time;
+        $this->addTime(microtime(true)-$time);
         return (int) $this->_adapter->lastInsertId();
     }
 
@@ -1286,7 +1293,6 @@ EOF;
      */
     public function sequenceCurrent($tableName, $colName="id")
     {
-        $sqlTime=self::$sqlTime;
         $time=microtime(true);
         $this->initialize();
         self::$nbRequest++;
@@ -1296,11 +1302,11 @@ EOF;
         $stmt=$this->_adapter->query($sql);
         $res=$stmt->fetch(Zend_Db::FETCH_NUM);
         if ($stmt->fetch(Zend_Db::FETCH_NUM)) {
-            self::$sqlTime=$sqlTime+microtime(true)-$time;
+            $this->addTime(microtime(true)-$time);
             throw new Gb_Exception("erreur sequenceCurrent($tableName.$colName)");
         }
         $res=$res[0];
-        self::$sqlTime=$sqlTime+microtime(true)-$time;
+        $this->addTime(microtime(true)-$time);
         return $res;
     }
 
