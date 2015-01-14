@@ -572,6 +572,10 @@ class Gb_Log
         if (null !== $error && in_array($error['type'], array(E_CORE_WARNING, E_COMPILE_WARNING))) {
             // these warnings cannot be handled by errorHandler
             if(0){$errstr=$errfile=$errline=0;}
+            $errno  = $error["type"];
+            $errstr = $error["message"];
+            $errfile = $error["file"];
+            $errline = $error["line"];
             $text = "shutdown warning: $errstr, in file $errfile, line $errline";
             self::writelog(self::LOG_WARNING, $text);
         }
