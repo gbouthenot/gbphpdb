@@ -20,57 +20,57 @@ require_once(_GB_PATH."Util.php");
 
 class Gb_Log
 {
-    const LOG_EMERG=11;
-    const LOG_ALERT=10;
-    const LOG_CRIT=9;
-    const LOG_ERROR=8;           // Ecriture bdd NOK
-    const LOG_EXCEPTION=7;       // Ne devrait pas être atteint
-    const LOG_WARNING=6;
-    const LOG_NOTICE=5;          // Génération d'un identifiant
-    const LOG_INFO=4;            // Ecriture bdd OK
-    const LOG_DEBUG=3;
-    const LOG_DUMP=2;            // comme debug mais verbeux
-    const LOG_TRACE=1;           //
+    const LOG_EMERG = 11;
+    const LOG_ALERT = 10;
+    const LOG_CRIT = 9;
+    const LOG_ERROR = 8;           // Ecriture bdd NOK
+    const LOG_EXCEPTION = 7;       // Ne devrait pas être atteint
+    const LOG_WARNING = 6;
+    const LOG_NOTICE = 5;          // Génération d'un identifiant
+    const LOG_INFO = 4;            // Ecriture bdd OK
+    const LOG_DEBUG = 3;
+    const LOG_DUMP = 2;            // comme debug mais verbeux
+    const LOG_TRACE = 1;           //
 
-    const LOG_NONE=99;
-    const LOG_ALL=0;
+    const LOG_NONE = 99;
+    const LOG_ALL = 0;
 
-    public static $logFilename="";                  // Fichier de log, par défaut error_log/PROJECTNAME.log
-    public static $loglevel_firebug=self::LOG_NONE;
-    public static $loglevel_footer=self::LOG_DEBUG;
-    public static $loglevel_file=self::LOG_WARNING;
-    public static $loglevel_showuser=self::LOG_CRIT;
+    public static $logFilename = ""; // Fichier de log, par défaut error_log/PROJECTNAME.log
+    public static $loglevel_firebug = self::LOG_NONE;
+    public static $loglevel_footer = self::LOG_DEBUG;
+    public static $loglevel_file = self::LOG_WARNING;
+    public static $loglevel_showuser = self::LOG_CRIT;
 
     public static $file_prepend = "";
     public static $file_append  = "";
 
-    protected static $aLevels=array(
-        1=>"tr         ",
-        2=>"dmp        ",
-        3=>"db--       ",
-        4=>"nfo--      ",
-        5=>"note--     ",
-        6=>"warn---    ",
-        7=>"exce----   ",
-        8=>"error---   ",
-        9=>"crit-----  ",
-       10=>"alert----- ",
-       11=>"emerg------"
+    protected static $aLevels = array(
+        1 => "tr         ",
+        2 => "dmp        ",
+        3 => "db--       ",
+        4 => "nfo--      ",
+        5 => "note--     ",
+        6 => "warn---    ",
+        7 => "exce----   ",
+        8 => "error---   ",
+        9 => "crit-----  ",
+       10 => "alert----- ",
+       11 => "emerg------"
     );
 
     /// correspondance pour icone firebug
-    protected static $aFBLevels=array(
-        1=>"TRACE",
-        2=>"DUMP",
-        3=>"LOG",
-        4=>"INFO",
-        5=>"INFO",
-        6=>"WARN",
-        7=>"EXCEPTION",
-        8=>"ERROR",
-        9=>"ERROR",
-       10=>"ERROR",
-       11=>"ERROR"
+    protected static $aFBLevels = array(
+        1 => "TRACE",
+        2 => "DUMP",
+        3 => "LOG",
+        4 => "INFO",
+        5 => "INFO",
+        6 => "WARN",
+        7 => "EXCEPTION",
+        8 => "ERROR",
+        9 => "ERROR",
+       10 => "ERROR",
+       11 => "ERROR"
     );
 
     /**
@@ -79,13 +79,19 @@ class Gb_Log
      * @return boolean|integer
      * @throws Gb_Exception
      */
-    public static function getRevision($mini=null, $throw=true)
+    public static function getRevision($mini = null, $throw = true)
     {
-        $revision='$Revision$';
+        $revision = '$Revision$';
         $revision=(int) trim(substr($revision, strrpos($revision, ":")+2, -1));
-        if ($mini===null) { return $revision; }
-        if ($revision>=$mini) { return true; }
-        if ($throw) { throw new Gb_Exception(__CLASS__." r".$revision."<r".$mini); }
+        if (null === $mini) {
+            return $revision;
+        }
+        if ($revision >= $mini) {
+            return true;
+        }
+        if ($throw) {
+            throw new Gb_Exception(__CLASS__ . " r" . $revision . "<r" . $mini);
+        }
         return false;
     }
 
@@ -107,18 +113,19 @@ class Gb_Log
      */
     public static function getLogFilename()
     {
-        if ( self::$logFilename=="" ) { // met le logFilename sur error_log/{PROJECTNAME}.LOG
-            $logFilename=ini_get("error_log");
-            $d=addslashes(DIRECTORY_SEPARATOR);;
+        if ("" === self::$logFilename) {
+            // met le logFilename sur error_log/{PROJECTNAME}.LOG
+            $logFilename = ini_get("error_log");
+            $d = addslashes(DIRECTORY_SEPARATOR);
             // 1: /var/log/php5 2:php_error.log
-            $matches=null;
+            $matches = null;
             preg_match("@^(.+$d)(.+)\$@", $logFilename, $matches);
             if (isset($matches[1])) {
-                self::$logFilename=$matches[1].Gb_Glue::getProjectName().".log";
+                self::$logFilename = $matches[1].Gb_Glue::getProjectName().".log";
             } else {
                 // pas de répertoire: utilise session_save_path
-                $updir=Gb_Glue::getOldSessionDir();
-                self::$logFilename=$updir.DIRECTORY_SEPARATOR.Gb_Glue::getProjectName().".log";
+                $updir = Gb_Glue::getOldSessionDir();
+                self::$logFilename = $updir.DIRECTORY_SEPARATOR.Gb_Glue::getProjectName().".log";
             }
         }
         return self::$logFilename;
@@ -168,63 +175,72 @@ class Gb_Log
 
 
 
-  /**
-   * Loggue dans un fichier
-   *
-   * @param string $sText Message à ecrire
-   * @param string[optional] $sFName Fichier dans lequel ecrire, sinon self::getLogFilename
-   */
-  public static function log_file($sText, $sFName="")
-  {
-    $REMOTE_USER="";          if (isset($_SERVER["REMOTE_USER"]))              $REMOTE_USER=         $_SERVER["REMOTE_USER"];
-    $REMOTE_ADDR="";          if (isset($_SERVER["REMOTE_ADDR"]))              $REMOTE_ADDR=         $_SERVER["REMOTE_ADDR"];
-    $HTTP_X_FORWARDED_FOR=""; if (isset($_SERVER["HTTP_X_FORWARDED_FOR"])) {
-      if ($HTTP_X_FORWARDED_FOR != $REMOTE_ADDR) {
-        $HTTP_X_FORWARDED_FOR = $_SERVER["HTTP_X_FORWARDED_FOR"];
-      }
-    }
+    /**
+     * Loggue dans un fichier
+     *
+     * @param string $sText Message à ecrire
+     * @param string[optional] $sFName Fichier dans lequel ecrire, sinon self::getLogFilename
+     */
+    public static function log_file($sText, $sFName = "")
+    {
+        $REMOTE_USER = "";
+        $REMOTE_ADDR = "";
+        $HTTP_X_FORWARDED_FOR = "";
 
-    if (!is_string($sText)) {
-      $sText=self::dump($sText);
-    }
-    if (strlen($sFName)==0) {
-      $sFName=self::getLogFilename();
-    }
-    if (strlen($sFName)) {
-      $fd=fopen($sFName, "a");
-      $sLog=date("dm His ");
-
-      if (strlen($REMOTE_ADDR) || strlen($HTTP_X_FORWARDED_FOR)) {
-        $sLog.=$REMOTE_ADDR;
-        if (strlen($HTTP_X_FORWARDED_FOR)) {
-          $sLog.="/".$HTTP_X_FORWARDED_FOR;
+        if (isset($_SERVER["REMOTE_USER"])) {
+            $REMOTE_USER = $_SERVER["REMOTE_USER"];
         }
-        $sLog.=" ";
-      }
+        if (isset($_SERVER["REMOTE_ADDR"])) {
+            $REMOTE_ADDR = $_SERVER["REMOTE_ADDR"];
+        }
+        if (isset($_SERVER["HTTP_X_FORWARDED_FOR"]) && ($_SERVER["HTTP_X_FORWARDED_FOR"] != $REMOTE_ADDR)) {
+            $HTTP_X_FORWARDED_FOR = $_SERVER["HTTP_X_FORWARDED_FOR"];
+        }
 
-      // padding et limite à 44 caractères
-      $sLog=substr(str_pad($sLog, 44),0, 44);
+        if (!is_string($sText)) {
+            $sText = self::dump($sText);
+        }
+        if (0 === strlen($sFName)) {
+            $sFName = self::getLogFilename();
+        }
+        if (strlen($sFName)) {
+            $fd = fopen($sFName, "a");
+            $sLog = date("dm His ");
 
-      if (isset($_SESSION[__CLASS__."_uniqId"])) {
-        $sLog.="uid=".$_SESSION[__CLASS__."_uniqId"]." ";
-      }
-      if (strlen($REMOTE_USER)) {
-        $sLog.="user=".$REMOTE_USER." ";
-      }
-      $sLog.=$sText." ";
+            if (strlen($REMOTE_ADDR) || strlen($HTTP_X_FORWARDED_FOR)) {
+                $sLog .= $REMOTE_ADDR;
+                if (strlen($HTTP_X_FORWARDED_FOR)) {
+                    $sLog .= "/" . $HTTP_X_FORWARDED_FOR;
+                }
+                $sLog .= " ";
+            }
 
-      $vd=debug_backtrace();
-      if (isset($vd[1]))  $vd=$vd[1];
-      else                $vd=$vd[0];
+            // padding et limite à 44 caractères
+            $sLog = substr(str_pad($sLog, 44), 0, 44);
 
-            $sLog.="file:".substr($vd["file"],-30)." line:".$vd["line"]." in ".$vd["function"];
-            $sLog.=self::dump_array($vd["args"], "(%s)");
-            $sLog.="\n";
+            if (isset($_SESSION[__CLASS__."_uniqId"])) {
+                $sLog .= "uid=" . $_SESSION[__CLASS__ . "_uniqId"] . " ";
+            }
+            if (strlen($REMOTE_USER)) {
+                $sLog .= "user=" . $REMOTE_USER . " ";
+            }
+            $sLog .= $sText . " ";
 
-      fwrite($fd, $sLog);
-      fclose ($fd);
-    }//endif (strlen($sFName))
-  }
+            $vd = debug_backtrace();
+            if (isset($vd[1])) {
+                $vd = $vd[1];
+            } else {
+                $vd = $vd[0];
+            }
+
+            $sLog .= "file:" . substr($vd["file"], -30) . " line:" . $vd["line"] . " in " . $vd["function"];
+            $sLog .= self::dump_array($vd["args"], "(%s)");
+            $sLog .= "\n";
+
+            fwrite($fd, $sLog);
+            fclose($fd);
+        }//endif (strlen($sFName))
+    }
 
 
 
@@ -251,20 +267,20 @@ class Gb_Log
      * @param integer[optional] $debugOffset offset backtrace (0 par défaut: met la ligne de l'appel de la fonction)
      * @param boolean $fPrintCall
      */
-    public static function log($level=self::LOG_DEBUG, $text="", $o=null, $debugOffset=0, $fPrintCall=0)
+    public static function log($level = self::LOG_DEBUG, $text = "", $o = null, $debugOffset = 0, $fPrintCall = 0)
     {
         if (version_compare(PHP_VERSION, '5.4.0') >= 0) {
             $vd = debug_backtrace(0, $debugOffset+2);
         } else {
             $vd = debug_backtrace(0);
             // keep only the last 2 levels
-            for ($i = count($vd); $i>($debugOffset+2); $i--) {
+            for ($i = count($vd); $i > ($debugOffset+2); $i--) {
                 array_pop($vd);
             }
         }
 
         // throw away the firsts levels
-        for ($i=0; $i<$debugOffset; $i++) {
+        for ($i=0; $i < $debugOffset; $i++) {
             array_shift($vd);
         }
 
@@ -273,8 +289,7 @@ class Gb_Log
         }
 
         self::writelog($level, $text, $o, $vd, $fPrintCall);
-
-  }
+    }
 
 
 
@@ -288,38 +303,41 @@ class Gb_Log
      * @param array[optional] $aParam paramètres
      * @return unknown
      */
-  public static function __DELETED_log_function($level, $text, $fName, array $aParam=array())
-  {
-    $prevtime=microtime(true);
+    public static function __DELETED_log_function($level, $text, $fName, array $aParam = array())
+    {
+        $prevtime = microtime(true);
 
-// récupère les arguments : NON: ca ne marche pas avec les références !
-//    $aParam=array();
-//    for ($i=1; $i<func_num_args(); $i++)
-//      $aParam[]=func_get_arg($i);
-//    $aParam=func_get_args();
-//    array_shift($aParam);
+    // récupère les arguments : NON: ca ne marche pas avec les références !
+    //    $aParam=array();
+    //    for ($i=1; $i<func_num_args(); $i++)
+    //      $aParam[]=func_get_arg($i);
+    //    $aParam=func_get_args();
+    //    array_shift($aParam);
 
-    $sCallName=null;
-    if (is_callable($fName, false, $sCallName)) // $sCallName reçoit le nom imprimable de la fonction, utile pour les objets
-      $ret=call_user_func_array($fName, $aParam);
-    else
-      throw new Gb_Exception("Fonction inexistante");
+        $sCallName = null;
+        if (is_callable($fName, false, $sCallName)) {
+            // $sCallName reçoit le nom imprimable de la fonction, utile pour les objets
+            $ret = call_user_func_array($fName, $aParam);
+        } else {
+            throw new Gb_Exception("Fonction inexistante");
+        }
 
-    $time=microtime(true)-$prevtime;
-    $sParam=substr(self::dump_array($aParam, "%s"), 0, 50);
-    $sRet=substr(self::dump($ret), 0, 50);
+        $time = microtime(true)-$prevtime;
+        $sParam = substr(self::dump_array($aParam, "%s"), 0, 50);
+        $sRet = substr(self::dump($ret), 0, 50);
 
-    if (!strlen($text))
-      $text="$sCallName()";
-    $text.=" duration:".Gb_Util::roundCeil($time)." s";
+        if (!strlen($text)) {
+            $text = "$sCallName()";
+        }
+        $text .= " duration:" . Gb_Util::roundCeil($time) . " s";
 
-    $vd=debug_backtrace();
-    $vd0=$vd[0];
+        $vd = debug_backtrace();
+        $vd0 = $vd[0];
 
-    self::writelog($level, $text, $vd0["file"], $vd0["line"], $sCallName, $sParam, $sRet);
+        self::writelog($level, $text, $vd0["file"], $vd0["line"], $sCallName, $sParam, $sRet);
 
-    return $ret;
-  }
+        return $ret;
+    }
 
 
 
@@ -332,228 +350,241 @@ class Gb_Log
      * @param array[optional] $backtrace backtrace
      * @param integer[optional] $backtraceDeep
      */
-  public static function writelog($level, $text, $o=null, $backtrace=null, $backtraceDeep=0)
-  {
-    $logFilename=self::getLogFilename();
-    if (!is_string($text)) {
-        $text=self::dump($text);
-    }
-    $texto="";
-    if (isset($o)) {
-        if ($o instanceof Exception) {
-        } elseif (is_string($o)) {
-            $texto=$o;
-        } else {
-            $texto=self::dump($o);
+    public static function writelog($level, $text, $o = null, $backtrace = null, $backtraceDeep = 0)
+    {
+        $logFilename = self::getLogFilename();
+        if (!is_string($text)) {
+            $text = self::dump($text);
         }
-    }
-    $fHasText = false;
-    if (strlen($text)+strlen($texto) > 0) {
-        $fHasText = true;
-    }
-
-    // aContext
-    $aContext = array();
-    for ($i=0; $i<$backtraceDeep; $i++) {
-        // level n is the call file/line
-        // level n+1 (if available) is the name of the function that has the log order called from
-        $fxname = "";
-        if (isset($backtrace[1])) {
-            $fxname = $backtrace[1]["function"];
-            if (isset($backtrace[1]["class"])) {
-                $fxname = $backtrace[1]["class"].$backtrace[1]["type"].$fxname;
+        $texto = "";
+        if (isset($o)) {
+            if ($o instanceof Exception) {
+            } elseif (is_string($o)) {
+                $texto = $o;
+            } else {
+                $texto = self::dump($o);
             }
-            $args = $backtrace[1]["args"];
         }
-        $line = $backtrace[0]["line"];
-        $file = $backtrace[0]["file"];
-        //$file=substr($file,-30);
-
-        $args2 = null;
-        if (null !== $args) {
-            $args2 = self::dump_array($args, "%s");
+        $fHasText = false;
+        if (strlen($text)+strlen($texto) > 0) {
+            $fHasText = true;
         }
 
-        $context = "";
-        if (null !== $file || null !== $fxname) {
-            if (strlen($fxname)) {
-                $context .= "$fxname($args2)";
-            }
-            if (strlen($file)) {
-                if (strlen($context)) {
-                    $context .= " ----- ";
+        // aContext
+        $aContext = array();
+        for ($i=0; $i < $backtraceDeep; $i++) {
+            // level n is the call file/line
+            // level n+1 (if available) is the name of the function that has the log order called from
+            $fxname = "";
+            if (isset($backtrace[1])) {
+                $fxname = $backtrace[1]["function"];
+                if (isset($backtrace[1]["class"])) {
+                    $fxname = $backtrace[1]["class"].$backtrace[1]["type"].$fxname;
                 }
-                $context .=  $file;
-                if (strlen($line)) {
-                    $context .= "::$line";
+                $args = $backtrace[1]["args"];
+            }
+            $line = $backtrace[0]["line"];
+            $file = $backtrace[0]["file"];
+            //$file=substr($file,-30);
+
+            $args2 = null;
+            if (null !== $args) {
+                $args2 = self::dump_array($args, "%s");
+            }
+
+            $context = "";
+            if (null !== $file || null !== $fxname) {
+                if (strlen($fxname)) {
+                    $context .= "$fxname($args2)";
                 }
+                if (strlen($file)) {
+                    if (strlen($context)) {
+                        $context .= " ----- ";
+                    }
+                    $context .=  $file;
+                    if (strlen($line)) {
+                        $context .= "::$line";
+                    }
+                }
+            }
+
+            if (strlen($context)) {
+                $aContext[$i] = $context;
+            }
+
+            // next
+            array_pop($backtrace);
+        }
+
+
+
+        $sLevel = self::$aLevels[$level];
+        $timecode = microtime(true) - Gb_Glue::getStartTime();
+        $timecode = sprintf("%.03f", $timecode);
+
+        $REMOTE_USER = "";
+        $REMOTE_ADDR = "";
+        $HTTP_X_FORWARDED_FOR = "";
+
+        if (isset($_SERVER["REMOTE_USER"])) {
+            $REMOTE_USER = $_SERVER["REMOTE_USER"];
+        }
+        if (isset($_SERVER["REMOTE_ADDR"])) {
+            $REMOTE_ADDR = $_SERVER["REMOTE_ADDR"];
+        }
+        if (isset($_SERVER["HTTP_X_FORWARDED_FOR"]) && ($_SERVER["HTTP_X_FORWARDED_FOR"] != $REMOTE_ADDR)) {
+            $HTTP_X_FORWARDED_FOR = $_SERVER["HTTP_X_FORWARDED_FOR"];
+        }
+
+        $date = date("dm His ");
+
+        if ($level >= self::$loglevel_showuser) {
+            // montre l'erreur
+            echo $text;
+        }
+        if (class_exists("FirePHP", false) && ($level >= self::$loglevel_firebug)) {
+            $firephp = FirePHP::getInstance(true);
+            $fblevel = self::$aFBLevels[$level];
+            // si pas d'object, met un texte nul et l'objet
+            if (null === $o) {
+                $firephp->fb($text, "", $fblevel);
+            } else {
+                $firephp->fb($o, $text, $fblevel);
             }
         }
 
-        if (strlen($context)) {
-            $aContext[$i] = $context;
+        if ($level>=self::$loglevel_file && strlen($logFilename)) {
+            // écrit dans fichier de log
+            $sLog = $date;
+            $sLog .= $REMOTE_ADDR;
+
+            if (strlen($HTTP_X_FORWARDED_FOR)) {
+                $sLog .= "/" . $HTTP_X_FORWARDED_FOR;
+            }
+            $sLog .= " ";
+
+            // padding et limite à 44 caractères
+            $sLog = substr(str_pad($sLog, 44), 0, 44);
+
+            $sLog .= $sLevel . " ";
+
+            $plugins = Gb_Glue::getPlugins("Gb_Log");
+            foreach ($plugins as $plugin) {
+                if (is_callable($plugin[0])) {
+                    $plug = call_user_func_array($plugin[0], $plugin[1]);
+                    if (strlen($plug)) {
+                        $sLog .= $plug . " ";
+                    }
+                }
+            }
+
+            if (strlen(self::$file_prepend)) {
+                $text = self::$file_prepend . $text;
+            }
+            if (strlen(self::$file_append)) {
+                $text = $text . self::$file_append;
+            }
+
+            if (strlen($REMOTE_USER)) {
+                $sLog .= "user={$REMOTE_USER} ";
+            }
+
+            $indentLen = strlen($sLog);
+            if ($fHasText) {
+                if (strlen($text) && strlen($texto)) {
+                    $sLog .= "{$text} {$texto}\n";
+                } else {
+                    $sLog .= "{$text}{$texto}\n";
+                }
+            }
+
+            foreach ($aContext as $i => $context) {
+                if (!(0===$i && !$fHasText)) {
+                    $sLog .= str_repeat(" ", $indentLen);
+                }
+                $sLog .= "[$i] $context\n";
+            }
+
+            $fd = @fopen($logFilename, "a");
+            if ($fd) {
+                fwrite($fd, $sLog);
+                fclose($fd);
+            }
         }
 
-        // next
-        array_pop($backtrace);
-    }
-
-
-
-    $sLevel=self::$aLevels[$level];
-    $timecode=microtime(true)-Gb_Glue::getStartTime();
-    $timecode=sprintf("%.03f", $timecode);
-    $REMOTE_USER="";          if (isset($_SERVER["REMOTE_USER"]))          $REMOTE_USER=         $_SERVER["REMOTE_USER"];
-    $REMOTE_ADDR="";          if (isset($_SERVER["REMOTE_ADDR"]))          $REMOTE_ADDR=         $_SERVER["REMOTE_ADDR"];
-    $HTTP_X_FORWARDED_FOR=""; if (isset($_SERVER["HTTP_X_FORWARDED_FOR"])) $HTTP_X_FORWARDED_FOR=$_SERVER["HTTP_X_FORWARDED_FOR"];
-    $HTTP_X_FORWARDED_FOR=""; if (isset($_SERVER["HTTP_X_FORWARDED_FOR"])) {
-      if ($_SERVER["HTTP_X_FORWARDED_FOR"] != $REMOTE_ADDR) {
-        $HTTP_X_FORWARDED_FOR = $_SERVER["HTTP_X_FORWARDED_FOR"];
-      }
-    }
-
-    $date=date("dm His ");
-
-    if ($level>=self::$loglevel_showuser) {
-        // montre l'erreur
-      echo $text;
-    }
-    if (class_exists("FirePHP", false) && $level>=self::$loglevel_firebug) {
-        $firephp=FirePHP::getInstance(true);
-        $fblevel=self::$aFBLevels[$level];
-        // si pas d'object, met un texte nul et l'objet
-        if ($o===null) {
-            $firephp->fb($text, "", $fblevel);
-        } else {
-            $firephp->fb($o, $text, $fblevel);
+        if ($level >= self::$loglevel_footer) {
+             // écrit dans le footer
+            $sLog = "{$sLevel} t+{$timecode}: ";
+            $indentLen = strlen($sLog);
+            if ($fHasText) {
+                $sLog .= "{$text}{$texto}\n";
+            }
+            foreach ($aContext as $i => $context) {
+                if (!(0==$i && !$fHasText)) {
+                    $sLog .= str_repeat(" ", $indentLen);
+                }
+                $sLog .= "[{$i}] {$context}\n";
+            }
+            Gb_Response::$footer .= $sLog;
         }
+
     }
 
-    if ($level>=self::$loglevel_file && strlen($logFilename)) {
-        // écrit dans fichier de log
-      $sLog=$date;
-      $sLog.=$REMOTE_ADDR;
 
-      if (strlen($HTTP_X_FORWARDED_FOR))          $sLog.="/".$HTTP_X_FORWARDED_FOR;
-      $sLog.=" ";
 
-      // padding et limite à 44 caractères
-      $sLog=substr(str_pad($sLog, 44),0, 44);
-
-      $sLog.=$sLevel." ";
-
-      $plugins=Gb_Glue::getPlugins("Gb_Log");
-      foreach ($plugins as $plugin) {
-          if (is_callable($plugin[0])) {
-              $plug = call_user_func_array($plugin[0], $plugin[1]);
-              if (strlen($plug)) {
-                  $sLog .= $plug . " ";
-              }
-          }
-      }
-
-      if (strlen(self::$file_prepend)) {
-          $text = self::$file_prepend . $text;
-      }
-      if (strlen(self::$file_append)) {
-          $text = $text . self::$file_append;
-      }
-
-      if (strlen($REMOTE_USER))
-        $sLog.="user=".$REMOTE_USER." ";
-
-      $indentLen = strlen($sLog);
-      if ($fHasText) {
-          if (strlen($text) && strlen($texto)) {
-              $sLog .= $text." ".$texto."\n";
-          } else {
-              $sLog .= $text.$texto."\n";
-          }
-      }
-
-      foreach ($aContext as $i=>$context) {
-          if (!(0==$i && !$fHasText)) {
-              $sLog .= str_repeat(" ", $indentLen);
-          }
-          $sLog .= "[$i] $context\n";
-      }
-
-      $fd = @fopen($logFilename, "a");
-      if ($fd) {
-        fwrite($fd, $sLog);
-        fclose ($fd);
-      }
+    /**
+     * Renvoie une description sur une ligne d'une variable (comme print_r, mais sur une ligne)
+     * préférer dump
+     *
+     * @param mixed $var Variable à dumper
+     * @pram string[optional] $sFormat mettre "%s" pour n'avoir que le contenu du array. Par défaut, c'est "array(%s)".
+     * @return string
+     */
+    public static function dump_array($var, $sFormat = "array(%s)")
+    {
+        if (null === $var) {
+            return "null";
+        }
+        $sLog = "";
+        $curnum = 0;
+        $fShowKey = false;
+        foreach ($var as $num => $arg) {
+            if ($curnum) {
+                $sLog .= ", ";
+            }
+            $pr = "";
+            if (is_array($arg)) {
+                $pr = self::dump_array($arg);
+            } else {
+                $pr = print_r($arg, true);
+                $pr = preg_replace("/^ +/m", "", $pr);        // enlève les espaces en début de ligne
+                $pr = preg_replace("/,\n\\)/m", ")", $pr);    // remplace les ,) par )
+                $pr = preg_replace("/,$/m", ", ", $pr);       // remplace "," par ", " en fin de ligne
+                $pr = str_replace("\n", "", $pr);             // met tout sur une ligne
+                $pr = str_replace(" => ", "=>", $pr);         // enlève les espaces avant et après "=>"
+                $pr = str_replace("array (", "array( ", $pr); // formate array (
+            }
+            if ($fShowKey || ($curnum !== $num)) {
+                $fShowKey = true;
+                $pr = "$num=>$pr";
+            }
+            $sLog .= $pr;
+            $curnum++;
+        }
+        return sprintf($sFormat, $sLog);
     }
 
-    if ($level>=self::$loglevel_footer) {
-         // écrit dans le footer
-      $sLog="$sLevel t+$timecode: ";
-      $indentLen = strlen($sLog);
-      if ($fHasText) {
-          $sLog.=$text.$texto."\n";
-      }
-      foreach ($aContext as $i=>$context) {
-          if (!(0==$i && !$fHasText)) {
-              $sLog .= str_repeat(" ", $indentLen);
-          }
-          $sLog .= "[$i] $context\n";
-      }
-      Gb_Response::$footer.=$sLog;
-    }
-
-  }
 
 
-
-  /**
-   * Renvoie une description sur une ligne d'une variable (comme print_r, mais sur une ligne)
-   * préférer dump
-   *
-   * @param mixed $var Variable à dumper
-   * @pram string[optional] $sFormat mettre "%s" pour n'avoir que le contenu du array. Par défaut, c'est "array(%s)".
-   * @return string
-   */
-  public static function dump_array($var, $sFormat="array(%s)")
-  {
-      if (null === $var) { return "null"; }
-    $sLog="";
-    $curnum=0;
-    $fShowKey=false;
-    foreach ($var as $num=>$arg)
-    { if ($curnum)      $sLog.=", ";
-      $pr="";
-      if (is_array($arg))
-        $pr=self::dump_array($arg);
-      else
-      {
-        $pr=print_r($arg, true);
-        $pr=preg_replace("/^ +/m", "", $pr);                // enlève les espaces en début de ligne
-        $pr=preg_replace("/,\n\\)/m", ")", $pr);            // remplace les ,) par )
-        $pr=preg_replace("/,$/m", ", ", $pr);               // remplace "," par ", " en fin de ligne
-        $pr=str_replace("\n", "", $pr);                     // met tout sur une ligne
-        $pr=str_replace(" => ", "=>", $pr);                 // enlève les espaces avant et après "=>"
-        $pr=str_replace("array (", "array( ", $pr);         // formate array (
-      }
-      if ($fShowKey || $curnum!==$num)
-      {
-        $fShowKey=true;
-        $pr="$num=>$pr";
-      }
-      $sLog.=$pr;
-      $curnum++;
-    }
-    return sprintf($sFormat, $sLog);
-  }
-
-
-
-    public static function errorHandler($errno, $errstr, $errfile, $errline) {
+    public static function errorHandler($errno, $errstr, $errfile, $errline)
+    {
         if (0 === error_reporting()) {
-          // @ error-control operator.
-          // http://php.net/manual/en/language.operators.errorcontrol.php
-          return;
+            // @ error-control operator.
+            // http://php.net/manual/en/language.operators.errorcontrol.php
+            return;
         }
-        if (in_array($errno, array(E_WARNING, E_NOTICE, E_USER_WARNING, E_USER_NOTICE, E_USER_DEPRECATED, E_DEPRECATED))) {
+        $aHandled = array(E_WARNING, E_NOTICE, E_USER_WARNING, E_USER_NOTICE, E_USER_DEPRECATED, E_DEPRECATED);
+        if (in_array($errno, $aHandled)) {
             // is only a warning
             $text = "warning: $errstr";
             $text .= ", in file $errfile, line $errline";
@@ -572,21 +603,21 @@ class Gb_Log
 
 
 
-    public static function shutdownFunction() {
+    public static function shutdownFunction()
+    {
         $error = error_get_last();
-        if (null !== $error && in_array($error['type'], array(E_CORE_WARNING, E_COMPILE_WARNING))) {
+        $aHandled = array(E_CORE_WARNING, E_COMPILE_WARNING);
+        if (null !== $error && in_array($error['type'], $aHandled)) {
             // these warnings cannot be handled by errorHandler
-            if(0){$errstr=$errfile=$errline=0;}
-            $errno  = $error["type"];
             $errstr = $error["message"];
             $errfile = $error["file"];
             $errline = $error["line"];
             $text = "shutdown warning: $errstr, in file $errfile, line $errline";
             self::writelog(self::LOG_WARNING, $text);
         }
-        if (null !== $error && in_array($error['type'], array(E_ERROR, E_PARSE, E_CORE_ERROR, E_COMPILE_ERROR))) {
+        $aHandled = array(E_ERROR, E_PARSE, E_CORE_ERROR, E_COMPILE_ERROR);
+        if (null !== $error && in_array($error['type'], $aHandled)) {
             // these errors cannot be handled by errorHandler
-            $errno  = $error["type"];
             $errstr = $error["message"];
             $errfile = $error["file"];
             $errline = $error["line"];
@@ -600,7 +631,8 @@ class Gb_Log
 
 
 
-    public static function exceptionHandler(Exception $e) {
+    public static function exceptionHandler(Exception $e)
+    {
         if (!headers_sent()) {
             header("HTTP/1.0 500 Application Exception");
         }
@@ -629,17 +661,16 @@ class Gb_Log
         } elseif (method_exists($var, "__toString")) {
             $pr = $var->__toString();
         } else {
-            $pr=print_r($var, true);
-            $pr=preg_replace("/^ +/m", "", $pr);                // enlève les espaces en début de ligne
-            $pr=preg_replace("/,\n\\)/m", ")", $pr);            // remplace les ,) par )
-            $pr=preg_replace("/,$/m", ", ", $pr);               // remplace "," par ", " en fin de ligne
-            $pr=str_replace("\n", "", $pr);                     // met tout sur une ligne
-            $pr=str_replace(" => ", "=>", $pr);                 // enlève les espaces avant et après "=>"
-            $pr=str_replace("array (", "array( ", $pr);         // formate array (
+            $pr = print_r($var, true);
+            $pr = preg_replace("/^ +/m", "", $pr);             // enlève les espaces en début de ligne
+            $pr = preg_replace("/,\n\\)/m", ")", $pr);         // remplace les ,) par )
+            $pr = preg_replace("/,$/m", ", ", $pr);            // remplace "," par ", " en fin de ligne
+            $pr = str_replace("\n", "", $pr);                  // met tout sur une ligne
+            $pr = str_replace(" => ", "=>", $pr);              // enlève les espaces avant et après "=>"
+            $pr = str_replace("array (", "array( ", $pr);      // formate array (
         }
         return $pr;
     }
-
 }
 ?>
 <?php
