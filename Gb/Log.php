@@ -548,6 +548,11 @@ class Gb_Log
 
 
     public static function errorHandler($errno, $errstr, $errfile, $errline) {
+        if (0 === error_reporting()) {
+          // @ error-control operator.
+          // http://php.net/manual/en/language.operators.errorcontrol.php
+          return;
+        }
         if (in_array($errno, array(E_WARNING, E_NOTICE, E_USER_WARNING, E_USER_NOTICE, E_USER_DEPRECATED, E_DEPRECATED))) {
             // is only a warning
             $text = "warning: $errstr";
