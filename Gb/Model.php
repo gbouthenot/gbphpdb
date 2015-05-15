@@ -37,6 +37,13 @@ class Model implements \IteratorAggregate, \ArrayAccess {
     protected static $_isFullyLoaded = false;
 
     /**
+     * Get the adapter
+     * @return \Gb_Db $db
+     */
+    public static function getAdapter() {
+        return self::$_db;
+    }
+    /**
      * Set the default adapter
      * @param \Gb_Db $db
      */
