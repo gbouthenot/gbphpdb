@@ -55,7 +55,8 @@ class Gb_Log
         8 => "error---   ",
         9 => "crit-----  ",
        10 => "alert----- ",
-       11 => "emerg------"
+       11 => "emerg------",
+       99 => "MAX LVL 99-"
     );
 
     /// correspondance pour icone firebug
@@ -416,11 +417,18 @@ class Gb_Log
             array_pop($backtrace);
         }
 
-
-
-        $sLevel = self::$aLevels[$level];
-        $timecode = microtime(true) - Gb_Glue::getStartTime();
-        $timecode = sprintf("%.03f", $timecode);
+        if (isset(self::$aLevels[$level])) {
+            $sLevel = self::$aLevels[$level];
+        } else {
+            // format a string with a fixed length and the level left-padded
+            $sLevel = str_pad($level, self::$aLevels[99], "-");
+        }
+        $startTime = Gb_Glue::getStartTime();
+        $timecode = null;
+        if (0 !== $startTime) {
+            $timecode = microtime(true) - $startTime;
+            $timecode = sprintf("%.03f", $timecode);
+        }
 
         $REMOTE_USER = "";
         $REMOTE_ADDR = "";
@@ -514,7 +522,10 @@ class Gb_Log
 
         if ($level >= self::$loglevel_footer) {
              // écrit dans le footer
-            $sLog = "{$sLevel} t+{$timecode}: ";
+            $sLog = "{$sLevel} ";
+            if (null !== $timecode) {
+                $sLog .= "t+{$timecode}: ";
+            }
             $indentLen = strlen($sLog);
             if ($fHasText) {
                 $sLog .= "{$text}{$texto}\n";
