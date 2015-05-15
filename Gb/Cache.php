@@ -31,7 +31,7 @@ Class Gb_Cache
      * crée le répertoire si besoin
      *
      * @return string cacheDir
-   * @throws Gb_Exception
+     * @throws Gb_Exception
      */
     public static function getCacheDir()
     {
@@ -48,6 +48,22 @@ Class Gb_Cache
             self::$cacheDir=$updir3;
         }
         return self::$cacheDir;
+    }
+
+    /**
+     * Set the cache directory
+     * @param $dir string
+     * @throws Gb_Exception
+     */
+    public static function setCacheDir($dir)
+    {
+        if ( (!is_dir($dir) || !is_writable($dir)) && is_dir($dir) && is_writable($dir) ) {
+            @mkdir($up, 0700);
+        }
+        if ( !is_dir($dir) || !is_writable($dir) ) {
+            throw new Gb_Exception("Impossible de créer le répertoire $dir pour stocker le cache !");
+        }
+        self::$cacheDir = $dir;
     }
 
     public static function get_nbTotal()
