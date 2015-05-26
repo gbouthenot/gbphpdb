@@ -13,9 +13,9 @@ if (!defined("_GB_PATH")) {
     throw new Exception("gbphpdb roots mismatch");
 }
 
-require_once(_GB_PATH."Exception.php");
-require_once(_GB_PATH."Glue.php");
-require_once(_GB_PATH."Util.php");
+require_once _GB_PATH . "Exception.php";
+require_once _GB_PATH . "Glue.php";
+require_once _GB_PATH . "Util.php";
 
 
 class Gb_Log
@@ -162,7 +162,8 @@ class Gb_Log
 
 
     protected static $installed = false;
-    public static function installErrorHandlers() {
+    public static function installErrorHandlers()
+    {
         if (false === self::$installed) {
             set_error_handler(array(__CLASS__, "errorHandler"));
             set_exception_handler(array(__CLASS__, "exceptionhandler"));
@@ -271,7 +272,7 @@ class Gb_Log
     public static function log($level = self::LOG_DEBUG, $text = "", $o = null, $debugOffset = 0, $fPrintCall = 0)
     {
         if (version_compare(PHP_VERSION, '5.4.0') >= 0) {
-            $vd = debug_backtrace(0, $debugOffset+2);
+            $vd = debug_backtrace(0, $debugOffset + 2);
         } else {
             $vd = debug_backtrace(0);
             // keep only the last 2 levels
@@ -281,7 +282,7 @@ class Gb_Log
         }
 
         // throw away the firsts levels
-        for ($i=0; $i < $debugOffset; $i++) {
+        for ($i = 0; $i < $debugOffset; $i++) {
             array_shift($vd);
         }
 
@@ -373,19 +374,19 @@ class Gb_Log
 
         // aContext
         $aContext = array();
-        for ($i=0; $i < $backtraceDeep; $i++) {
+        for ($i = 0; $i < $backtraceDeep; $i++) {
             // level n is the call file/line
             // level n+1 (if available) is the name of the function that has the log order called from
             $fxname = "";
-            if (isset($backtrace[1])) {
-                $fxname = $backtrace[1]["function"];
-                if (isset($backtrace[1]["class"])) {
-                    $fxname = $backtrace[1]["class"].$backtrace[1]["type"].$fxname;
+            if (isset($backtrace[$i + 1])) {
+                $fxname = $backtrace[$i + 1]["function"];
+                if (isset($backtrace[$i + 1]["class"])) {
+                    $fxname = $backtrace[$i + 1]["class"].$backtrace[$i + 1]["type"].$fxname;
                 }
-                $args = $backtrace[1]["args"];
+                $args = $backtrace[$i + 1]["args"];
             }
-            $line = $backtrace[0]["line"];
-            $file = $backtrace[0]["file"];
+            $line = (isset($backtrace[$i])) ? ($backtrace[$i]["line"]) : "";
+            $file = (isset($backtrace[$i])) ? ($backtrace[$i]["file"]) : "";
             //$file=substr($file,-30);
 
             $args2 = null;
@@ -410,11 +411,8 @@ class Gb_Log
             }
 
             if (strlen($context)) {
-                $aContext[$i] = $context;
+                $aContext[] = $context;
             }
-
-            // next
-            array_pop($backtrace);
         }
 
         if (isset(self::$aLevels[$level])) {
@@ -507,7 +505,7 @@ class Gb_Log
             }
 
             foreach ($aContext as $i => $context) {
-                if (!(0===$i && !$fHasText)) {
+                if (!((0 === $i) && !$fHasText)) {
                     $sLog .= str_repeat(" ", $indentLen);
                 }
                 $sLog .= "[$i] $context\n";
@@ -534,8 +532,9 @@ class Gb_Log
                 if (!(0==$i && !$fHasText)) {
                     $sLog .= str_repeat(" ", $indentLen);
                 }
-                $sLog .= "[{$i}] {$context}\n";
+                $sLog .= "[$i] {$context}\n";
             }
+            require_once _GB_PATH . "Response.php";
             Gb_Response::$footer .= $sLog;
         }
 
