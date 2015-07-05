@@ -55,7 +55,7 @@ class Model implements \IteratorAggregate, \ArrayAccess {
      * Get one row, by primary key
      * @param \Gb_Db[optional] $db
      * @param $id
-     * @throws \Gb_Exception
+     * @throws \Gb_Exception if not found
      * @return self
      */
     public static function getOne($db__id) {
@@ -126,7 +126,7 @@ class Model implements \IteratorAggregate, \ArrayAccess {
      * @param \Gb_Db[optional] $db
      * @return \Gb\Model\Rows
      */
-    public static function getAll() {
+    public static function getAll($db = null) {
         $args = func_get_args();
         $db = array_pop($args); if (!$db) {$db = self::$_db; };
 
@@ -362,14 +362,12 @@ class Model implements \IteratorAggregate, \ArrayAccess {
      * @param array|stdClass[optional] $data
      * @return self
      */
-    public static function create($db__data=null) {
+    public static function create($db__data = null) {
         $args = func_get_args();
-        $data = array_pop($args);
-        $db = array_pop($args);
-        if (is_array($db) || is_a($db, "stdClass")) {
-            $data = $db;
-            $db = null;
+        if (isset($args[0]) && $args[0] instanceof \Gb_Db) {
+            $db = array_shift($args);
         }
+        $data = array_shift($args);
 
         if ($db   === null) { $db = self::$_db; }
         if ($data === null) { $data = array(); }
@@ -389,17 +387,18 @@ class Model implements \IteratorAggregate, \ArrayAccess {
 
 
     /**
-     * Cast columns to integer
+     * Cast rows of columns to integer
      * @param array[array] $data
      * @return array[array]
      */
     protected static function castInteger_all($data) {
-        $integerCols = self::_getIntegerCols();
-
         foreach (array_keys($data) as $rowid) {
+            $integerCols = self::_getIntegerCols($data[$rowid]);
             foreach ($integerCols as $col) {
                 if (isset($data[$rowid][$col])) { // is set, and is not null
-                    $data[$rowid][$col] = (int) $data[$rowid][$col];
+                    if ($data[$rowid][$col] !== null) {
+                        $data[$rowid][$col] = (int) $data[$rowid][$col];
+                    }
                 }
             }
         }
@@ -427,16 +426,23 @@ class Model implements \IteratorAggregate, \ArrayAccess {
 
     /**
      * return array of column to be casted to int
+     * @param array $data
      * @return array
      */
-    protected static function _getIntegerCols() {
+    protected static function _getIntegerCols($data) {
         if (isset(static::$_integerCols)) {
             $integerCols = static::$_integerCols;
         } else {
             $integerCols = array();
         }
         $integerCols[] = static::$_pk; // always push id
+        foreach (array_keys($data) as $col) {
+            if ("id_" === substr($col, 0, 3) || "_id" === substr($col, -3)) {
+                $integerCols[] = $col;
+            }
+        }
 
+        $integerCols = array_unique($integerCols);
         return $integerCols;
     }
 
