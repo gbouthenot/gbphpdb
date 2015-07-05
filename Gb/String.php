@@ -125,7 +125,7 @@ class Gb_String
      */
     public static function mystrtoupper($s)
     {
-        return strtoupper(self::removeAccents($s));
+        return strtoupper(self::removeLatin2(self::removeAccents($s)));
     }
 
     /**
