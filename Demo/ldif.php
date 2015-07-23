@@ -11,7 +11,7 @@ Gb_Util::startup();
 
 function main()
 {
-    $db=new Gb_Db(array("type"=>"Pdo_Mysql",    "host"=>"localhost" , "name"=>"gestion_e",      "user"=>"gestion_e", "pass"=>"***REMOVED***"));
+    $db=new Gb_Db(array("type"=>"Pdo_Mysql",    "host"=>"localhost" , "name"=>"gestion_e",      "user"=>"gestion_e", "pass"=>"********"));
     $users=$db->retrieve_all("SELECT usa_login, usa_passwordmd5std FROM tusager WHERE usa_statut='ADM'", array(), "usa_login", "usa_passwordmd5std");
 
     foreach ($users as $login=>$password) {
