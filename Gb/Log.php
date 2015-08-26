@@ -513,7 +513,8 @@ class Gb_Log
 
             $fd = @fopen($logFilename, "a");
             if ($fd) {
-                fwrite($fd, $sLog);
+                $noTrailingSpaces = preg_replace("/\s*\$/", "", $sLog);
+                fwrite($fd, $noTrailingSpaces . "\n");
                 fclose($fd);
             }
         }
