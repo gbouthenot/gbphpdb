@@ -950,7 +950,9 @@ EOF;
                     //enlève les quote autour de $val
                     if     (substr($val,0,1)=="'" && substr($val,-1)=="'") { $val=substr($val, 1, -1); }
                     elseif (substr($val,0,1)=='"' && substr($val,-1)=='"') { $val=substr($val, 1, -1); }
-                    elseif (!is_int($val)) { throw new Gb_Exception("Pas de guillemets trouvés dans la clause where !");  }
+                    elseif (strval($val) !== strval(intval($val))) {
+                        throw new Gb_Exception("Pas de guillemets trouvés dans la clause where !");
+                    }
                     $data[$col]=$val;
                 }
                 $data2=array_merge($data, $moreDataInsert);
