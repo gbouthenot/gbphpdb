@@ -642,7 +642,7 @@ class Gb_Log
 
 
 
-    public static function exceptionHandler(Exception $e)
+    public static function exceptionHandler($e)
     {
         if (!headers_sent()) {
             header("HTTP/1.0 500 Application Exception");

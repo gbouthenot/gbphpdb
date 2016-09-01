@@ -316,7 +316,7 @@ Class Gb_Util
             $fnameOut.="-".str_replace(":", "", Gb_String::date_iso()).".csv";
         }
 
-        $len=mb_strlen($data, 'latin1');
+        $len=strlen($data);
         ob_end_clean();
         header("Content-Type: application/octet-stream");
         header("Content-Length: $len");
