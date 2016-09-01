@@ -137,8 +137,20 @@ class Gb_Db_Migration
                 $this->migrateVersion($version, "down", array("deprecated"=>true));
             } elseif (!in_array($version, $aMigratedVersions)) {
                 $this->migrateVersion($version, "up");
+            } elseif (!in_array($version, $aImplementedVersions)) {
+                $unknownVersions[] = $version;
             }
         }
+
+        /*
+        if (!empty($unknownVersions)) {
+            $first = $unknownVersions[0];
+            $msg  = "Unknown migrations found in database: " . implode(",", $unknownVersions);
+            $msg .= ". Restore application/db/Migration.php containing method 'migrate_to_version_$first'";
+            $msg .= " and rename this method to 'migrate_to_deprecated_version_$first'.";
+            throw new Gb_Exception($msg);
+        }
+        */
     }
 
 
