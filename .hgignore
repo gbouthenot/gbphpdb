@@ -4,3 +4,5 @@ Demo/readline/favorites.ini
 .buildpath/
 .project/
 .settings/
+composer.phar
+vendor/
