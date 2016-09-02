@@ -259,13 +259,15 @@ class Rows implements \IteratorAggregate, \Countable, \ArrayAccess {
                 $relfk    = $relMeta["foreign_key"];
                 // for each line, get the foreign key
                 $relfks   = array_map(function($id) use ($relfk, $model) {
-                    if (!isset($model::$_buffer[$id][$relfk])) {
-                        throw new \Gb_Exception("column $relfk does not exist in $model");
-                    }
-                    return $model::$_buffer[$id][$relfk];
+                    // no exception, foreigh key may be null for left joins
+                    //if (!isset($model::$_buffer[$id][$relfk])) {
+                    //    throw new \Gb_Exception("column $relfk does not exist in $model");
+                    //}
+                    return (isset($model::$_buffer[$id][$relfk])) ? ($model::$_buffer[$id][$relfk]) : null;
                 }, $this->o);
                 $relfks   = array_unique($relfks);
                 $relfks   = array_filter($relfks, "strlen"); // remove null, false, empty string
+                $relfks   = array_values($relfks);
                 $relclass::_getSome($this->db, $relfks);
                 $this->rel[$relname] = $relfks;
             }
@@ -299,7 +301,10 @@ class Rows implements \IteratorAggregate, \Countable, \ArrayAccess {
         } elseif ('belongs_to_json' === $reltype) {
             if ($params["fCacheMiss"] || !isset($this->rel[$relname])) {
                 $relfk    = $relMeta["foreign_key"];
-                $relfks   = array_map(function($id)use($relfk, $model){return $model::$_buffer[$id][$relfk]; }, $this->o);
+                $relfks   = array_map(function($id) use ($relfk, $model) {
+                    return (isset($model::$_buffer[$id][$relfk])) ? ($model::$_buffer[$id][$relfk]) : array();
+                },
+                $this->o);
                 $relfks2  = array();
                 array_walk($relfks, function($in) use (&$relfks2) {
                     $relfks2 = array_merge($relfks2, json_decode($in));
@@ -353,8 +358,12 @@ class Rows implements \IteratorAggregate, \Countable, \ArrayAccess {
             $reltype  = $relMeta["reltype"];
             $relfk = $relMeta["foreign_key"];
             if ('belongs_to' === $reltype) {
-                $pk = $model::$_buffer[$id][$relfk];
-                $aRels[$relname] = $relclass::_getOne($this->db, $pk)->asArray();
+                if (isset($_buffer[$id][$relfk])) {
+                    $pk = $model::$_buffer[$id][$relfk];
+                    $aRels[$relname] = $relclass::_getOne($this->db, $pk)->asArray();
+                } else {
+                    $aRels[$relname] = array();
+                }
             } elseif ('has_many' === $reltype) {
                 $aRels[$relname] = array_filter($reldata, function($pk) use ($relclass, $relfk, $id) {
                     // keep only the matching lines
