@@ -154,7 +154,6 @@ class Gb_String
         // htmlentities it
         $s = htmlentities($s, ENT_NOQUOTES, "UTF-8");
 
-
         $s = preg_replace('#&([A-za-z])(?:acute|cedil|circ|grave|orn|ring|slash|th|tilde|uml);#', '\1', $s);
         $s = str_replace("&euro;", "EUR", $s);
         $s = preg_replace('#&([A-za-z]{2})(?:lig);#', '\1', $s); // pour les ligatures e.g. '&oelig;'
@@ -177,8 +176,10 @@ class Gb_String
      */
     public static function removeLatin2($str)
     {
-        $from = "óÓąĄćĆęĘłŁńŃśŚźŹżŻ";
-        $to   = "oOaAcCeElLnNsSzZzZ";
+        // https://en.wikipedia.org/wiki/ISO/IEC_8859-2
+        $from = "óÓąĄćĆęĘłŁńŃśŚźŹżŻĄ˘ŁĽŚŤŹŽŻą˛łľśˇťź˝žżŔĂĹĆČĘĚÍÎĎĐŃŇŐŘŮŰÝŢŕăĺćčęěďđńňőřůűýţ˙";
+        $to   = "oOaAcCeElLnNsSzZzZA^LLSTZZZa,lls^tz~zzRALCCEEIIDDNNORUUYTralcceeddnnoruuyt°";
+
         return self::mb_strtr($str, $from, $to);
     }
 
