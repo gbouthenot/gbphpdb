@@ -170,6 +170,22 @@ class Gb_String
 
 
     /**
+     * Return a new string made of unique chars
+     * @param string $str
+     * @return string
+     */
+    public static function uniqueChars($str) {
+        $unique = "";
+        for ($i = 0, $size = mb_strlen($str); $i < $size; $i++) {
+            $char = mb_substr($str, $i, 1);
+            if (mb_strpos($unique, $char) === false) {
+                $unique .= $char;
+            }
+        }
+        return $unique;
+    }
+
+    /**
      * substitute polish character
      * @param string $str to translate
      * @return string
@@ -179,6 +195,9 @@ class Gb_String
         // https://en.wikipedia.org/wiki/ISO/IEC_8859-2
         $from = "óÓąĄćĆęĘłŁńŃśŚźŹżŻĄ˘ŁĽŚŤŹŽŻą˛łľśˇťź˝žżŔĂĹĆČĘĚÍÎĎĐŃŇŐŘŮŰÝŢŕăĺćčęěďđńňőřůűýţ˙";
         $to   = "oOaAcCeElLnNsSzZzZA^LLSTZZZa,lls^tz~zzRALCCEEIIDDNNORUUYTralcceeddnnoruuyt°";
+
+        // keep only unique chars:
+        // die("unique: " . self::uniqueChars($from));
 
         return self::mb_strtr($str, $from, $to);
     }
