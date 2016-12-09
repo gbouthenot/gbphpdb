@@ -193,8 +193,10 @@ class Gb_String
     public static function removeLatin2($str)
     {
         // https://en.wikipedia.org/wiki/ISO/IEC_8859-2
-        $from = "óÓąĄćĆęĘłŁńŃśŚźŹżŻĄ˘ŁĽŚŤŹŽŻą˛łľśˇťź˝žżŔĂĹĆČĘĚÍÎĎĐŃŇŐŘŮŰÝŢŕăĺćčęěďđńňőřůűýţ˙";
-        $to   = "oOaAcCeElLnNsSzZzZA^LLSTZZZa,lls^tz~zzRALCCEEIIDDNNORUUYTralcceeddnnoruuyt°";
+        $from  = "ţ";
+        $to    = "t";
+        $from .= "óÓąĄćĆęĘłŁńŃśŚźŹżŻ˘ĽŤŽ˛ľˇť˝žŔĂĹČĚÍÎĎĐŇŐŘŮŰÝŢŕăĺčěďđňőřůűý˙";
+        $to   .= "oOaAcCeElLnNsSzZzZ^LTZ,l^t~zRALCEIIDDNORUUYTralceddnoruuy°";
 
         // keep only unique chars:
         // die("unique: " . self::uniqueChars($from));
