@@ -192,16 +192,44 @@ class Gb_String
      */
     public static function removeLatin2($str)
     {
-        // https://en.wikipedia.org/wiki/ISO/IEC_8859-2
-        $from  = "ţ";
-        $to    = "t";
-        $from .= "óÓąĄćĆęĘłŁńŃśŚźŹżŻ˘ĽŤŽ˛ľˇť˝žŔĂĹČĚÍÎĎĐŇŐŘŮŰÝŢŕăĺčěďđňőřůűý˙";
-        $to   .= "oOaAcCeElLnNsSzZzZ^LTZ,l^t~zRALCEIIDDNORUUYTralceddnoruuy°";
+        $from = $to = "";
+
+        // Latin Extended-A unicode subset: https://www.utf8icons.com/subsets/latin-extended-a
+        // $(".character-links").text().replace(/\ /g,"")
+        $from .= "ĀāĂăĄąĆćĈĉĊċČčĎďĐđĒēĔĕĖėĘęĚěĜĝĞğĠġĢģĤĥĦħĨĩĪīĬĭĮįİıĴĵĶķĸĹĺĻļĽľĿŀŁł";
+        $to   .= "AaAaAaCcCcCcCcDdDdEeEeEeEeEeGgGgGgGgHhHhIiIiIiIiIiJjKkkLlLlLlLlLl";
+        $from .= "ŃńŅņŇňŉŊŋŌōŎŏŐőŔŕŖŗŘřŚśŜŝŞşŠšŢţŤťŦŧŨũŪūŬŭŮůŰűŲųŴŵŶŷŸŹźŻżŽžſ";
+        $to   .= "NnNnNnnNnOoOoOoRrRrRrSsSsSsSsTtTtTtUuUuUuUuUuUuWwYyYZzZzZzf";
+
+        // Latin Extended-B unicode subset: https://www.utf8icons.com/subsets/latin-extended-b
+        $from .= "ƀƁƂƃƄƅƆƇƈƉƊƋƌƍƎƏƐƑƒƓƔƕƖƗƘƙƚƛƜƝƞƟƠơƢƣƤƥƦƧƨƩƪƫƬƭƮƯưƱƲƳƴƵƶƷƸƹƺƻƼƽƾƿǀǃ";
+        $to   .= "bBbbbbCCcDDddqEEEFFGYhllKKlYWNnOOoOoPBRSsEltTfTUuOOYyZz33zz255?P|!";
+        $from .= "ǍǎǏǐǑǒǓǔǕǖǗǘǙǚǛǜǝǞǟǠǡǤǥǦǧǨǩǪǫǬǭǮǯǰǴǵǷǸǹ";
+        $to   .= "AaIiOoUuUuUuUuUueAaAaGgGgKkQqQq33jGgPNn";
+        $from .= "ǺǻǾǿȀȁȂȃȄȅȆȇȈȉȊȋȌȍȎȏȐȑȒȓȔȕȖȗȘșȚțȜȝȞȟȠȡȢȣȤȥȦȧȨȩȪȫȬȭȮȯȰȱȲȳȴȵȶȷ";
+        $to   .= "Aa00AaAaEeEeliliOoOoRrRrUuUuSsTt33Hhnd88ZzAaEeOoOoOoOoYylntj";
+        $from .= "ȺȻȼȽȾȿɀɁɂɃɄɅɆɇɈɉɊɋɌɍɎɏ";
+        $to   .= "ACcLTsz??BUAEeJjQqRrYy";
+
+        // Autres dans https://en.wikipedia.org/wiki/ISO/IEC_8859-2
+        $from .= "óÓ˘˛ˇÍÎÝý˙";
+        $to   .= "oO^,^IIYy`";
+        $from .= '˝';
+        $to   .= '"';
 
         // keep only unique chars:
-        // die("unique: " . self::uniqueChars($from));
+        //die("unique: " . self::uniqueChars($from));
 
-        return self::mb_strtr($str, $from, $to);
+        $str = self::mb_strtr($str, $from, $to);
+
+        $multi1 = array("Ĳ", "ĳ", "Œ", "œ", "ǁ", "ǂ", "Ǉ", "ǈ", "ǉ", "Ǌ", "ǋ", "ǌ",
+            "Ǣ", "ǣ", "Ƕ", "Ǆ", "ǅ", "ǆ", "Ǳ", "ǲ", "ǳ", "Ǽ", "ǽ", "ȸ", "ȹ");
+        $multi2 = array("IJ", "ij", "OE", "oe","||", "|=", "LJ", "Lj", "lj", "NJ", "Nj", "nj",
+            "AE", "ae", "Hu", "DZ", "Dz", "dz", "DZ", "Dz", "dz", "AE", "ae", "db", "qp");
+
+        $str = str_replace($multi1, $multi2, $str);
+
+        return $str;
     }
 
     /**
@@ -444,9 +472,10 @@ class Gb_String
      * @param integer[optional] maxColLen default:40, 0 for no limit
      * @param string[optional] string to use for padding (default " ", set to "" for no padding)
      * @param string[optional]  $arrayMode   "FIRST" (default) or a string used to implode array cols
+     * @param array[optional]  $cols   array of column headers
      * @return string
      */
-    public static function formatTable(array $array, $format=null, $maxColLen=null, $pad=null, $arrayMode=null)
+    public static function formatTable(array $array, $format=null, $maxColLen=null, $pad=null, $arrayMode=null, $cols=null)
     {
         if (null === $format) { $format = "text"; }
         $format=strtolower($format);
@@ -482,7 +511,11 @@ class Gb_String
             // COMPUTE WIDTHS
             //
             reset($array);
-            $firstrowkeys=array_keys(current($array));
+            if (null === $cols) {
+                $firstrowkeys=array_keys(current($array));
+            } else {
+                $firstrowkeys=$cols;
+            }
 
             // get the max length of each column
             $max=array();
@@ -499,6 +532,9 @@ class Gb_String
             foreach ($array as $indexname=>$line) {
                 $max["index"]=max($max["index"], mb_strlen($indexname, "UTF-8"));
                 foreach ($firstrowkeys as $number=>$keyname) {
+                    if ($cols) {
+                        $keyname = $number;
+                    }
                     $col = self::splat($line[$keyname], $arrayMode);
                     $max[$number]=max($max[$number], mb_strlen(str_replace(array("\r","\n","\0"), array("\\r", "\\n", "\\0"), $col), "UTF-8"));
                     if ($maxColLen) {
@@ -543,6 +579,9 @@ class Gb_String
                     $ret.="|".$pad.self::mb_str_pad(mb_substr($indexname, 0, $len, "UTF-8"), $indexlen, " ", STR_PAD_LEFT, "UTF-8").$pad;
                 }
                 foreach ($firstrowkeys as $number=>$keyname) {
+                    if ($cols) {
+                        $keyname = $number;
+                    }
                     $len=$max[$number];
                     $col = self::splat($line[$keyname], $arrayMode);
 
@@ -554,7 +593,6 @@ class Gb_String
         } elseif ($format=="html") {
             reset($array);
             $firstrowkeys=array_keys(current($array));
-
             //
             // OUTPUT FIRST ROW
             //
@@ -563,6 +601,10 @@ class Gb_String
                 $rowhead .= "<th>index</th>";
             }
             foreach ($firstrowkeys as $number=>$keyname) {
+                if ($cols) {
+                    $keyname = $number;
+                }
+
                 $rowhead .= "<th>$keyname</th>";
             }
             $rowhead .= "</tr></thead>";
@@ -577,6 +619,9 @@ class Gb_String
                     $tbody .= "<td>$indexname</td>\n";
                 }
                 foreach ($firstrowkeys as $number=>$keyname) {
+                    if ($cols) {
+                        $keyname = $number;
+                    }
                     $val = htmlspecialchars(self::splat($line[$keyname], $arrayMode));
                     $tbody .= "<td>$val</td>";;
                 }
