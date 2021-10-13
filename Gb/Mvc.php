@@ -82,7 +82,12 @@ Class Gb_Mvc
         $rooturl=$match[1];                       //       /maps/
 
         $href="";
-        $href.=$_SERVER["SERVER_PORT"]==443 ? "https":"http";
+        $href.=(
+            $_SERVER["SERVER_PORT"]==443 ||
+            (isset($_SERVER['HTTP_X_FORWARDED_PROTO']) && $_SERVER['HTTP_X_FORWARDED_PROTO'] === 'https') ||
+            (isset($_SERVER['HTTP_X_SSL']) && $_SERVER['HTTP_X_SSL'] === 'true')
+            ) ? "https":"http";
+
         $href.="://";
         $href.=$_SERVER["SERVER_NAME"];
         $href.=$_SERVER["SERVER_PORT"]!=80 ? ":".$_SERVER["SERVER_PORT"] : "";
