@@ -1,4 +1,9 @@
 Personal php library / collection of utilities
+Language: PHP 5.4
+
+This has been developped and used from 2001 to 2017.
+Used Subversion (up to 2013-02-26), then Mercurial (hosted on bitbucket)
+Converted to git (hosted on github) on 2021-10-13 because bitbucket deleted all the mercurial repositories.
 
 Demo/readline/sql.php -> complete cli application similar to the mysql console, but using Gb_Db. It includes search in lines and column and schema description
 
