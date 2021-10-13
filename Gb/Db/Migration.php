@@ -1,6 +1,6 @@
 <?php
 /**
- * Gb_Db_Engine
+ * Gb_Db_Migration
  *
  * @author Gilles Bouthenot
  */
