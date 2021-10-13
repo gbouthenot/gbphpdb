@@ -23,6 +23,7 @@ Class Gb_Cache
     protected static    $nbTotal=0;                    // Nombre d'objet au total
     protected static    $nbCacheHits=0;                // Nombre de cache hit
     protected static    $nbCacheMiss=0;                // Nombre de cache miss
+    protected static    $debugMsg=array();             // Log
 
     protected static    $fPluginRegistred=false;
 
@@ -86,7 +87,6 @@ Class Gb_Cache
     protected $cacheID;
     protected $fUpdated;
     protected $fExpired;
-    protected $cacheHit;
 
     protected $values;
 
@@ -175,15 +175,16 @@ Class Gb_Cache
                 )
         );
 
+        // echo"id: $cacheID "; $metas = $this->cacheEngine->getMetadatas($cacheID); echo $metas["expire"] - time(); var_dump($metas);
         $this->cacheID=$cacheID;
         if ($fExpired) {
-            $this->values=array();
+            $this->values=array('_ttl' => time() + $lifetime);
             $this->cacheHit=false;
         } else {
             $this->values=$this->cacheEngine->load($cacheID);
-            if ( $this->values===false ) {
+            if ( $this->values===false || ( isset($this->values['_ttl']) && $this->values['_ttl'] < time() ) ) {
                 // cache invalide ou expiré
-                $this->values=array();
+                $this->values=array('_ttl' => time() + $lifetime);
                 $this->cacheHit=false;
             } else {
                 $this->cacheHit=true;
@@ -191,6 +192,7 @@ Class Gb_Cache
         }
 
         self::$nbTotal++;
+        self::$debugMsg[] = $this->cacheID . " (" . ($this->cacheHit ? "hit" : "miss") . ")";
 
         if (!self::$fPluginRegistred)
         {
@@ -205,6 +207,7 @@ Class Gb_Cache
      */
     public function __destruct()
     {
+        // self::$debugMsg[] = $this->cacheID . " destructed";
         if ($this->fUpdated && !$this->fExpired) {
             $this->cacheEngine->save($this->values, $this->cacheID);
         }
@@ -253,7 +256,7 @@ Class Gb_Cache
 
     public static function cacheHit()
     {
-        return self::$cacheHit;
+        return self::$nbCacheHit;
     }
 
     public static function cacheMiss()
@@ -309,8 +312,8 @@ Class Gb_Cache
     public function __isset($index)
     {
         $res=isset($this->values[$index]);
-        if ($res) { self::$nbCacheHits++; }
-        else      { self::$nbCacheMiss++; }
+        if ($res) { self::$nbCacheHits++; self::$debugMsg[] = $this->cacheID . "->$index (hit)"; }
+        else      { self::$nbCacheMiss++; self::$debugMsg[] = $this->cacheID . "->$index (miss)"; }
         return $res;
     }
 
@@ -324,7 +327,8 @@ Class Gb_Cache
         $nbtotal=self::$nbTotal;
         $nbcachehits=self::$nbCacheHits;
         $nbcachemiss=self::$nbCacheMiss;
-        $ret.="Gb_Cache:{ total:$nbtotal hits:$nbcachehits miss:$nbcachemiss }";
+        $ret.="Gb_Cache:{ totalInstances:$nbtotal hits:$nbcachehits miss:$nbcachemiss }\n";
+        $ret.="Gb_Cache debug: {\n" . join(self::$debugMsg,"\n")  . "\n}\n";
         return $ret;
       }
 
